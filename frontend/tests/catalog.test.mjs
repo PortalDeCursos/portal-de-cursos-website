@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { filterCourses, normalizeSearch, activeFilterCount } from '../src/features/courses/filterCourses.ts'
+import { filterCourses, normalizeSearch, activeFilterCount } from '../src/features/courses/utils/filterCourses.ts'
 const data = [
   { title: 'Análise e Desenvolvimento de Sistemas', abbreviation: 'TADS', category: 'Tecnologia', duration: 6, degree: 'Tecnologia', level: 'Presencial', shift: 'Noturno', campus: 'Campus Central', area: 'Exatas e Tecnologia' },
   { title: 'Redes de Computadores', abbreviation: 'Redes', category: 'Tecnologia', duration: 6, degree: 'Tecnologia', level: 'Presencial', shift: 'Matutino', campus: 'Campus Central', area: 'Exatas e Tecnologia' },
@@ -24,7 +24,7 @@ test('busca inexistente não retorna cursos e limpar recupera catálogo', () => 
 test('contador inclui cada filtro ativo e ignora termo vazio', () => assert.equal(activeFilterCount({ ...clear, query: '  ', degree: 'Graduação', areas: ['Exatas e Tecnologia'], durations: ['medium'] }), 3))
 
 test('projetos são isolados por curso e categoria', async () => {
-  const { filterCourseProjects } = await import('../src/features/projects/filterProjects.ts')
+  const { filterCourseProjects } = await import('../src/features/projects/utils/filterProjects.ts')
   const projects = [{ courseId: 'tads', category: 'TCC', id: 'a' }, { courseId: 'redes', category: 'Pesquisa', id: 'b' }, { courseId: 'tads', category: 'Projeto integrador', id: 'c' }]
   assert.deepEqual(filterCourseProjects(projects, 'tads').map(project => project.id), ['a', 'c'])
   assert.equal(filterCourseProjects(projects, 'tads', 'Pesquisa').length, 0)

@@ -1,0 +1,4 @@
+import type { CourseAcademicDetails } from '../../types/details'
+export default function CourseFaculty({ details }: { details?: CourseAcademicDetails }) {
+  return <section className="course-white-panel"><h2>Professores e orientação acadêmica</h2><p className="course-body-copy">Conheça as áreas de atuação do corpo docente demonstrativo.</p>{details ? <ul className="course-faculty-grid">{details.faculty.map(professor => <li key={professor.name}><span className="faculty-initials" aria-hidden="true">{professor.name.split(' ').slice(-2).map(part => part[0]).join('')}</span><div><h3>{professor.name}</h3><p>{professor.role}</p><small>{professor.subjects}</small></div></li>)}</ul> : <p className="course-body-copy" role="status">As informações do corpo docente deste curso ainda não estão disponíveis.</p>}</section>
+}

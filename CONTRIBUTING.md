@@ -1,7 +1,7 @@
 # Contribuir
 
 1. Parta de `develop` e crie uma branch `feat/`, `fix/` ou `docs/`.
-2. Mantenha mudanças pequenas e componentes de domínio em `features`.
+2. Mantenha mudanças pequenas e páginas componentes hooks serviços tipos e dados no domínio correspondente de `features`.
 3. Use os tokens existentes e preserve Header/Footer compartilhados.
 4. Execute `npm run check` na raiz.
 5. Para UI, confira desktop, celular, teclado e estados vazio/erro/carregamento. Inclua uma captura no PR.

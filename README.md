@@ -43,14 +43,31 @@ Submissão, autenticação, documentos e contato exibem um aviso de integração
 
 ```text
 frontend/src/
-  components/layout/    # Header e Footer
-  components/ui/        # Elementos compartilhados
-  features/courses/     # Catálogo, filtros, tipos e detalhes
-  features/projects/    # Projetos e filtros
-  services/             # Acesso a dados, hoje por mocks
-  mocks/                # Conteúdo demonstrativo
-  pages/                # Composição das telas
-  App.tsx               # Rotas e layout global
+  app/                   # Inicialização e rotas
+  shared/
+    components/layout/   # Header Footer e PortalLayout
+    components/ui/       # Elementos reutilizáveis
+    pages/               # Página não encontrada
+  features/
+    home/pages/          # Home
+    courses/
+      components/        # Cartões catálogo e detalhes
+      pages/             # Catálogo e detalhes de curso
+      hooks/             # Estado de carregamento e retry
+      services/          # Fronteira de acesso a dados
+      data/mocks/        # Dados demonstrativos
+      types/             # Contratos do domínio
+      utils/             # Busca e filtros
+      styles/            # Estilos específicos
+    projects/
+      components/        # Listas ilustrações e estado vazio
+      pages/             # Biblioteca e detalhes
+      data/mocks/        # Projetos demonstrativos
+      types/             # Contratos do domínio
+      utils/             # Filtros
+  styles/                # Tokens e estilos globais
+  assets/                # Imagens importadas
+  main.tsx               # Entrada do frontend
 ```
 
 Assets locais ficam em `frontend/src/assets` e `frontend/public/design`. A origem visual é o [protótipo no Figma](https://www.figma.com/design/6NyMCCCMKYeNv6QRvZXzE4). A publicação do código não concede uma licença independente para marcas ou materiais de terceiros.
