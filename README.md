@@ -82,5 +82,13 @@ Leia [CONTRIBUTING.md](CONTRIBUTING.md), [arquitetura](docs/architecture.md) e [
 
 ## Publicação futura
 
-O build está em `frontend/dist`. Configure a hospedagem SPA para redirecionar rotas para `index.html`. O carregador nativo da configuração Vite evita uma incompatibilidade do módulo Tailwind no Windows; por isso usamos Node 24. Este repositório não publica automaticamente o site.
+O build está em `frontend/dist`. Configure a hospedagem SPA para redirecionar rotas para `index.html`. O carregador nativo da configuração Vite evita uma incompatibilidade do módulo Tailwind no Windows; por isso usamos Node 24. O workflow pages publica o build no GitHub Pages ao atualizar a branch develop.
+
+
+
+## GitHub Pages
+
+O portal é publicado em https://portaldecursos.github.io/portal-de-cursos/ pelo workflow pages. A configuração do repositório usa GitHub Actions como fonte. O build define VITE_BASE_PATH como /portal-de-cursos/ e VITE_ROUTER_MODE como hash. Assim a home e rotas como /portal-de-cursos/#/cursos/tads funcionam em hospedagem estática sem fallback de servidor.
+
+Localmente o projeto continua usando as URLs normais. A função publicAsset monta os caminhos de ícones e imagens a partir da base do build. A publicação segue develop que já está autorizada no ambiente github-pages do repositório.
 

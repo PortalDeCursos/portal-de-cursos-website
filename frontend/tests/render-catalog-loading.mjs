@@ -14,7 +14,8 @@ function loadComponent(filename) {
   if (cache.has(full)) return cache.get(full)
   const module = { exports: {} }
   cache.set(full, module.exports)
-  const compiled = ts.transpileModule(fs.readFileSync(full, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
+  const source = fs.readFileSync(full, 'utf8').replaceAll('import.meta.env.BASE_URL', JSON.stringify('/'))
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
   const localRequire = specifier => {
     if (!specifier.startsWith('.')) return require(specifier)
     const target = path.resolve(path.dirname(full), specifier)
