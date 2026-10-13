@@ -2,6 +2,7 @@ import { useParams, useSearchParams } from "react-router";
 import useCatalog from "../hooks/useCatalog";
 import { courseDetails } from "../data/mocks/courseDetails";
 import { projects } from "../../projects/data/mocks/projects";
+import CourseProjectsIdentity from "../components/details/CourseProjectsIdentity";
 import CourseIdentity from "../components/details/CourseIdentity";
 import CourseTabs from "../components/details/CourseTabs";
 import CourseOverview from "../components/details/CourseOverview";
@@ -40,7 +41,9 @@ export default function CourseDetailsPage() {
     else next.delete("type");
     setParams(next, { replace: true });
   }
-  if (catalog.status === "loading")
+  const preview = import.meta.env.DEV ? params.get("preview") : null;
+  const visibleProjects = preview === "empty" ? [] : projects;
+  if (catalog.status === "loading" || preview === "loading")
     return (
       <div className="course-details-page">
         <div className="container course-details-content">
@@ -67,10 +70,10 @@ export default function CourseDetailsPage() {
   if (!course) return <NotFoundPage />;
   const details = courseDetails[course.id];
   return (
-    <div className="course-details-page">
+    <div className={`course-details-page${activeTab === "projects" ? " is-repository" : ""}`}>
       <div className="container course-details-content">
-        <CourseIdentity course={course} details={details} />
-        <CourseTabs active={activeTab} onChange={changeTab} />
+        {activeTab === "projects" ? <CourseProjectsIdentity course={course} details={details} /> : <CourseIdentity course={course} details={details} />}
+        <CourseTabs active={activeTab} onChange={changeTab} projectCount={visibleProjects.filter(project => project.courseId === course.id).length} />
         {validTabs.map((value) => (
           <div
             key={value}
@@ -93,14 +96,14 @@ export default function CourseDetailsPage() {
             {activeTab === value && value === "projects" && (
               <CourseProjects
                 course={course}
-                projects={projects}
+                projects={visibleProjects}
                 category={params.get("type") ?? ""}
                 onCategoryChange={changeCategory}
               />
             )}
           </div>
         ))}
-        <CourseCoordination course={course} details={details} />
+        {activeTab !== "projects" && <CourseCoordination course={course} details={details} />}
       </div>
     </div>
   );

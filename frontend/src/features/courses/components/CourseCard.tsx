@@ -3,7 +3,7 @@ import DesignIcon from "../../../shared/components/ui/DesignIcon";
 import type { Course } from "../types/course";
 export default function CourseCard({ course }: { course: Course }) {
   return (
-    <article className="course-card">
+    <article className="course-card" data-degree={course.category}>
       <div className="course-card-top">
         <span className="course-badge">{course.category}</span>
         <span className="course-abbreviation">{course.abbreviation}</span>
@@ -17,7 +17,7 @@ export default function CourseCard({ course }: { course: Course }) {
         </li>
         <li>
           <DesignIcon name="imgContainer3" />
-          {course.level}
+          <span className="modality-badge" data-modality={course.level}>{course.level}</span>
         </li>
         <li>
           <DesignIcon

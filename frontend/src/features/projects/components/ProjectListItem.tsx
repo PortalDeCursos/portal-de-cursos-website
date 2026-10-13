@@ -3,7 +3,7 @@ import DesignIcon from "../../../shared/components/ui/DesignIcon";
 import type { Project } from "../types/project";
 export default function ProjectListItem({ project }: { project: Project }) {
   return (
-    <li className="project-item">
+    <li className="project-item" data-category={project.category}>
       <div className="project-copy">
         <div className="project-tags">
           <span
