@@ -14,7 +14,7 @@ function loadComponent(filename) {
   if (cache.has(full)) return cache.get(full)
   const module = { exports: {} }
   cache.set(full, module.exports)
-  const source = fs.readFileSync(full, 'utf8').replaceAll('import.meta.env.BASE_URL', JSON.stringify('/'))
+  const source = fs.readFileSync(full, 'utf8').replaceAll('import.meta.env.BASE_URL', JSON.stringify('/')).replaceAll('import.meta.env.DEV', 'false')
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
   const localRequire = specifier => {
     if (!specifier.startsWith('.')) return require(specifier)
@@ -42,10 +42,9 @@ console.log('Snapshot do componente real de carregamento gerado; sem controles d
 
 
 const DetailsSkeleton = loadComponent('src/features/courses/components/details/CourseDetailsSkeleton.tsx').default
-const Identity = loadComponent('src/features/courses/components/details/CourseIdentity.tsx').default
+const RepositoryIdentity = loadComponent('src/features/courses/components/details/CourseProjectsIdentity.tsx').default
 const Tabs = loadComponent('src/features/courses/components/details/CourseTabs.tsx').default
 const ProjectsPanel = loadComponent('src/features/courses/components/details/CourseProjects.tsx').default
-const Coordination = loadComponent('src/features/courses/components/details/CourseCoordination.tsx').default
 const course = loadComponent('src/features/courses/data/mocks/catalog.ts').catalogCourses[0]
 const details = loadComponent('src/features/courses/data/mocks/courseDetails.ts').courseDetails.tads
 function renderDetailsSnapshot(filename, children) {
@@ -55,7 +54,7 @@ function renderDetailsSnapshot(filename, children) {
 }
 const detailLoading = renderDetailsSnapshot('reports/course-details-loading.html', [React.createElement(DetailsSkeleton)])
 assert.match(detailLoading, /aria-label="Carregando detalhes do curso"/)
-const detailEmpty = renderDetailsSnapshot('reports/course-details-no-projects.html', [React.createElement(Identity, { course, details }), React.createElement(Tabs, { active: 'projects', onChange() {} }), React.createElement(ProjectsPanel, { course, projects: [], category: '', onCategoryChange() {} }), React.createElement(Coordination, { course, details })])
+const detailEmpty = renderDetailsSnapshot('reports/course-details-no-projects.html', [React.createElement(RepositoryIdentity, { course, details }), React.createElement(Tabs, { active: 'projects', projectCount: 0, onChange() {} }), React.createElement(ProjectsPanel, { course, projects: [], category: '', onCategoryChange() {} })])
 assert.match(detailEmpty, /Nenhum projeto publicado para este curso no momento/)
 assert.match(detailEmpty, /Conhecer biblioteca geral de projetos/)
 assert.equal(details.curriculum.flatMap(semester => semester.subjects).length, details.moduleCount)

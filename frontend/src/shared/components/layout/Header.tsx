@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router'
 import logo from '../../../assets/logo.png'
-import DesignIcon from '../ui/DesignIcon'
+import { LogIn } from 'lucide-react'
 import PrototypeAction from '../ui/PrototypeAction'
+import ThemeToggle from '../ui/ThemeToggle'
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
@@ -21,8 +22,9 @@ export default function Header() {
           <NavLink to="/cursos" onClick={closeMenu}>Cursos</NavLink>
           <NavLink to="/projetos" onClick={closeMenu}>Projetos</NavLink>
         </nav>
-        <div className="header-actions"><PrototypeAction className="submission-link">Submeter projeto</PrototypeAction><PrototypeAction title="Área restrita" className="restricted-link"><DesignIcon name="imgContainer8" /><span>Área restrita</span></PrototypeAction></div>
+        <div className="header-actions"><PrototypeAction className="submission-link">Submeter projeto</PrototypeAction><PrototypeAction title="Área restrita" className="restricted-link"><LogIn size={20} strokeWidth={1.8} aria-hidden="true" /><span>Área restrita</span></PrototypeAction></div>
       </div>
+      <ThemeToggle />
     </div>
   </header>
 }

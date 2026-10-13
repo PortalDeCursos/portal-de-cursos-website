@@ -25,9 +25,9 @@ export default function CatalogRecommendations({
         {courses
           .filter((course) => course.recommended)
           .map((course) => (
-            <article key={course.id}>
+            <article key={course.id} data-degree={course.degree}>
               <div className="recommendation-top">
-                <span>
+                <span className="catalog-degree">
                   {course.degree === "Tecnologia" ? "Tecnólogo" : course.degree}
                 </span>
                 <span>
