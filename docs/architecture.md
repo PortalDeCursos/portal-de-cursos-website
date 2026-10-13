@@ -1,5 +1,7 @@
 # Arquitetura
 
+O projeto usa uma única raiz de aplicação em `frontend/`; não há um segundo projeto aninhado em `frontend/frontend`.
+
 O frontend é uma SPA com React Router. App organiza rotas e layout; páginas compõem componentes; features concentram domínio, filtros e tipos; services concentra a leitura dos dados.
 
 ## Fronteira de dados
