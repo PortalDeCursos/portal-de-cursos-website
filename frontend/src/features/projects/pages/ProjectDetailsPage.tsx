@@ -1,16 +1,13 @@
-import { Link, useParams } from "react-router";
-import { projects } from "../data/mocks/projects";
-import NotFoundPage from "../../../shared/pages/NotFoundPage";
+import { Link, useParams } from 'react-router';
+import { projects } from '../data/mocks/projects';
+import NotFoundPage from '../../../shared/pages/NotFoundPage';
 export default function ProjectDetailsPage() {
   const { projectId } = useParams();
   const project = projects.find((item) => item.id === projectId);
   if (!project) return <NotFoundPage />;
   return (
     <div className="container page">
-      <Link
-        to={"/cursos/" + project.courseId}
-        className="text-sm font-bold text-brand"
-      >
+      <Link to={'/cursos/' + project.courseId} className="text-sm font-bold text-brand">
         ← Voltar ao curso
       </Link>
       <p className="mt-8 text-sm font-bold text-brand">Projeto prático</p>
@@ -18,10 +15,7 @@ export default function ProjectDetailsPage() {
       <p className="mt-6 max-w-2xl text-lg text-muted">{project.description}</p>
       <ul aria-label="Tecnologias" className="mt-6 flex flex-wrap gap-3">
         {project.skills.map((skill) => (
-          <li
-            key={skill}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm"
-          >
+          <li key={skill} className="rounded-md border border-border bg-surface px-3 py-2 text-sm">
             {skill}
           </li>
         ))}

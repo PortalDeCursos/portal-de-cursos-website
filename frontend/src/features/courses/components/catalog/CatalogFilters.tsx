@@ -1,5 +1,5 @@
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import type { CourseFilters } from "../../types/catalog";
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import type { CourseFilters } from '../../types/catalog';
 type Props = {
   filters: CourseFilters;
   onChange: (filters: CourseFilters) => void;
@@ -20,7 +20,7 @@ export default function CatalogFilters({ filters, onChange, onClear }: Props) {
           id="course-search"
           type="search"
           value={filters.query}
-          onChange={(event) => update("query", event.target.value)}
+          onChange={(event) => update('query', event.target.value)}
           placeholder="Buscar por nome ou sigla do curso..."
         />
       </div>
@@ -31,7 +31,7 @@ export default function CatalogFilters({ filters, onChange, onClear }: Props) {
         <select
           id="course-degree"
           value={filters.degree}
-          onChange={(event) => update("degree", event.target.value)}
+          onChange={(event) => update('degree', event.target.value)}
         >
           <option value="">Grau: Todos</option>
           <option>Tecnologia</option>
@@ -47,7 +47,7 @@ export default function CatalogFilters({ filters, onChange, onClear }: Props) {
         <select
           id="course-modality"
           value={filters.modality}
-          onChange={(event) => update("modality", event.target.value)}
+          onChange={(event) => update('modality', event.target.value)}
         >
           <option value="">Modalidade: Todas</option>
           <option>Presencial</option>
@@ -63,7 +63,7 @@ export default function CatalogFilters({ filters, onChange, onClear }: Props) {
         <select
           id="course-shift"
           value={filters.shift}
-          onChange={(event) => update("shift", event.target.value)}
+          onChange={(event) => update('shift', event.target.value)}
         >
           <option value="">Turno: Todos</option>
           <option>Matutino</option>

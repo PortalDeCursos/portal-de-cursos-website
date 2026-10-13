@@ -1,11 +1,11 @@
-import { publicAsset } from '../../../shared/utils/publicAsset'
-const imgVector = publicAsset("design/imgVector.svg");
-const imgVector1 = publicAsset("design/imgVector1.svg");
-const imgVector2 = publicAsset("design/imgVector2.svg");
-const imgVector3 = publicAsset("design/imgVector3.svg");
-const imgVector4 = publicAsset("design/imgVector4.svg");
-const imgVector5 = publicAsset("design/imgVector5.svg");
-const imgVector6 = publicAsset("design/imgVector6.svg");
+import { publicAsset } from '../../../shared/utils/publicAsset';
+const imgVector = publicAsset('design/imgVector.svg');
+const imgVector1 = publicAsset('design/imgVector1.svg');
+const imgVector2 = publicAsset('design/imgVector2.svg');
+const imgVector3 = publicAsset('design/imgVector3.svg');
+const imgVector4 = publicAsset('design/imgVector4.svg');
+const imgVector5 = publicAsset('design/imgVector5.svg');
+const imgVector6 = publicAsset('design/imgVector6.svg');
 
 export default function ProjectIllustration() {
   return (

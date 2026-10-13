@@ -1,18 +1,12 @@
-import { Link } from "react-router";
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import type { CatalogCourse } from "../../types/catalog";
-export default function CatalogCourseCard({
-  course,
-}: {
-  course: CatalogCourse;
-}) {
+import { Link } from 'react-router';
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import type { CatalogCourse } from '../../types/catalog';
+export default function CatalogCourseCard({ course }: { course: CatalogCourse }) {
   return (
     <article className="catalog-course-card" data-degree={course.degree}>
       <div className="catalog-card-top">
         <span className="catalog-degree">
-          {course.degree === "Tecnologia"
-            ? "Graduação Tecnológica"
-            : course.degree}
+          {course.degree === 'Tecnologia' ? 'Graduação Tecnológica' : course.degree}
         </span>
         <span className="catalog-duration">
           <DesignIcon name="catalog-imgContainer2" />
@@ -32,15 +26,13 @@ export default function CatalogCourseCard({
           </li>
           <li>
             <DesignIcon name="catalog-imgContainer4" />
-            <span className="modality-badge" data-modality={course.level}>{course.level}</span>
+            <span className="modality-badge" data-modality={course.level}>
+              {course.level}
+            </span>
           </li>
           <li>
             <DesignIcon
-              name={
-                course.shift === "Matutino"
-                  ? "catalog-imgContainer7"
-                  : "catalog-imgContainer5"
-              }
+              name={course.shift === 'Matutino' ? 'catalog-imgContainer7' : 'catalog-imgContainer5'}
             />
             {course.shift}
           </li>
@@ -48,9 +40,9 @@ export default function CatalogCourseCard({
         <div className="catalog-card-actions">
           <p className="catalog-code">
             <span />
-            {course.emec ? "Código e-MEC: " + course.emec : course.campus}
+            {course.emec ? 'Código e-MEC: ' + course.emec : course.campus}
           </p>
-          <Link to={"/cursos/" + course.id} className="text-link">
+          <Link to={'/cursos/' + course.id} className="text-link">
             Conhecer o curso
             <DesignIcon name="catalog-imgContainer6" />
           </Link>

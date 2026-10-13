@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "lint": "npm --prefix frontend run lint",
+    "format": "npm --prefix frontend run format",
+    "format:check": "npm --prefix frontend run format:check",
     "test": "npm --prefix frontend run test",
     "build": "npm --prefix frontend run build",
     "check:views": "npm --prefix frontend run check:views",

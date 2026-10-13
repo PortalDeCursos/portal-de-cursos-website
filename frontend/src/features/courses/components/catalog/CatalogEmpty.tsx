@@ -1,9 +1,9 @@
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
 const tips = [
-  "Verifique se não há erros de digitação no termo digitado.",
-  "Experimente usar termos mais amplos (ex: “Computação”, “Sistemas”).",
-  "Remova filtros de campus ou modalidade para ampliar os resultados.",
-  "Consulte outras opções de grau de formação no catálogo.",
+  'Verifique se não há erros de digitação no termo digitado.',
+  'Experimente usar termos mais amplos (ex: “Computação”, “Sistemas”).',
+  'Remova filtros de campus ou modalidade para ampliar os resultados.',
+  'Consulte outras opções de grau de formação no catálogo.',
 ];
 export default function CatalogEmpty({
   onClear,
@@ -19,20 +19,15 @@ export default function CatalogEmpty({
       </div>
       <h2 id="empty-title">Nenhum curso encontrado</h2>
       <p>
-        Não encontramos cursos correspondentes aos critérios ou termos
-        pesquisados. Tente ajustar os filtros ou utilizar palavras-chave mais
-        genéricas.
+        Não encontramos cursos correspondentes aos critérios ou termos pesquisados. Tente ajustar os
+        filtros ou utilizar palavras-chave mais genéricas.
       </p>
       <div className="empty-actions">
         <button type="button" className="primary-button" onClick={onClear}>
           <DesignIcon name="empty-imgContainer9" />
           Limpar filtros
         </button>
-        <button
-          type="button"
-          className="catalog-secondary-button"
-          onClick={onShowAll}
-        >
+        <button type="button" className="catalog-secondary-button" onClick={onShowAll}>
           <DesignIcon name="empty-imgContainer10" />
           Ver catálogo completo
         </button>

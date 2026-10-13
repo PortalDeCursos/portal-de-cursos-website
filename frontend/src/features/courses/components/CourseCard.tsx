@@ -1,6 +1,6 @@
-import { Link } from "react-router";
-import DesignIcon from "../../../shared/components/ui/DesignIcon";
-import type { Course } from "../types/course";
+import { Link } from 'react-router';
+import DesignIcon from '../../../shared/components/ui/DesignIcon';
+import type { Course } from '../types/course';
 export default function CourseCard({ course }: { course: Course }) {
   return (
     <article className="course-card" data-degree={course.category}>
@@ -17,18 +17,16 @@ export default function CourseCard({ course }: { course: Course }) {
         </li>
         <li>
           <DesignIcon name="imgContainer3" />
-          <span className="modality-badge" data-modality={course.level}>{course.level}</span>
+          <span className="modality-badge" data-modality={course.level}>
+            {course.level}
+          </span>
         </li>
         <li>
-          <DesignIcon
-            name={
-              course.shift === "Noturno" ? "imgContainer4" : "imgContainer5"
-            }
-          />
+          <DesignIcon name={course.shift === 'Noturno' ? 'imgContainer4' : 'imgContainer5'} />
           {course.shift}
         </li>
       </ul>
-      <Link to={"/cursos/" + course.id} className="text-link course-link">
+      <Link to={'/cursos/' + course.id} className="text-link course-link">
         Conhecer o curso
         <DesignIcon name="imgContainer1" />
       </Link>

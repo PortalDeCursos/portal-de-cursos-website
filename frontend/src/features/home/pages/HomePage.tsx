@@ -1,13 +1,13 @@
-import { Link } from "react-router";
-import Button from "../../../shared/components/ui/Button";
-import DesignIcon from "../../../shared/components/ui/DesignIcon";
-import PrototypeAction from "../../../shared/components/ui/PrototypeAction";
-import SectionState from "../../../shared/components/ui/SectionState";
-import CourseCard from "../../courses/components/CourseCard";
-import ProjectListItem from "../../projects/components/ProjectListItem";
-import ProjectIllustration from "../../projects/components/ProjectIllustration";
-import { courses } from "../../courses/data/mocks/courses";
-import { projects } from "../../projects/data/mocks/projects";
+import { Link } from 'react-router';
+import Button from '../../../shared/components/ui/Button';
+import DesignIcon from '../../../shared/components/ui/DesignIcon';
+import PrototypeAction from '../../../shared/components/ui/PrototypeAction';
+import SectionState from '../../../shared/components/ui/SectionState';
+import CourseCard from '../../courses/components/CourseCard';
+import ProjectListItem from '../../projects/components/ProjectListItem';
+import ProjectIllustration from '../../projects/components/ProjectIllustration';
+import { courses } from '../../courses/data/mocks/courses';
+import { projects } from '../../projects/data/mocks/projects';
 
 export default function HomePage() {
   return (
@@ -26,8 +26,8 @@ export default function HomePage() {
               <br className="desktop-break" /> produzem.
             </h1>
             <p className="hero-description">
-              Explore disciplinas, conheça professores e descubra projetos
-              desenvolvidos pelos estudantes.
+              Explore disciplinas, conheça professores e descubra projetos desenvolvidos pelos
+              estudantes.
             </p>
             <div className="hero-actions">
               <Button to="/cursos">Explorar cursos</Button>
@@ -99,10 +99,7 @@ export default function HomePage() {
           <div className="section-heading">
             <div>
               <h2 id="projects-title">O conhecimento ganha forma aqui</h2>
-              <p>
-                Conheça trabalhos aprovados e desenvolvidos ao longo da
-                formação.
-              </p>
+              <p>Conheça trabalhos aprovados e desenvolvidos ao longo da formação.</p>
             </div>
             <div className="section-controls">
               <Link to="/projetos" className="text-link">
@@ -129,13 +126,10 @@ export default function HomePage() {
             </p>
             <h2>Seu projeto também pode fazer parte.</h2>
             <p className="submission-description">
-              Envie sua produção acadêmica em PDF. Após a avaliação do
-              orientador, os projetos aprovados ficam disponíveis para consulta
-              pública.
+              Envie sua produção acadêmica em PDF. Após a avaliação do orientador, os projetos
+              aprovados ficam disponíveis para consulta pública.
             </p>
-            <p className="submission-note">
-              Não é necessário ter uma conta para enviar.
-            </p>
+            <p className="submission-note">Não é necessário ter uma conta para enviar.</p>
           </div>
           <PrototypeAction className="primary-button">
             <DesignIcon name="imgContainer7" />

@@ -1,6 +1,6 @@
-import { Link } from "react-router";
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import PrototypeAction from "../../../../shared/components/ui/PrototypeAction";
+import { Link } from 'react-router';
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import PrototypeAction from '../../../../shared/components/ui/PrototypeAction';
 export default function CatalogSupport() {
   return (
     <section className="catalog-support">
@@ -10,9 +10,8 @@ export default function CatalogSupport() {
       <div>
         <h2>Não encontrou a formação que procurava?</h2>
         <p>
-          Consulte nossos projetos acadêmicos e grupos de extensão ou entre em
-          contato com as coordenações de área para orientações sobre ingresso e
-          transferências.
+          Consulte nossos projetos acadêmicos e grupos de extensão ou entre em contato com as
+          coordenações de área para orientações sobre ingresso e transferências.
         </p>
       </div>
       <div className="support-actions">
@@ -20,10 +19,7 @@ export default function CatalogSupport() {
           <DesignIcon name="catalog-imgContainer9" />
           Ver projetos
         </Link>
-        <PrototypeAction
-          className="catalog-contact"
-          title="Falar com a coordenação"
-        >
+        <PrototypeAction className="catalog-contact" title="Falar com a coordenação">
           <DesignIcon name="catalog-imgContainer10" />
           Falar com a coordenação
         </PrototypeAction>
