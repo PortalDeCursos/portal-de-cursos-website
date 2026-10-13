@@ -1,5 +1,5 @@
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import type { CourseFilters } from "../../types/catalog";
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import type { CourseFilters } from '../../types/catalog';
 
 export default function ActiveCourseFilters({
   filters,
@@ -11,14 +11,14 @@ export default function ActiveCourseFilters({
   onClear: () => void;
 }) {
   const values: {
-    key: "query" | "degree" | "modality" | "shift" | "campus";
+    key: 'query' | 'degree' | 'modality' | 'shift' | 'campus';
     label: string;
   }[] = [
-    { key: "query", label: "Termo" },
-    { key: "degree", label: "Grau" },
-    { key: "modality", label: "Modalidade" },
-    { key: "shift", label: "Turno" },
-    { key: "campus", label: "Campus" },
+    { key: 'query', label: 'Termo' },
+    { key: 'degree', label: 'Grau' },
+    { key: 'modality', label: 'Modalidade' },
+    { key: 'shift', label: 'Turno' },
+    { key: 'campus', label: 'Campus' },
   ];
   return (
     <div className="active-course-filters">
@@ -33,27 +33,25 @@ export default function ActiveCourseFilters({
             <button
               type="button"
               key={item.key}
-              aria-label={
-                "Remover filtro " + item.label + ": " + filters[item.key]
-              }
-              onClick={() => onChange({ ...filters, [item.key]: "" })}
+              aria-label={'Remover filtro ' + item.label + ': ' + filters[item.key]}
+              onClick={() => onChange({ ...filters, [item.key]: '' })}
             >
               {item.label}: {filters[item.key]}
               <DesignIcon
                 name={
-                  item.key === "query"
-                    ? "empty-imgButtonRemoverTermo"
-                    : "empty-imgButtonRemoverFiltroDeGraduacao"
+                  item.key === 'query'
+                    ? 'empty-imgButtonRemoverTermo'
+                    : 'empty-imgButtonRemoverFiltroDeGraduacao'
                 }
               />
             </button>
           ))}
-        {(["areas", "durations"] as const).flatMap((key) =>
+        {(['areas', 'durations'] as const).flatMap((key) =>
           filters[key].map((value) => (
             <button
               type="button"
               key={key + value}
-              aria-label={"Remover filtro " + value}
+              aria-label={'Remover filtro ' + value}
               onClick={() =>
                 onChange({
                   ...filters,
@@ -61,11 +59,11 @@ export default function ActiveCourseFilters({
                 })
               }
             >
-              {key === "durations"
+              {key === 'durations'
                 ? ({
-                    short: "Até 2 anos",
-                    medium: "De 2,5 a 4 anos",
-                    long: "Mais de 4 anos",
+                    short: 'Até 2 anos',
+                    medium: 'De 2,5 a 4 anos',
+                    long: 'Mais de 4 anos',
                   }[value] ?? value)
                 : value}
               <DesignIcon name="empty-imgButtonRemoverFiltroDeGraduacao" />

@@ -1,11 +1,7 @@
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
 export default function CatalogSkeleton() {
   return (
-    <div
-      className="catalog-loading"
-      role="status"
-      aria-label="Carregando cursos"
-    >
+    <div className="catalog-loading" role="status" aria-label="Carregando cursos">
       <span className="sr-only">Carregando cursos. Aguarde.</span>
       <div aria-hidden="true">
         <div className="catalog-loading-count skeleton-block" />

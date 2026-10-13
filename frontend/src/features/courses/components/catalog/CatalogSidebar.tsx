@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import PrototypeAction from "../../../../shared/components/ui/PrototypeAction";
-import type { CatalogCourse, CourseFilters } from "../../types/catalog";
+import { useEffect, useState } from 'react';
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import PrototypeAction from '../../../../shared/components/ui/PrototypeAction';
+import type { CatalogCourse, CourseFilters } from '../../types/catalog';
 const areas = [
-  "Exatas e Tecnologia",
-  "Ciências da Saúde",
-  "Ciências Humanas e Sociais",
-  "Gestão e Negócios",
-  "Engenharias e Produção",
+  'Exatas e Tecnologia',
+  'Ciências da Saúde',
+  'Ciências Humanas e Sociais',
+  'Gestão e Negócios',
+  'Engenharias e Produção',
 ];
 const durations = [
-  { value: "short", label: "Até 2 anos" },
-  { value: "medium", label: "De 2,5 a 4 anos" },
-  { value: "long", label: "Mais de 4 anos" },
+  { value: 'short', label: 'Até 2 anos' },
+  { value: 'medium', label: 'De 2,5 a 4 anos' },
+  { value: 'long', label: 'Mais de 4 anos' },
 ];
 export default function CatalogSidebar({
   courses,
@@ -26,17 +26,15 @@ export default function CatalogSidebar({
   onChange: (filters: CourseFilters) => void;
 }) {
   const [expanded, setExpanded] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(min-width: 768px)").matches,
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
   );
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
+    const media = window.matchMedia('(min-width: 768px)');
     const update = () => setExpanded(media.matches);
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
   }, []);
-  function toggle(key: "areas" | "durations", value: string) {
+  function toggle(key: 'areas' | 'durations', value: string) {
     onChange({
       ...filters,
       [key]: filters[key].includes(value)
@@ -71,12 +69,10 @@ export default function CatalogSidebar({
                   <input
                     type="checkbox"
                     checked={filters.areas.includes(area)}
-                    onChange={() => toggle("areas", area)}
+                    onChange={() => toggle('areas', area)}
                   />
                   <span>{area}</span>
-                  <small>
-                    {courses.filter((course) => course.area === area).length}
-                  </small>
+                  <small>{courses.filter((course) => course.area === area).length}</small>
                 </label>
               ))}
             </div>
@@ -87,7 +83,7 @@ export default function CatalogSidebar({
               <DesignIcon name="empty-imgContainer6" />
             </summary>
             <div className="sidebar-options">
-              {["Matutino", "Noturno", "Integral"].map((shift) => (
+              {['Matutino', 'Noturno', 'Integral'].map((shift) => (
                 <label key={shift}>
                   <input
                     type="radio"
@@ -96,15 +92,13 @@ export default function CatalogSidebar({
                     onChange={() => onChange({ ...filters, shift })}
                   />
                   <span>{shift}</span>
-                  <small>
-                    {courses.filter((course) => course.shift === shift).length}
-                  </small>
+                  <small>{courses.filter((course) => course.shift === shift).length}</small>
                 </label>
               ))}
               <button
                 type="button"
                 className="text-link"
-                onClick={() => onChange({ ...filters, shift: "" })}
+                onClick={() => onChange({ ...filters, shift: '' })}
               >
                 Todos os turnos
               </button>
@@ -121,7 +115,7 @@ export default function CatalogSidebar({
                   <input
                     type="checkbox"
                     checked={filters.durations.includes(duration.value)}
-                    onChange={() => toggle("durations", duration.value)}
+                    onChange={() => toggle('durations', duration.value)}
                   />
                   <span>{duration.label}</span>
                 </label>
@@ -133,9 +127,7 @@ export default function CatalogSidebar({
             <select
               id="course-campus"
               value={filters.campus}
-              onChange={(event) =>
-                onChange({ ...filters, campus: event.target.value })
-              }
+              onChange={(event) => onChange({ ...filters, campus: event.target.value })}
             >
               <option value="">Todos os campi</option>
               <option>Campus Central</option>
@@ -148,8 +140,7 @@ export default function CatalogSidebar({
               Dúvida vocacional?
             </h3>
             <p>
-              A coordenação acadêmica disponibiliza orientação sobre as
-              possibilidades de formação.
+              A coordenação acadêmica disponibiliza orientação sobre as possibilidades de formação.
             </p>
             <PrototypeAction title="Agendar atendimento" className="text-link">
               Agendar atendimento →

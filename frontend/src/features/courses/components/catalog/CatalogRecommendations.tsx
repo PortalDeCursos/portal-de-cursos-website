@@ -1,6 +1,6 @@
-import { Link } from "react-router";
-import DesignIcon from "../../../../shared/components/ui/DesignIcon";
-import type { CatalogCourse } from "../../types/catalog";
+import { Link } from 'react-router';
+import DesignIcon from '../../../../shared/components/ui/DesignIcon';
+import type { CatalogCourse } from '../../types/catalog';
 export default function CatalogRecommendations({
   courses,
   onShowAll,
@@ -13,9 +13,7 @@ export default function CatalogRecommendations({
       <div className="recommendations-heading">
         <div>
           <h2>Cursos em destaque institucional</h2>
-          <p>
-            Conheça outras possibilidades de formação no catálogo demonstrativo.
-          </p>
+          <p>Conheça outras possibilidades de formação no catálogo.</p>
         </div>
         <button type="button" className="text-link" onClick={onShowAll}>
           Ver todos os {courses.length} cursos →
@@ -28,7 +26,7 @@ export default function CatalogRecommendations({
             <article key={course.id} data-degree={course.degree}>
               <div className="recommendation-top">
                 <span className="catalog-degree">
-                  {course.degree === "Tecnologia" ? "Tecnólogo" : course.degree}
+                  {course.degree === 'Tecnologia' ? 'Tecnólogo' : course.degree}
                 </span>
                 <span>
                   <DesignIcon name="empty-imgContainer12" />
@@ -41,7 +39,7 @@ export default function CatalogRecommendations({
                 <span>
                   {course.campus} • {course.shift}
                 </span>
-                <Link to={"/cursos/" + course.id} className="text-link">
+                <Link to={'/cursos/' + course.id} className="text-link">
                   Detalhes →
                 </Link>
               </div>

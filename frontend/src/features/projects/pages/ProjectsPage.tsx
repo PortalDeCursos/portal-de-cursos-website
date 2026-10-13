@@ -1,5 +1,5 @@
-import { projects } from "../data/mocks/projects";
-import ProjectListItem from "../components/ProjectListItem";
+import { projects } from '../data/mocks/projects';
+import ProjectListItem from '../components/ProjectListItem';
 export default function ProjectsPage() {
   return (
     <div className="container page">

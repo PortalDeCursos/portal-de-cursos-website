@@ -1,6 +1,6 @@
-import { Link } from "react-router";
-import DesignIcon from "../../../shared/components/ui/DesignIcon";
-import type { Project } from "../types/project";
+import { Link } from 'react-router';
+import DesignIcon from '../../../shared/components/ui/DesignIcon';
+import type { Project } from '../types/project';
 export default function ProjectListItem({ project }: { project: Project }) {
   return (
     <li className="project-item" data-category={project.category}>
@@ -8,12 +8,12 @@ export default function ProjectListItem({ project }: { project: Project }) {
         <div className="project-tags">
           <span
             className={
-              "project-badge " +
-              (project.category === "Pesquisa"
-                ? "research"
-                : project.category === "TCC"
-                  ? "tcc"
-                  : "")
+              'project-badge ' +
+              (project.category === 'Pesquisa'
+                ? 'research'
+                : project.category === 'TCC'
+                  ? 'tcc'
+                  : '')
             }
           >
             {project.category}
@@ -26,7 +26,7 @@ export default function ProjectListItem({ project }: { project: Project }) {
           Orientador: <strong>{project.advisor}</strong>
         </p>
       </div>
-      <Link to={"/projetos/" + project.id} className="text-link project-link">
+      <Link to={'/projetos/' + project.id} className="text-link project-link">
         Ver projeto
         <DesignIcon name="imgContainer1" />
       </Link>

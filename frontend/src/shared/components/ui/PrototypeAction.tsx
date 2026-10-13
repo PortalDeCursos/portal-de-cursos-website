@@ -1,9 +1,9 @@
-import { useRef } from "react";
-import type { ReactNode } from "react";
+import { useRef } from 'react';
+import type { ReactNode } from 'react';
 export default function PrototypeAction({
   children,
   className,
-  title = "Submeter projeto",
+  title = 'Submeter projeto',
 }: {
   children: ReactNode;
   className?: string;
@@ -12,11 +12,7 @@ export default function PrototypeAction({
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <>
-      <button
-        type="button"
-        className={className}
-        onClick={() => dialog.current?.showModal()}
-      >
+      <button type="button" className={className} onClick={() => dialog.current?.showModal()}>
         {children}
       </button>
       <dialog
@@ -28,15 +24,8 @@ export default function PrototypeAction({
         }}
       >
         <h2>{title}</h2>
-        <p>
-          Este é um ambiente demonstrativo. Esta funcionalidade ainda não está
-          disponível e depende da integração com o sistema institucional.
-        </p>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => dialog.current?.close()}
-        >
+        <p>Esta funcionalidade depende da integração com o sistema institucional.</p>
+        <button type="button" className="primary-button" onClick={() => dialog.current?.close()}>
           Entendi
         </button>
       </dialog>
