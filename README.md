@@ -30,19 +30,19 @@ Submissão, autenticação, documentos e contato exibem um aviso de integração
 
 ## Rotas
 
-| Rota | Tela |
-| --- | --- |
-| `/` | Home |
-| `/cursos` | Catálogo com filtros |
-| `/cursos/tads` | Detalhes do TADS |
-| `/cursos/:courseId` | Detalhes de curso |
-| `/projetos` | Biblioteca |
-| `/projetos/:projectId` | Detalhes de projeto |
+| Rota                   | Tela                 |
+| ---------------------- | -------------------- |
+| `/`                    | Home                 |
+| `/cursos`              | Catálogo com filtros |
+| `/cursos/tads`         | Detalhes do TADS     |
+| `/cursos/:courseId`    | Detalhes de curso    |
+| `/projetos`            | Biblioteca           |
+| `/projetos/:projectId` | Detalhes de projeto  |
 
 ## Organização
 
 ```text
-frontend/src/
+src/
   app/                   # Inicialização e rotas
   shared/
     components/layout/   # Header Footer e PortalLayout
@@ -70,25 +70,22 @@ frontend/src/
   main.tsx               # Entrada do frontend
 ```
 
-Assets locais ficam em `frontend/src/assets` e `frontend/public/design`. A origem visual é o [protótipo no Figma](https://www.figma.com/design/6NyMCCCMKYeNv6QRvZXzE4). A publicação do código não concede uma licença independente para marcas ou materiais de terceiros.
+Assets locais ficam em `src/assets` e `public/design`. A origem visual é o [protótipo no Figma](https://www.figma.com/design/6NyMCCCMKYeNv6QRvZXzE4). A publicação do código não concede uma licença independente para marcas ou materiais de terceiros.
 
 ## Fluxo de desenvolvimento
 
 `main` guarda a versão validada. `develop` é a base para desenvolvimento futuro; ambas começam com a mesma versão preparada. A tag `prototype-baseline` preserva o protótipo anterior às melhorias. Crie branches curtas como `feat/api-courses` a partir de `develop`, abra PR para `develop` e valide antes de promover uma versão para `main`. Evite branches permanentes para cada experimento.
 
-A CI executa lint, testes, build e geração de fixtures em pushes e PRs. Os relatórios gerados em `frontend/reports` ficam fora do Git e são disponibilizados como artefatos da CI.
+A CI executa lint, testes, build e geração de fixtures em pushes e PRs. Os relatórios gerados em `reports` ficam fora do Git e são disponibilizados como artefatos da CI.
 
 Leia [CONTRIBUTING.md](CONTRIBUTING.md), [arquitetura](docs/architecture.md) e [roadmap](docs/roadmap.md).
 
 ## Publicação futura
 
-O build está em `frontend/dist`. Configure a hospedagem SPA para redirecionar rotas para `index.html`. O carregador nativo da configuração Vite evita uma incompatibilidade do módulo Tailwind no Windows; por isso usamos Node 24. O workflow pages publica o build no GitHub Pages ao atualizar a branch develop.
-
-
+O build está em `dist`. Configure a hospedagem SPA para redirecionar rotas para `index.html`. O carregador nativo da configuração Vite evita uma incompatibilidade do módulo Tailwind no Windows; por isso usamos Node 24. O workflow pages publica o build no GitHub Pages ao atualizar a branch develop.
 
 ## GitHub Pages
 
 O portal é publicado em https://portaldecursos.github.io/portal-de-cursos-website/ pelo workflow pages. A configuração do repositório usa GitHub Actions como fonte. O build define VITE_BASE_PATH como /portal-de-cursos-website/ e VITE_ROUTER_MODE como hash. Assim a home e rotas como /portal-de-cursos-website/#/cursos/tads funcionam em hospedagem estática sem fallback de servidor.
 
 Localmente o projeto continua usando as URLs normais. A função publicAsset monta os caminhos de ícones e imagens a partir da base do build. A publicação segue develop que já está autorizada no ambiente github-pages do repositório.
-

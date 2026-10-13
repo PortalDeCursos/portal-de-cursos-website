@@ -61,7 +61,6 @@
     color: var(--color-academic-brand);
   }
   .catalog-eyebrow span,
-  .catalog-code > span,
   .catalog-period > span {
     display: inline-block;
     width: 8px;
@@ -79,6 +78,14 @@
     border-radius: 12px;
     box-shadow: var(--shadow-surface);
     align-items: center;
+    border: 3px solid var(--color-card-border);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .catalog-filters:focus-within {
+    border-color: color-mix(in srgb, var(--color-academic-brand) 55%, var(--color-card-border));
+    box-shadow: var(--shadow-hover);
   }
   .catalog-search {
     position: relative;
@@ -103,6 +110,12 @@
     color: var(--color-academic-muted);
     opacity: 0.8;
   }
+  .catalog-search input:focus,
+  .catalog-select select:focus {
+    border-color: var(--color-academic-brand);
+    outline: 3px solid color-mix(in srgb, var(--color-academic-brand) 20%, transparent);
+    outline-offset: 1px;
+  }
   .catalog-select {
     position: relative;
     min-width: 0;
@@ -122,7 +135,10 @@
   .catalog-select > .design-icon {
     position: absolute;
     right: 10px;
-    top: 19px;
+    top: 13px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-academic-muted);
     pointer-events: none;
   }
   .catalog-clear {
@@ -135,6 +151,13 @@
     font-weight: 600;
     color: var(--color-academic-muted);
     cursor: pointer;
+    transition:
+      color 180ms ease,
+      transform 180ms ease;
+  }
+  .catalog-clear:hover {
+    color: var(--color-academic-brand);
+    transform: translateY(-2px);
   }
   .catalog-results-meta {
     display: flex;
@@ -183,6 +206,11 @@
     border-radius: 12px;
     background: var(--color-surface);
     box-shadow: var(--shadow-surface);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      outline-color 180ms ease,
+      background-color 180ms ease;
   }
   .catalog-card-top {
     display: flex;
@@ -193,8 +221,14 @@
   .catalog-degree {
     display: inline-block;
     padding: 4px 12px;
-    color: var(--color-academic-brand);
-    background: var(--color-catalog-badge);
+    color: var(--badge-accent, var(--color-academic-brand));
+    background: color-mix(
+      in srgb,
+      var(--badge-accent, var(--color-academic-brand)) 12%,
+      var(--color-surface)
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--badge-accent, var(--color-academic-brand)) 24%, var(--color-surface));
     border-radius: 9999px;
     font-size: 12px;
     line-height: 16px;
@@ -223,8 +257,11 @@
     height: 2px;
     margin-top: 4px;
     border-radius: 99px;
-    background: var(--color-brand);
-    opacity: 0.6;
+    background: var(--badge-accent, var(--color-academic-brand));
+    opacity: 0.8;
+    transition:
+      width 180ms ease,
+      opacity 180ms ease;
   }
   .catalog-course-card > p {
     margin-top: 16px;
@@ -242,7 +279,17 @@
     justify-content: space-between;
     padding: 10px 12px;
     border-radius: 8px;
-    background: var(--color-academic-tint);
+    background: color-mix(
+      in srgb,
+      var(--badge-accent, var(--color-academic-brand)) 7%,
+      var(--color-surface)
+    );
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--badge-accent, var(--color-academic-brand)) 14%,
+        var(--color-card-border)
+      );
     color: var(--color-academic-muted);
     font-size: 14px;
     line-height: 20px;
@@ -253,6 +300,9 @@
     gap: 6px;
     flex: 1;
   }
+  .catalog-card-meta .design-icon {
+    color: var(--badge-accent, var(--color-academic-brand));
+  }
   .catalog-card-actions {
     display: flex;
     align-items: center;
@@ -260,17 +310,69 @@
     gap: 12px;
     margin-top: 24px;
   }
-  .catalog-code {
+  .catalog-campus {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font: 500 12px/16px var(--font-mono);
-    color: var(--color-academic-muted);
+    width: fit-content;
+    padding: 4px 9px;
+    border: 1px solid
+      color-mix(in srgb, var(--badge-accent, var(--color-academic-brand)) 24%, var(--color-surface));
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--badge-accent, var(--color-academic-brand)) 10%,
+      var(--color-surface)
+    );
+    color: var(--badge-accent, var(--color-academic-brand));
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
   }
   .catalog-card-actions > a {
     min-height: 28px;
     padding: 4px 8px;
     gap: 6px;
+    color: var(--badge-accent, var(--color-academic-brand));
+  }
+  .catalog-card-actions > a .design-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 180ms ease;
+  }
+
+  @media (hover: hover) {
+    .catalog-course-card:hover {
+      border-color: color-mix(in srgb, var(--badge-accent) 65%, var(--color-card-border));
+      outline: 3px solid var(--badge-accent);
+      outline-offset: 0;
+      box-shadow:
+        0 16px 32px color-mix(in srgb, var(--badge-accent) 22%, transparent),
+        var(--shadow-hover);
+      background: var(--color-surface);
+    }
+    .catalog-course-card:hover .catalog-title-rule {
+      width: 96px;
+      height: 3px;
+      opacity: 1;
+    }
+    .catalog-course-card:hover .catalog-card-actions > a .design-icon {
+      transform: translateX(3px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .catalog-course-card,
+    .catalog-filters,
+    .catalog-clear {
+      transition: none;
+    }
+    .catalog-course-card {
+      outline: none;
+    }
+    .catalog-title-rule,
+    .catalog-card-actions > a .design-icon {
+      transition: none;
+    }
   }
   .catalog-support {
     display: flex;

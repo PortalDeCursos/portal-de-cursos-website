@@ -38,10 +38,7 @@ export default function CatalogCourseCard({ course }: { course: CatalogCourse })
           </li>
         </ul>
         <div className="catalog-card-actions">
-          <p className="catalog-code">
-            <span />
-            {course.emec ? 'Código e-MEC: ' + course.emec : course.campus}
-          </p>
+          <span className="catalog-campus">{course.campus}</span>
           <Link to={'/cursos/' + course.id} className="text-link">
             Conhecer o curso
             <DesignIcon name="catalog-imgContainer6" />
