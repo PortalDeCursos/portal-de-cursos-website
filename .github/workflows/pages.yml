@@ -26,7 +26,7 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          VITE_BASE_PATH: /portal-de-cursos/
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
           VITE_ROUTER_MODE: hash
       - uses: actions/upload-pages-artifact@v3
         with:
