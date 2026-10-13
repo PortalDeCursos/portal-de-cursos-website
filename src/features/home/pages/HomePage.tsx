@@ -8,6 +8,7 @@ import ProjectListItem from '../../projects/components/ProjectListItem';
 import ProjectIllustration from '../../projects/components/ProjectIllustration';
 import { courses } from '../../courses/data/mocks/courses';
 import { projects } from '../../projects/data/mocks/projects';
+import '../styles/home.css';
 
 export default function HomePage() {
   return (
@@ -79,8 +80,11 @@ export default function HomePage() {
               <p>Conheça a estrutura e as possibilidades de cada formação.</p>
             </div>
             <div className="section-controls">
-              <Link to="/cursos" className="text-link">
-                Ver todos os cursos
+              <Link to="/cursos" className="section-cta">
+                <span>
+                  <strong>Ver mais cursos</strong>
+                  <small>Explore todas as formações</small>
+                </span>
                 <DesignIcon name="imgContainer1" />
               </Link>
             </div>
@@ -131,10 +135,14 @@ export default function HomePage() {
             </p>
             <p className="submission-note">Não é necessário ter uma conta para enviar.</p>
           </div>
-          <PrototypeAction className="primary-button">
-            <DesignIcon name="imgContainer7" />
-            Submeter projeto
-          </PrototypeAction>
+          <div className="submission-action">
+            <span className="submission-action-label">Pronto para compartilhar?</span>
+            <PrototypeAction className="primary-button">
+              <DesignIcon name="imgContainer7" />
+              Submeter projeto
+              <DesignIcon name="imgContainer1" />
+            </PrototypeAction>
+          </div>
         </section>
       </div>
     </div>

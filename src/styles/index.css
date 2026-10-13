@@ -231,21 +231,20 @@ body {
   .home-content {
     display: flex;
     flex-direction: column;
-    gap: 56px;
-    padding-block: 48px 64px;
+    gap: 40px;
+    padding-block: 40px;
   }
   .home-hero {
     display: grid;
-    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
-    gap: 40px;
-    padding-top: 8px;
-    min-height: 432px;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    padding-top: 16px;
+    min-height: 384px;
     align-items: center;
   }
   .hero-copy {
-    grid-column: auto;
-    max-width: 720px;
-    padding-right: 16px;
+    grid-column: span 7;
+    padding-right: 24px;
   }
   .hero-eyebrow {
     display: flex;
@@ -297,14 +296,10 @@ body {
     gap: 6px;
   }
   .featured-project {
-    grid-column: auto;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
+    grid-column: span 5;
     position: relative;
-    min-height: 384px;
-    padding: 28px;
-    border-radius: 16px;
+    padding: 24px;
+    border-radius: 12px;
     background: var(--color-surface);
     box-shadow: var(--shadow-surface);
   }
@@ -386,11 +381,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1;
-    min-height: 104px;
     margin-top: 8px;
+    height: 88px;
     padding: 16px 8px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--color-academic-tint);
   }
   .project-illustration {
@@ -408,7 +402,7 @@ body {
     margin-top: 23px;
   }
   .home-section {
-    padding-top: 8px;
+    padding-top: 16px;
   }
   .section-heading {
     display: flex;
@@ -439,7 +433,7 @@ body {
   .home-course-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
+    gap: 24px;
   }
   .course-card {
     display: flex;
@@ -1146,9 +1140,6 @@ body {
     line-height: 18px;
   }
   .course-category > span {
-    background: var(--badge-accent);
-  }
-  .catalog-course-card[data-degree] .catalog-code > span {
     background: var(--badge-accent);
   }
   .project-item[data-category] .project-badge {

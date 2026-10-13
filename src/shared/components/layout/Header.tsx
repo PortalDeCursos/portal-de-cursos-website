@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router';
 import logo from '../../../assets/logo.png';
-import { LogIn } from 'lucide-react';
+import { LogIn, Menu, X } from 'lucide-react';
 import PrototypeAction from '../ui/PrototypeAction';
 import ThemeToggle from '../ui/ThemeToggle';
 export default function Header() {
@@ -36,17 +36,11 @@ export default function Header() {
           aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
           onClick={() => setMenuOpen((value) => !value)}
         >
-          <svg
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            {menuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
-          </svg>
+          {menuOpen ? (
+            <X size={24} strokeWidth={1.8} aria-hidden="true" />
+          ) : (
+            <Menu size={24} strokeWidth={1.8} aria-hidden="true" />
+          )}
         </button>
         <div id="portal-navigation" className={`header-navigation${menuOpen ? ' is-open' : ''}`}>
           <nav aria-label="Navegação principal">
