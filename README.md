@@ -88,7 +88,7 @@ O build está em `frontend/dist`. Configure a hospedagem SPA para redirecionar r
 
 ## GitHub Pages
 
-O portal é publicado em https://portaldecursos.github.io/portal-de-cursos/ pelo workflow pages. A configuração do repositório usa GitHub Actions como fonte. O build define VITE_BASE_PATH como /portal-de-cursos/ e VITE_ROUTER_MODE como hash. Assim a home e rotas como /portal-de-cursos/#/cursos/tads funcionam em hospedagem estática sem fallback de servidor.
+O portal é publicado em https://portaldecursos.github.io/portal-de-cursos-website/ pelo workflow pages. A configuração do repositório usa GitHub Actions como fonte. O build define VITE_BASE_PATH como /portal-de-cursos-website/ e VITE_ROUTER_MODE como hash. Assim a home e rotas como /portal-de-cursos-website/#/cursos/tads funcionam em hospedagem estática sem fallback de servidor.
 
 Localmente o projeto continua usando as URLs normais. A função publicAsset monta os caminhos de ícones e imagens a partir da base do build. A publicação segue develop que já está autorizada no ambiente github-pages do repositório.
 
