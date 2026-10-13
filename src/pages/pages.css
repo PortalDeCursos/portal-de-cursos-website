@@ -1,0 +1,19 @@
+@layer components {
+  .page {
+    min-height: 50vh;
+    padding-block: 3rem;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+  }
+
+  .project-details-page .project-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
