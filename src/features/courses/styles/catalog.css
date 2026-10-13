@@ -199,6 +199,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
   }
+  .catalog-results-layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+    margin-top: 16px;
+  }
+  .catalog-results-main {
+    min-width: 0;
+  }
   .catalog-course-card {
     display: flex;
     flex-direction: column;
@@ -1053,6 +1063,9 @@
       min-height: 44px;
     }
     .catalog-empty-layout {
+      grid-template-columns: 1fr;
+    }
+    .catalog-results-layout {
       grid-template-columns: 1fr;
     }
     .catalog-sidebar {
