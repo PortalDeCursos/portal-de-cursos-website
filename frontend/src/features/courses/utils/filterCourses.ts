@@ -1,4 +1,4 @@
-import type { CatalogCourse, CourseFilters } from './catalogTypes';
+import type { CatalogCourse, CourseFilters } from '../types/catalog';
 export function normalizeSearch(value: string) {
   return value
     .normalize('NFD')
