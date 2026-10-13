@@ -98,49 +98,51 @@ export default function CoursesPage() {
                 </p>
               </div>
             )}
-            {noResults ? (
-              <div className="catalog-empty-layout">
-                <CatalogSidebar
-                  courses={catalog.courses}
-                  filters={filters}
-                  activeCount={activeFilterCount(filters)}
-                  onChange={updateFilters}
-                />
-                <div className="catalog-empty-results">
-                  <div className="empty-results-header">
-                    <h2>
-                      Resultados da busca <span role="status">0 cursos encontrados</span>
-                    </h2>
-                    <label>
-                      Ordenar por:{' '}
-                      <select
-                        value={sort}
-                        onChange={(event) => {
-                          const next = new URLSearchParams(params);
-                          next.set('sort', event.target.value);
-                          setParams(next, { replace: true });
-                        }}
-                      >
-                        <option value="relevance">Mais relevantes</option>
-                        <option value="name">Nome do curso</option>
-                        <option value="duration">Menor duração</option>
-                      </select>
-                    </label>
-                  </div>
-                  <CatalogEmpty onClear={clearFilters} onShowAll={clearFilters} />
-                  <CatalogRecommendations courses={catalog.courses} onShowAll={clearFilters} />
-                </div>
+            <div className="catalog-results-layout">
+              <CatalogSidebar
+                courses={catalog.courses}
+                filters={filters}
+                activeCount={activeFilterCount(filters)}
+                onChange={updateFilters}
+              />
+              <div className={noResults ? 'catalog-empty-results' : 'catalog-results-main'}>
+                {noResults ? (
+                  <>
+                    <div className="empty-results-header">
+                      <h2>
+                        Resultados da busca <span role="status">0 cursos encontrados</span>
+                      </h2>
+                      <label>
+                        Ordenar por:{' '}
+                        <select
+                          value={sort}
+                          onChange={(event) => {
+                            const next = new URLSearchParams(params);
+                            next.set('sort', event.target.value);
+                            setParams(next, { replace: true });
+                          }}
+                        >
+                          <option value="relevance">Mais relevantes</option>
+                          <option value="name">Nome do curso</option>
+                          <option value="duration">Menor duração</option>
+                        </select>
+                      </label>
+                    </div>
+                    <CatalogEmpty onClear={clearFilters} onShowAll={clearFilters} />
+                    <CatalogRecommendations courses={catalog.courses} onShowAll={clearFilters} />
+                  </>
+                ) : (
+                  <>
+                    <div className="catalog-grid">
+                      {sorted.map((course) => (
+                        <CatalogCourseCard key={course.id} course={course} />
+                      ))}
+                    </div>
+                    <CatalogSupport />
+                  </>
+                )}
               </div>
-            ) : (
-              <>
-                <div className="catalog-grid">
-                  {sorted.map((course) => (
-                    <CatalogCourseCard key={course.id} course={course} />
-                  ))}
-                </div>
-                <CatalogSupport />
-              </>
-            )}
+            </div>
           </>
         )}
       </div>
