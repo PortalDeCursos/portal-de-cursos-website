@@ -37,7 +37,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <article className="featured-project">
+          <article className="featured-project" data-category="Projeto integrador">
             <div className="featured-top">
               <span className="project-badge">Projeto integrador</span>
               <span className="approval-badge">

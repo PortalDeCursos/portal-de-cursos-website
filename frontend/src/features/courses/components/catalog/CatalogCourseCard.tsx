@@ -7,7 +7,7 @@ export default function CatalogCourseCard({
   course: CatalogCourse;
 }) {
   return (
-    <article className="catalog-course-card">
+    <article className="catalog-course-card" data-degree={course.degree}>
       <div className="catalog-card-top">
         <span className="catalog-degree">
           {course.degree === "Tecnologia"
@@ -32,7 +32,7 @@ export default function CatalogCourseCard({
           </li>
           <li>
             <DesignIcon name="catalog-imgContainer4" />
-            {course.level}
+            <span className="modality-badge" data-modality={course.level}>{course.level}</span>
           </li>
           <li>
             <DesignIcon
