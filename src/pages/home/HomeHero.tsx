@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
 import Button from '../../components/ui/Button';
-import DesignIcon from '../../components/ui/DesignIcon';
 import ProjectIllustration from '../../features/projects/ProjectIllustration';
 
 export default function HomeHero() {
@@ -24,7 +23,7 @@ export default function HomeHero() {
           <Button to="/cursos">Explorar cursos</Button>
           <Link to="/projetos" className="text-link">
             Conhecer projetos
-            <DesignIcon name="imgContainer" />
+            <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
@@ -57,7 +56,7 @@ export default function HomeHero() {
         </div>
         <Link to="/projetos/portal" className="text-link featured-link">
           Conhecer este projeto
-          <DesignIcon name="imgContainer1" />
+          <span aria-hidden="true">→</span>
         </Link>
       </article>
     </section>

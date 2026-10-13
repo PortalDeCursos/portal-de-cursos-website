@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
-import logo from '../../assets/logo-transparent.png';
+import logo from '../../../assets/logo.png';
 import PrototypeAction from '../ui/PrototypeAction';
+
 export default function Footer() {
   return (
     <footer className="site-footer">
