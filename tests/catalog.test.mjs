@@ -4,7 +4,7 @@ import {
   filterCourses,
   normalizeSearch,
   activeFilterCount,
-} from '../src/features/courses/filterCourses.ts';
+} from '../src/features/courses/utils/filterCourses.ts';
 const data = [
   {
     title: 'Análise e Desenvolvimento de Sistemas',
@@ -93,7 +93,7 @@ test('contador inclui cada filtro ativo e ignora termo vazio', () =>
   ));
 
 test('projetos são isolados por curso e categoria', async () => {
-  const { filterCourseProjects } = await import('../src/features/projects/filterProjects.ts');
+  const { filterCourseProjects } = await import('../src/features/projects/utils/filterProjects.ts');
   const projects = [
     { courseId: 'tads', category: 'TCC', id: 'a' },
     { courseId: 'redes', category: 'Pesquisa', id: 'b' },
