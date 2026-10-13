@@ -1,0 +1,17 @@
+node_modules
+dist
+reports
+coverage
+.git
+public/design
+src/assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot

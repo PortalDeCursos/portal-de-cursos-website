@@ -10,4 +10,5 @@ reports/
 *.tsbuildinfo
 .idea/
 .vscode/
+.impeccable/
 .DS_Store
