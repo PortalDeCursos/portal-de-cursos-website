@@ -1,91 +1,29 @@
 # Portal de Cursos
 
-Protótipo navegável de um portal acadêmico, implementado em React, TypeScript, Vite e Tailwind CSS a partir do Figma. Os dados acadêmicos, indicadores e contatos são demonstrativos.
+Interface React e Vite baseada nos designs do Figma para Início e Cursos, com JSX e CSS separados e organização por página em português.
 
-## Começar
-
-Use Node.js 24 e npm. Instale as dependências do frontend uma vez:
+## Executar
 
 ```sh
-npm --prefix frontend ci
+npm install
 npm run dev
 ```
 
-Abra o endereço mostrado pelo Vite. Os comandos da raiz encaminham para `frontend`:
+## Validar
 
 ```sh
-npm run check        # lint + testes + build + fixtures visuais
-npm run preview      # prévia do build
+npm run lint
+npm run build
 ```
 
-## O que funciona
+Consulte [DESIGN-E-REGRAS.md](./DESIGN-E-REGRAS.md) para as convenções e decisões visuais.
 
-- Home, catálogo, biblioteca de projetos e páginas de detalhes.
-- Busca sem distinção de acentos, filtros combinados e estado da busca na URL.
-- Abas de curso por teclado, grade por semestre e projetos filtrados por curso.
-- Skeleton, estado vazio e falha com nova tentativa no catálogo.
-- Header persistente com logo local, navegação ativa e menu móvel acessível.
+Dados locais ilustrativos. Autenticação, submissão e documentos reais dependem da futura integração aos microsserviços.
 
-Submissão, autenticação, documentos e contato exibem um aviso de integração pendente. Não há backend, envio de formulários ou login real. As fontes Manrope e JetBrains Mono são carregadas pelo Google Fonts e precisam de internet.
+## Catálogo
 
-## Rotas
+Acesse `/#cursos` pelo menu. Busca, ordenação, filtros à esquerda e etiquetas removíveis funcionam com os dados demonstrativos de `public/dados/cursos.json`. Os estados de carregamento, erro e busca vazia decorrem da consulta real e dos filtros. Em telas menores, os filtros ficam em um painel recolhível.
 
-| Rota                   | Tela                 |
-| ---------------------- | -------------------- |
-| `/`                    | Home                 |
-| `/cursos`              | Catálogo com filtros |
-| `/cursos/tads`         | Detalhes do TADS     |
-| `/cursos/:courseId`    | Detalhes de curso    |
-| `/projetos`            | Biblioteca           |
-| `/projetos/:projectId` | Detalhes de projeto  |
+Para integrar o serviço de Cursos, configure `VITE_API_CURSOS` com um endpoint GET que retorne uma lista no formato do JSON demonstrativo. Reinicie o Vite após alterar a configuração. O catálogo local é usado quando a variável não está definida.
 
-## Organização
-
-```text
-src/
-  app/                   # Inicialização e rotas
-  shared/
-    components/layout/   # Header Footer e PortalLayout
-    components/ui/       # Elementos reutilizáveis
-    pages/               # Página não encontrada
-  features/
-    home/pages/          # Home
-    courses/
-      components/        # Cartões catálogo e detalhes
-      pages/             # Catálogo e detalhes de curso
-      hooks/             # Estado de carregamento e retry
-      services/          # Fronteira de acesso a dados
-      data/mocks/        # Dados demonstrativos
-      types/             # Contratos do domínio
-      utils/             # Busca e filtros
-      styles/            # Estilos específicos
-    projects/
-      components/        # Listas ilustrações e estado vazio
-      pages/             # Biblioteca e detalhes
-      data/mocks/        # Projetos demonstrativos
-      types/             # Contratos do domínio
-      utils/             # Filtros
-  styles/                # Tokens e estilos globais
-  assets/                # Imagens importadas
-  main.tsx               # Entrada do frontend
-```
-
-Assets locais ficam em `src/assets` e `public/design`. A origem visual é o [protótipo no Figma](https://www.figma.com/design/6NyMCCCMKYeNv6QRvZXzE4). A publicação do código não concede uma licença independente para marcas ou materiais de terceiros.
-
-## Fluxo de desenvolvimento
-
-`main` guarda a versão validada. `develop` é a base para desenvolvimento futuro; ambas começam com a mesma versão preparada. A tag `prototype-baseline` preserva o protótipo anterior às melhorias. Crie branches curtas como `feat/api-courses` a partir de `develop`, abra PR para `develop` e valide antes de promover uma versão para `main`. Evite branches permanentes para cada experimento.
-
-A CI executa lint, testes, build e geração de fixtures em pushes e PRs. Os relatórios gerados em `reports` ficam fora do Git e são disponibilizados como artefatos da CI.
-
-Leia [CONTRIBUTING.md](CONTRIBUTING.md), [arquitetura](docs/architecture.md) e [roadmap](docs/roadmap.md).
-
-## Publicação futura
-
-O build está em `dist`. Configure a hospedagem SPA para redirecionar rotas para `index.html`. O carregador nativo da configuração Vite evita uma incompatibilidade do módulo Tailwind no Windows; por isso usamos Node 24. O workflow pages publica o build no GitHub Pages ao atualizar a branch develop.
-
-## GitHub Pages
-
-O portal é publicado em https://portaldecursos.github.io/portal-de-cursos-website/ pelo workflow pages. A configuração do repositório usa GitHub Actions como fonte. O build define VITE_BASE_PATH como /portal-de-cursos-website/ e VITE_ROUTER_MODE como hash. Assim a home e rotas como /portal-de-cursos-website/#/cursos/tads funcionam em hospedagem estática sem fallback de servidor.
-
-Localmente o projeto continua usando as URLs normais. A função publicAsset monta os caminhos de ícones e imagens a partir da base do build. A publicação segue develop que já está autorizada no ambiente github-pages do repositório.
+Os cenários de interface estão em `verificacoes/conferir-catalogo.cjs` e os resultados em `verificacoes/catalogo-resultados.json`. A execução requer Playwright com Edge disponível no ambiente.
