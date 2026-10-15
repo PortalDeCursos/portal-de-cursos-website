@@ -1,0 +1,7 @@
+node_modules
+dist
+.git
+.github/skills/impeccable/scripts
+.agents
+src/assets/**/*.ttf
+src/assets/**/*.png
