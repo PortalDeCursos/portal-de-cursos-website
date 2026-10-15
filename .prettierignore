@@ -1,8 +1,0 @@
-node_modules
-dist
-reports
-coverage
-.git
-.github/skills/impeccable
-docs/architecture.md
-public/design/manifest.json
