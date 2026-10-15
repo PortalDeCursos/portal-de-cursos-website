@@ -26,3 +26,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentação e verificações locais
+/verificacoes/
+/DESIGN-E-REGRAS.md
+/CONTRIBUTING.md
+/PENDENCIAS-MINIMUNDO.md
+/VINCULO-JIRA.md
+
+# Habilidades, agentes e configurações locais de IA
+.agents/
+.aider-desk/
+.codex/
+.claude/
+.github/agents/
+.github/skills/
+.github/hooks/
+skills-lock.json
+AGENTS.md
