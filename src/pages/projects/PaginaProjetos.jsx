@@ -1,0 +1,116 @@
+import { useState } from 'react'
+import { projetos } from '../../data/projetos.js'
+import ItemProjeto from '../../shared/components/project-item/ItemProjeto.jsx'
+import FiltrosProjetos from './components/FiltrosProjetos.jsx'
+import './projetos.css'
+
+export default function PaginaProjetos() {
+  const [filtrosAbertos, definirFiltrosAbertos] = useState(false)
+  const [ordem, definirOrdem] = useState('nome')
+  const [busca, definirBusca] = useState('')
+  const [tipo, definirTipo] = useState('')
+  const [curso, definirCurso] = useState('')
+  const publicados = projetos.filter((item) => item.status === 'Aprovado')
+  const normalizar = (texto) =>
+    texto
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  const resultados = publicados
+    .filter(
+      (item) =>
+        (!tipo || item.tipo === tipo) &&
+        (!curso || item.curso === curso) &&
+        normalizar(`${item.nome} ${item.descricao} ${item.orientador}`).includes(
+          normalizar(busca.trim()),
+        ),
+    )
+    .sort((a, b) =>
+      (ordem === 'curso' ? a.curso : ordem === 'tipo' ? a.tipo : a.nome).localeCompare(
+        ordem === 'curso' ? b.curso : ordem === 'tipo' ? b.tipo : b.nome,
+        'pt-BR',
+      ),
+    )
+  function limpar() {
+    definirBusca('')
+    definirTipo('')
+    definirCurso('')
+  }
+
+  return (
+    <main id="conteudo" className="limite pagina-projetos">
+      <nav aria-label="Você está aqui">
+        <a href="#inicio">Início</a>
+        <span aria-hidden="true"> / </span>
+        <span aria-current="page">Projetos</span>
+      </nav>
+      <div className="pagina-projetos__titulo">
+        <div>
+          <p className="pagina-projetos__rotulo">Produção acadêmica</p>
+          <h1>Produções acadêmicas</h1>
+          <p>Explore os trabalhos avaliados e aprovados pelos professores orientadores.</p>
+        </div>
+        <a className="botao-primario" href="#submeter">
+          Submeter projeto
+        </a>
+      </div>
+      <div className="pagina-projetos__grade">
+        <div
+          className={`pagina-projetos__painel ${filtrosAbertos ? 'pagina-projetos__painel--aberto' : ''}`}
+        >
+          <button
+            className="pagina-projetos__alternar"
+            aria-expanded={filtrosAbertos}
+            aria-controls="filtros-projetos"
+            onClick={() => definirFiltrosAbertos(!filtrosAbertos)}
+          >
+            {filtrosAbertos ? 'Recolher filtros' : 'Filtrar projetos'}
+          </button>
+          <div id="filtros-projetos">
+            <FiltrosProjetos
+              busca={busca}
+              definirBusca={definirBusca}
+              tipo={tipo}
+              definirTipo={definirTipo}
+              curso={curso}
+              definirCurso={definirCurso}
+              publicados={publicados}
+              limpar={limpar}
+            />
+          </div>
+        </div>
+        <section aria-label="Projetos aprovados">
+          <div className="pagina-projetos__resumo">
+            <p className="pagina-projetos__contagem" role="status" aria-live="polite">
+              {resultados.length}{' '}
+              {resultados.length === 1 ? 'projeto encontrado' : 'projetos encontrados'}
+            </p>
+            <label>
+              Ordenar por
+              <select value={ordem} onChange={(evento) => definirOrdem(evento.target.value)}>
+                <option value="nome">Nome de A a Z</option>
+                <option value="curso">Curso</option>
+                <option value="tipo">Tipo de trabalho</option>
+              </select>
+            </label>
+          </div>
+          {resultados.length ? (
+            <div className="lista-projetos">
+              {resultados.map((item) => (
+                <ItemProjeto key={item.identificador} projeto={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="pagina-projetos__vazio">
+              <h2>Nenhum projeto encontrado</h2>
+              <p>Tente outra palavra-chave ou remova os filtros para ampliar a busca.</p>
+              <button className="botao-secundario" onClick={limpar}>
+                Ver todos os projetos
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  )
+}

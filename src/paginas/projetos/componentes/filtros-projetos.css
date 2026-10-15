@@ -1,4 +1,0 @@
-.pagina-projetos__filtros { display: grid; gap: 20px; padding: 24px; background: var(--superficie); border-radius: 12px; box-shadow: var(--sombra); }
-.pagina-projetos__filtros h2 { font-size: 18px; margin: 0; }
-.pagina-projetos__filtros label { display: grid; gap: 8px; font-size: 13px; color: var(--titulo); }
-.pagina-projetos__filtros input, .pagina-projetos__filtros select { min-height: 44px; width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: var(--suave); color: var(--texto); }
