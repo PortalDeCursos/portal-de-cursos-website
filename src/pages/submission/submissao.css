@@ -1,0 +1,549 @@
+.pagina-submissao {
+  min-height: calc(100dvh - 300px);
+  padding-top: 64px;
+  padding-bottom: 88px;
+}
+
+.pagina-submissao__introducao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: end;
+  gap: 48px;
+  margin-bottom: 52px;
+}
+
+.pagina-submissao__introducao > div {
+  max-width: 720px;
+}
+
+.pagina-submissao__rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pagina-submissao__rotulo::before {
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+  content: '';
+}
+
+.pagina-submissao h1 {
+  max-width: 620px;
+  margin: 0;
+  font-size: clamp(38px, 5vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.pagina-submissao__introducao > div > p:last-child {
+  max-width: 620px;
+  margin: 24px 0 0;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.submissao-aviso {
+  display: grid;
+  gap: 8px;
+  max-width: none;
+  padding: 0 0 4px 20px;
+  border-left: 2px solid var(--azul);
+  background: transparent;
+  color: var(--texto);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.submissao-aviso strong {
+  color: var(--titulo);
+  font-size: 14px;
+}
+
+.etapas-submissao {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.etapa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 4px 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  transition:
+    border-color 180ms ease-out,
+    color 180ms ease-out;
+}
+
+.etapa span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--texto);
+  background: var(--suave);
+  font-size: 11px;
+  transition:
+    color 180ms ease-out,
+    background-color 180ms ease-out,
+    transform 180ms ease-out;
+}
+
+.etapa--atual {
+  border-bottom-width: 2px;
+  border-color: var(--azul);
+  color: var(--titulo);
+}
+
+.etapa--atual span,
+.etapa--feita span {
+  color: #fff;
+  background: var(--azul);
+}
+
+.etapa--feita {
+  cursor: pointer;
+}
+
+.etapa--feita:hover span {
+  transform: scale(1.08);
+}
+
+.formulario-submissao {
+  position: relative;
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: 18px;
+  background: var(--superficie);
+  box-shadow:
+    0 22px 60px #12294f0d,
+    0 2px 8px #12294f08;
+}
+
+.formulario-submissao::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--azul);
+  content: '';
+}
+
+.formulario-submissao__secao {
+  padding: clamp(28px, 4vw, 48px);
+  background: var(--superficie);
+}
+
+.formulario-submissao__cabecalho {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.formulario-submissao__cabecalho > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--azul);
+  background: var(--suave);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.formulario-submissao__cabecalho h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.formulario-submissao__cabecalho p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.formulario-submissao__grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 20px;
+}
+
+.formulario-submissao label {
+  display: grid;
+  gap: 8px;
+  color: var(--titulo);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.formulario-submissao label > span,
+.formulario-submissao label span[aria-hidden='true'] {
+  color: var(--azul);
+}
+
+.formulario-submissao input:not([type='file']),
+.formulario-submissao select,
+.formulario-submissao textarea {
+  width: 100%;
+  border: 1px solid #aebaca;
+  border-radius: 9px;
+  padding: 14px 15px;
+  color: var(--titulo);
+  background: #f8faff;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: inset 0 1px 2px #12294f05;
+  transition:
+    border-color 180ms ease-out,
+    background-color 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+
+.formulario-submissao textarea {
+  resize: vertical;
+}
+
+.formulario-submissao input::placeholder,
+.formulario-submissao textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+.formulario-submissao input:focus-visible,
+.formulario-submissao select:focus-visible,
+.formulario-submissao textarea:focus-visible {
+  outline: 0;
+  border-color: var(--azul);
+  background: var(--superficie);
+  box-shadow: 0 0 0 3px var(--brilho);
+}
+
+.formulario-submissao__campo-largo {
+  grid-column: 1 / -1;
+}
+
+.campo-arquivo {
+  position: relative;
+  display: grid !important;
+  justify-items: center;
+  gap: 6px !important;
+  padding: 28px;
+  border: 1px dashed var(--azul);
+  border-radius: 12px;
+  background: var(--suave);
+  text-align: center;
+  cursor: pointer;
+}
+
+.campo-arquivo__icone {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #fff !important;
+  background: var(--azul);
+  font-size: 22px;
+}
+
+.campo-arquivo small {
+  color: var(--texto);
+  font-weight: 500;
+}
+
+.campo-arquivo--secundario {
+  margin-top: 16px;
+  border-color: #aebaca;
+  background: #f8faff;
+}
+
+.documentos-submissao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.etiquetas-submissao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.etiquetas-submissao button {
+  padding: 7px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  color: var(--azul);
+  background: var(--suave);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.autores-submissao {
+  display: grid;
+  gap: 12px;
+}
+
+.autores-submissao__cabecalho,
+.autores-submissao__linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.autores-submissao__cabecalho {
+  justify-content: space-between;
+}
+
+.autores-submissao__linha input {
+  flex: 1;
+}
+
+.consentimento-submissao {
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px !important;
+  margin-top: 24px;
+  padding: 18px 20px;
+  border: 1px solid #aebaca;
+  border-radius: 10px;
+  color: var(--texto) !important;
+  font-weight: 500 !important;
+  line-height: 1.5;
+  background: #f8faff;
+  cursor: pointer;
+  transition:
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.consentimento-submissao:hover {
+  border-color: var(--azul);
+}
+
+.consentimento-submissao--ativo {
+  border-color: var(--azul);
+  background: var(--etiqueta);
+}
+
+.consentimento-submissao input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--azul);
+  cursor: pointer;
+}
+
+.consentimento-submissao__texto {
+  display: grid;
+  gap: 3px;
+}
+
+.consentimento-submissao__texto strong {
+  color: var(--titulo);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.consentimento-submissao__texto > span {
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+:root[data-tema='escuro'] .consentimento-submissao {
+  border-color: var(--borda);
+  background: var(--suave);
+}
+
+:root[data-tema='escuro'] .consentimento-submissao--ativo {
+  border-color: var(--azul);
+  background: #182238;
+}
+
+.campo-arquivo input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.formulario-submissao__erro {
+  margin: 0;
+  padding: 16px 32px;
+  color: var(--erro);
+  background: var(--erro-suave);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.formulario-submissao__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px clamp(28px, 4vw, 48px);
+  border-top: 1px solid var(--borda);
+  background: var(--superficie);
+}
+
+.formulario-submissao__rodape small {
+  max-width: 560px;
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.formulario-submissao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.formulario-submissao__acoes button {
+  min-width: 112px;
+}
+
+.formulario-submissao__acoes button:active {
+  transform: translateY(1px);
+}
+
+.submissao-confirmacao {
+  display: grid;
+  justify-items: start;
+  max-width: 720px;
+  margin: 48px auto 0;
+  padding: clamp(28px, 6vw, 64px);
+  border: 1px solid var(--borda);
+  border-radius: 18px;
+  background: var(--superficie);
+  box-shadow: 0 18px 50px #12294f0a;
+}
+
+.submissao-confirmacao__selo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--verde);
+  font-size: 26px;
+}
+
+.submissao-confirmacao h1 {
+  margin-bottom: 18px;
+}
+
+.submissao-confirmacao > p:not(.pagina-submissao__rotulo) {
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+.submissao-confirmacao__resumo {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  margin: 24px 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--suave);
+}
+
+.submissao-confirmacao__resumo span {
+  color: var(--texto);
+  font-size: 13px;
+}
+
+.submissao-confirmacao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .pagina-submissao {
+    padding-top: 40px;
+  }
+
+  .pagina-submissao__introducao {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-bottom: 36px;
+  }
+
+  .submissao-aviso {
+    max-width: none;
+  }
+
+  .formulario-submissao__secao {
+    padding: 24px;
+  }
+
+  .formulario-submissao__grade {
+    grid-template-columns: 1fr;
+  }
+
+  .formulario-submissao__campo-largo {
+    grid-column: auto;
+  }
+
+  .formulario-submissao__rodape {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .etapas-submissao {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .etapa {
+    justify-content: center;
+    padding-inline: 4px;
+    font-size: 0;
+  }
+
+  .autores-submissao__linha {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .documentos-submissao {
+    grid-template-columns: 1fr;
+  }
+}
