@@ -1,0 +1,55 @@
+.cartao-curso {
+  background:var(--superficie);
+  border-radius:12px;
+  padding:24px;
+  box-shadow:var(--sombra);
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+.cartao-curso__topo {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.cartao-curso__topo strong {
+  color:var(--azul);
+  font-size:14px;
+}
+
+.cartao-curso h3 {
+  font-size:22px;
+  line-height:30px;
+  letter-spacing:-.33px;
+  margin:8px 0;
+}
+
+.cartao-curso p {
+  font-size:14px;
+  line-height:22.75px;
+  margin:0;
+}
+
+.cartao-curso__informacoes {
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  list-style:none;
+  padding:0;
+  margin:24px 0 32px;
+}
+
+.cartao-curso__informacoes li {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.cartao-curso>.ligacao {
+  margin-top:auto;
+  align-self:flex-start;
+}
