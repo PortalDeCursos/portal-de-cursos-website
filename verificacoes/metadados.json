@@ -1,0 +1,22 @@
+{
+  "root": "C:\\Users\\20241134040016\\WebstormProjects\\portaldecursos-website",
+  "files_scanned": 16,
+  "passed": false,
+  "checks": {
+    "title": true,
+    "description": true,
+    "canonical": false,
+    "og_title": false,
+    "og_description": false,
+    "og_image": false,
+    "twitter_card": false,
+    "h1": true
+  },
+  "missing": [
+    "canonical",
+    "og_title",
+    "og_description",
+    "og_image",
+    "twitter_card"
+  ]
+}
