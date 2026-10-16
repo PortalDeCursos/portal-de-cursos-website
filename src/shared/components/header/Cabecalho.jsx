@@ -13,6 +13,8 @@ export default function Cabecalho({
   areaProfessor = false,
   aoSair,
   usuario,
+  destinoArea = 'professor/feed',
+  destinoPerfil = 'professor/perfil',
 }) {
   const [menuAberto, definirMenuAberto] = useState(false)
   const [seletorTemaAberto, definirSeletorTemaAberto] = useState(false)
@@ -47,8 +49,8 @@ export default function Cabecalho({
       <div className="limite cabecalho__conteudo">
         <a
           className="marca marca--cabecalho"
-          href={areaProfessor ? enderecoPrivado('professor/feed') : '#inicio'}
-          aria-label={areaProfessor ? 'Portal de Cursos — Submissões' : 'Portal de Cursos — Início'}
+          href={areaProfessor ? enderecoPrivado(destinoArea) : '#inicio'}
+          aria-label={areaProfessor ? 'Portal de Cursos — Minha área' : 'Portal de Cursos — Início'}
         >
           <img className="marca__simbolo" src={logoPortal} alt="" width="44" height="44" />
           <span>
@@ -76,7 +78,7 @@ export default function Cabecalho({
                 Ver portal <span aria-hidden="true">↗</span>
               </a>
               <a
-                href={enderecoPrivado('professor/perfil')}
+                href={enderecoPrivado(destinoPerfil)}
                 aria-current={pagina === 'perfil' ? 'page' : undefined}
               >
                 Meu perfil
@@ -105,10 +107,21 @@ export default function Cabecalho({
               </a>
               <a
                 className="navegacao__acesso"
-                href={enderecoPrivado(autenticado ? 'professor/feed' : 'login')}
-                aria-current={['acesso', 'professor'].includes(pagina) ? 'page' : undefined}
+                href={enderecoPrivado(autenticado ? destinoArea : 'professor/login')}
+                aria-current={
+                  ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
+                }
               >
-                Área restrita
+                Área do Professor
+              </a>
+              <a
+                className="navegacao__admin"
+                href={enderecoPrivado(autenticado ? destinoArea : 'administracao/login')}
+                aria-current={
+                  ['acesso-administracao', 'administracao'].includes(pagina) ? 'page' : undefined
+                }
+              >
+                Administração
               </a>
             </>
           )}
@@ -124,7 +137,7 @@ export default function Cabecalho({
               </button>
               <a
                 className="cabecalho__perfil"
-                href={enderecoPrivado('professor/perfil')}
+                href={enderecoPrivado(destinoPerfil)}
                 aria-label="Meu perfil"
                 title="Editar meu perfil"
                 aria-current={pagina === 'perfil' ? 'page' : undefined}
@@ -148,11 +161,22 @@ export default function Cabecalho({
                 Submeter projeto
               </a>
               <a
-                className="acesso-restrito"
-                href={enderecoPrivado(autenticado ? 'professor/feed' : 'login')}
-                aria-current={['acesso', 'professor'].includes(pagina) ? 'page' : undefined}
+                className="cabecalho__admin-link"
+                href={enderecoPrivado(autenticado ? destinoArea : 'administracao/login')}
+                aria-current={pagina === 'acesso-administracao' ? 'page' : undefined}
+                title="Acesso Administrativo"
               >
-                Área restrita{' '}
+                Administração
+              </a>
+              <a
+                className="acesso-restrito"
+                href={enderecoPrivado(autenticado ? destinoArea : 'professor/login')}
+                aria-current={
+                  ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
+                }
+                title="Área do Professor"
+              >
+                Área do Professor{' '}
                 <span className="avatar">
                   <Icone nome="usuario" />
                 </span>

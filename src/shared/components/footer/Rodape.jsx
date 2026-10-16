@@ -23,8 +23,9 @@ export default function Rodape() {
             <a href="#submeter">Submeter projeto</a>
           </nav>
           <div>
-            <h2>Acesso ao portal</h2>
-            <a href={enderecoPrivado('login')}>Área de professores e administradores</a>
+            <h2>Acesso restrito</h2>
+            <a href={enderecoPrivado('professor/login')}>Área do Professor</a>
+            <a href={enderecoPrivado('administracao/login')}>Acesso Administrativo</a>
             <p>Os trabalhos são publicados após a aprovação do orientador.</p>
           </div>
         </div>

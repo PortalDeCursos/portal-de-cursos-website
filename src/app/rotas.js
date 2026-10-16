@@ -8,9 +8,12 @@ export function lerRota() {
     .slice(basePortal.length)
     .replace(/^\//, '')
     .replace(/\/$/, '')
-  if (caminho === 'login') return 'acesso'
-  if (caminho === 'professor' || caminho === 'professor/feed') return 'professor'
+  if (['administracao/login', 'login/admin', 'admin/login'].includes(caminho))
+    return 'acesso-administracao'
+  if (['professor/login', 'login/professor', 'login'].includes(caminho)) return 'acesso-professor'
+  if (['professor', 'professor/feed', 'professor/painel'].includes(caminho)) return 'professor'
   if (caminho === 'professor/perfil') return caminho
+  if (caminho === 'administracao' || caminho.startsWith('administracao/')) return caminho
   if (caminho.startsWith('professor/submissao/')) return caminho
   return window.location.hash.slice(1)
 }
@@ -18,9 +21,15 @@ export function navegar(endereco, substituir = false) {
   window.history[substituir ? 'replaceState' : 'pushState'](null, '', endereco)
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
-export function retornoProfessor() {
+export function retornoAutenticado(tipoUsuario) {
   const retorno = new URLSearchParams(window.location.search).get('retorno')
-  return retorno && /^professor\/(feed|perfil|submissao\/[a-zA-Z0-9_-]+)$/.test(retorno)
+  const permitido =
+    tipoUsuario === 'ADMIN'
+      ? /^administracao\/(painel|professores|cursos|projetos|submissoes|perfil)$/
+      : /^professor\/(feed|perfil|submissao\/[a-zA-Z0-9_-]+)$/
+  return retorno && permitido.test(retorno)
     ? retorno
-    : 'professor/feed'
+    : tipoUsuario === 'ADMIN'
+      ? 'administracao/painel'
+      : 'professor/feed'
 }

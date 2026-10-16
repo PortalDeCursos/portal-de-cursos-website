@@ -3,7 +3,7 @@ import { enderecoPrivado } from '../../app/rotas.js'
 import Icone from '../../shared/components/icon/Icone.jsx'
 import './perfil.css'
 
-export default function PaginaPerfil({ usuario, aoSalvar }) {
+export default function PaginaPerfil({ usuario, aoSalvar, destinoVoltar = 'professor/feed' }) {
   const [nome, definirNome] = useState(usuario.nome || '')
   const [titulacao, definirTitulacao] = useState(usuario.titulacao || '')
   const [descricao, definirDescricao] = useState(usuario.descricao || '')
@@ -67,8 +67,11 @@ export default function PaginaPerfil({ usuario, aoSalvar }) {
   }
   return (
     <main id="conteudo" className="limite pagina-perfil">
-      <a className="perfil-voltar" href={enderecoPrivado('professor/feed')}>
-        ← Voltar para o feed
+      <a className="perfil-voltar" href={enderecoPrivado(destinoVoltar)}>
+        ←{' '}
+        {destinoVoltar.startsWith('administracao/')
+          ? 'Voltar para a administração'
+          : 'Voltar para o feed'}
       </a>
       <header className="perfil-titulo">
         <h1>Meu perfil</h1>

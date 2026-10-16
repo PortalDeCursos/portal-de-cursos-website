@@ -2,6 +2,7 @@ import { basePortal, enderecoPrivado } from '../../../app/rotas.js'
 import logo from '../../../assets/marca/logo-portal.png'
 import './estrutura-professor.css'
 import Cabecalho from '../../../shared/components/header/Cabecalho.jsx'
+import NavegacaoAdministracao from '../../administracao/componentes/NavegacaoAdministracao.jsx'
 
 export default function EstruturaProfessor({
   usuario,
@@ -10,7 +11,11 @@ export default function EstruturaProfessor({
   alternarTema,
   children,
   perfilAtivo = false,
+  rota = 'professor',
+  administrador = false,
+  tipoAcesso = 'PROFESSOR',
 }) {
+  const rotuloAcesso = tipoAcesso === 'ADMIN' ? 'Acesso Administrativo' : 'Área do Professor'
   return (
     <div
       className={`area-professor ${usuario ? 'area-professor--conectada' : 'area-professor--entrada'}`}
@@ -24,6 +29,8 @@ export default function EstruturaProfessor({
           tema={tema}
           alternarTema={alternarTema}
           aoSair={aoSair}
+          destinoArea={administrador ? 'administracao/painel' : 'professor/feed'}
+          destinoPerfil={administrador ? 'administracao/perfil' : 'professor/perfil'}
         />
       ) : (
         <header className="barra-professor">
@@ -33,7 +40,7 @@ export default function EstruturaProfessor({
           >
             <img src={logo} alt="" width="32" height="32" />
             <span>
-              Portal de Cursos<strong>Área do professor</strong>
+              Portal de Cursos<strong>{rotuloAcesso}</strong>
             </span>
           </a>
           <nav className="barra-professor__acoes" aria-label="Navegação da área do professor">
@@ -60,16 +67,15 @@ export default function EstruturaProfessor({
           </nav>
         </header>
       )}
-      {usuario && (
-        <div className="area-professor__identidade">
-          {usuario.nome || 'Professor'}
-          <span>Conta autenticada</span>
+      {usuario && administrador ? (
+        <div className="painel-estrutura">
+          <NavegacaoAdministracao rota={rota} />
+          <div className="painel-estrutura__conteudo">{children}</div>
         </div>
+      ) : (
+        children
       )}
-      {children}
-      {!usuario && (
-        <footer className="acesso-rodape">Portal de Cursos · Acesso de professores</footer>
-      )}
+      {!usuario && <footer className="acesso-rodape">Portal de Cursos · {rotuloAcesso}</footer>}
     </div>
   )
 }

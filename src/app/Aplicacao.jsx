@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { basePortal, enderecoPrivado, lerRota, navegar, retornoProfessor } from './rotas.js'
+import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } from './rotas.js'
 import EstruturaProfessor from '../pages/teacher/componentes/EstruturaProfessor.jsx'
 import Cabecalho from '../shared/components/header/Cabecalho.jsx'
 import Rodape from '../shared/components/footer/Rodape.jsx'
@@ -13,14 +13,21 @@ import PaginaSubmissao from '../pages/submission/PaginaSubmissao.jsx'
 import PaginaAcesso from '../pages/acesso/PaginaAcesso.jsx'
 import PaginaPerfil from '../pages/perfil/PaginaPerfil.jsx'
 import PaginaProfessor from '../pages/teacher/PaginaProfessor.jsx'
+import PaginaAdministracao from '../pages/administracao/PaginaAdministracao.jsx'
+import { cursos } from '../data/cursos.js'
+import { projetos } from '../data/projetos.js'
+import { submissoes } from '../data/submissoes.js'
 import PaginaDetalhesSubmissao from '../pages/teacher/PaginaDetalhesSubmissao.jsx'
 
 function identificarPagina(rota) {
   if (['projetos', 'biblioteca'].includes(rota)) return 'projetos'
-  if (rota === 'acesso') return 'acesso'
+  if (['acesso', 'acesso-professor'].includes(rota)) return 'acesso-professor'
+  if (rota === 'acesso-administracao') return 'acesso-administracao'
+  if (rota === 'administracao' || rota.startsWith('administracao/')) return 'administracao'
   if (rota === 'submeter') return 'submissao'
   if (
     rota === 'professor' ||
+    rota === 'professor/painel' ||
     rota === 'professor/perfil' ||
     rota.startsWith('professor/submissao/')
   )
@@ -43,6 +50,8 @@ function lerTema() {
 
 export default function Aplicacao() {
   const [sessao, definirSessao] = useState(null)
+  const [decisoes, definirDecisoes] = useState({})
+  const [rascunhos, definirRascunhos] = useState({ cursos, projetos })
   const [sessaoExpirada, definirSessaoExpirada] = useState(false)
   const [tema, definirTema] = useState(lerTema)
   const [rota, definirRota] = useState(lerRota)
@@ -89,10 +98,14 @@ export default function Aplicacao() {
       if (url.pathname === window.location.pathname && url.hash === '#conteudo') return
       const privado =
         url.pathname === enderecoPrivado('login') ||
-        url.pathname.startsWith(enderecoPrivado('professor'))
+        url.pathname === enderecoPrivado('professor/login') ||
+        url.pathname === enderecoPrivado('administracao/login') ||
+        url.pathname.startsWith(enderecoPrivado('professor')) ||
+        url.pathname.startsWith(enderecoPrivado('administracao'))
       const sairDoPainel =
-        ['acesso', 'professor'].includes(identificarPagina(lerRota())) &&
-        url.pathname === basePortal
+        ['acesso-professor', 'acesso-administracao', 'professor', 'administracao'].includes(
+          identificarPagina(lerRota()),
+        ) && url.pathname === basePortal
       if (privado || sairDoPainel) {
         evento.preventDefault()
         navegar(url.pathname + url.search + url.hash)
@@ -116,13 +129,17 @@ export default function Aplicacao() {
             ? 'Cursos — Portal de Cursos'
             : pagina === 'submissao'
               ? 'Submeter projeto — Portal de Cursos'
-              : pagina === 'professor'
-                ? sessao
-                  ? 'Avaliações — Portal de Cursos'
-                  : 'Entrar — Portal de Cursos'
-                : pagina === 'acesso'
-                  ? 'Entrar — Portal de Cursos'
-                  : 'Portal de Cursos — Formação e produção acadêmica'
+              : pagina === 'administracao'
+                ? 'Administração — Portal de Cursos'
+                : pagina === 'acesso-administracao'
+                  ? 'Acesso Administrativo — Portal de Cursos'
+                  : pagina === 'acesso-professor'
+                    ? 'Acesso do Professor — Portal de Cursos'
+                    : pagina === 'professor'
+                      ? sessao
+                        ? 'Avaliações — Portal de Cursos'
+                        : 'Entrar — Portal de Cursos'
+                      : 'Portal de Cursos — Formação e produção acadêmica'
   }, [pagina, sessao])
   useEffect(() => {
     if (!sessao) return
@@ -146,27 +163,60 @@ export default function Aplicacao() {
   }, [sessao])
 
   function entrar(novaSessao) {
+    definirDecisoes({})
+    definirRascunhos({ cursos, projetos })
     definirSessao(novaSessao)
     definirSessaoExpirada(false)
-    navegar(enderecoPrivado(retornoProfessor()), true)
+    navegar(enderecoPrivado(retornoAutenticado(novaSessao.tipoUsuario)), true)
   }
   function sair() {
+    const eraAdmin = sessao?.tipoUsuario === 'ADMIN'
     definirSessao(null)
+    definirDecisoes({})
+    definirRascunhos({ cursos, projetos })
     definirSessaoExpirada(false)
-    navegar(enderecoPrivado('login'), true)
+    navegar(enderecoPrivado(eraAdmin ? 'administracao/login' : 'professor/login'), true)
   }
   useEffect(() => {
     const noSitePublico = window.location.pathname === basePortal
-    if (pagina === 'professor' && !sessao) {
+    const ePaginaLogin = ['acesso-professor', 'acesso-administracao'].includes(pagina)
+    if (pagina === 'administracao' && !sessao) {
+      const retorno = rota === 'administracao' ? 'administracao/painel' : rota
+      navegar(
+        `${enderecoPrivado('administracao/login')}?retorno=${encodeURIComponent(retorno)}`,
+        true,
+      )
+    } else if (pagina === 'professor' && !sessao) {
       const retorno =
-        rota.startsWith('professor/submissao/') || rota === 'professor/perfil'
+        rota.startsWith('professor/submissao/') ||
+        ['professor/perfil', 'professor/painel'].includes(rota)
           ? rota
           : 'professor/feed'
-      navegar(`${enderecoPrivado('login')}?retorno=${encodeURIComponent(retorno)}`, true)
-    } else if (pagina === 'acesso' && sessao) {
-      navegar(enderecoPrivado(retornoProfessor()), true)
-    } else if (pagina === 'acesso' && noSitePublico) {
-      navegar(enderecoPrivado('login'), true)
+      navegar(`${enderecoPrivado('professor/login')}?retorno=${encodeURIComponent(retorno)}`, true)
+    } else if (ePaginaLogin && sessao) {
+      navegar(enderecoPrivado(retornoAutenticado(sessao.tipoUsuario)), true)
+    } else if (
+      sessao &&
+      ['professor', 'administracao'].includes(pagina) &&
+      pagina !== (sessao.tipoUsuario === 'ADMIN' ? 'administracao' : 'professor')
+    ) {
+      navegar(
+        enderecoPrivado(sessao.tipoUsuario === 'ADMIN' ? 'administracao/painel' : 'professor/feed'),
+        true,
+      )
+    } else if (
+      sessao &&
+      pagina === 'professor' &&
+      window.location.pathname.endsWith('/professor/painel')
+    ) {
+      navegar(enderecoPrivado('professor/feed'), true)
+    } else if (ePaginaLogin && noSitePublico) {
+      navegar(
+        enderecoPrivado(
+          pagina === 'acesso-administracao' ? 'administracao/login' : 'professor/login',
+        ),
+        true,
+      )
     } else if (pagina === 'professor' && noSitePublico) {
       navegar(enderecoPrivado(rota === 'professor' ? 'professor/feed' : rota), true)
     }
@@ -178,39 +228,74 @@ export default function Aplicacao() {
       ? 'projetos'
       : rota === 'submeter'
         ? 'submeter'
-        : rota === 'acesso'
-          ? 'acesso'
+        : ['acesso-professor', 'acesso-administracao'].includes(pagina)
+          ? pagina
           : pagina === 'detalhes-curso'
             ? 'cursos'
             : pagina
-  if (pagina === 'acesso' || pagina === 'professor') {
+  const ePaginaLogin = ['acesso-professor', 'acesso-administracao'].includes(pagina)
+  if (ePaginaLogin || pagina === 'professor' || pagina === 'administracao') {
+    const tipoAcesso = pagina === 'acesso-administracao' ? 'ADMIN' : 'PROFESSOR'
+    const administrador = sessao?.tipoUsuario === 'ADMIN'
+    if (sessao && (ePaginaLogin || pagina !== (administrador ? 'administracao' : 'professor')))
+      return (
+        <main id="conteudo" className="limite pagina-painel" role="status">
+          Abrindo sua área…
+        </main>
+      )
     return (
       <EstruturaProfessor
-        perfilAtivo={rota === 'professor/perfil'}
+        administrador={administrador}
+        rota={rota}
+        perfilAtivo={['professor/perfil', 'administracao/perfil'].includes(rota)}
         usuario={sessao?.usuario}
         aoSair={sair}
         tema={tema}
         alternarTema={definirTema}
+        tipoAcesso={tipoAcesso}
       >
         <a className="pular-conteudo" href="#conteudo">
           Pular para o conteúdo
         </a>
         {!sessao ? (
-          <PaginaAcesso aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
-        ) : rota === 'professor/perfil' ? (
+          <PaginaAcesso tipoAcesso={tipoAcesso} aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
+        ) : ['professor/perfil', 'administracao/perfil'].includes(rota) ? (
           <PaginaPerfil
+            destinoVoltar={administrador ? 'administracao/painel' : 'professor/feed'}
             usuario={sessao.usuario}
             aoSalvar={(perfil) =>
               definirSessao((atual) => ({ ...atual, usuario: { ...atual.usuario, ...perfil } }))
             }
           />
+        ) : administrador ? (
+          <PaginaAdministracao
+            secao={rota.split('/')[1] || 'painel'}
+            sessao={sessao}
+            rascunhos={rascunhos}
+            aoAlterar={(dominio, itens) =>
+              definirRascunhos((atual) => ({ ...atual, [dominio]: itens }))
+            }
+            submissoes={submissoes.map((item) => ({
+              ...item,
+              status: decisoes[item.identificador] || item.status,
+            }))}
+          />
         ) : identificadorSubmissao ? (
           <PaginaDetalhesSubmissao
             key={identificadorSubmissao}
             identificador={identificadorSubmissao}
+            decisao={decisoes[identificadorSubmissao]}
+            aoDecidir={(status) =>
+              definirDecisoes((atuais) => ({ ...atuais, [identificadorSubmissao]: status }))
+            }
           />
         ) : (
-          <PaginaProfessor />
+          <PaginaProfessor
+            submissoes={submissoes.map((item) => ({
+              ...item,
+              status: decisoes[item.identificador] || item.status,
+            }))}
+          />
         )}
       </EstruturaProfessor>
     )
@@ -221,6 +306,7 @@ export default function Aplicacao() {
         Pular para o conteúdo
       </a>
       <Cabecalho
+        destinoArea={sessao?.tipoUsuario === 'ADMIN' ? 'administracao/painel' : 'professor/feed'}
         pagina={secaoAtiva}
         autenticado={Boolean(sessao)}
         tema={tema}

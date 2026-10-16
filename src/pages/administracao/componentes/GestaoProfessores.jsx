@@ -1,0 +1,212 @@
+import { useEffect, useState } from 'react'
+import {
+  cadastrarProfessor,
+  excluirProfessor,
+  listarProfessores,
+} from '../servicos/gerenciarProfessores.js'
+import FormularioProfessor from './FormularioProfessor.jsx'
+import ConfirmacaoGestao from './ConfirmacaoGestao.jsx'
+
+export default function GestaoProfessores({ token }) {
+  const [consulta, definirConsulta] = useState({ estado: 'carregando', dados: [], erro: '' })
+  const [tentativa, definirTentativa] = useState(0)
+  const [busca, definirBusca] = useState('')
+  const [criando, definirCriando] = useState(false)
+  const [exclusao, definirExclusao] = useState(null)
+  const [ocupado, definirOcupado] = useState(false)
+  const [erro, definirErro] = useState('')
+  const [mensagem, definirMensagem] = useState('')
+  useEffect(() => {
+    const controle = new AbortController()
+    listarProfessores(token, controle.signal)
+      .then((dados) => {
+        if (!controle.signal.aborted) definirConsulta({ estado: 'pronto', dados, erro: '' })
+      })
+      .catch((falha) => {
+        if (!controle.signal.aborted)
+          definirConsulta({ estado: 'erro', dados: [], erro: falha.message })
+      })
+    return () => controle.abort()
+  }, [token, tentativa])
+  async function salvar(dados) {
+    if (ocupado) return
+    definirOcupado(true)
+    definirErro('')
+    definirMensagem('')
+    try {
+      const professor = await cadastrarProfessor(token, dados)
+      definirConsulta((atual) => ({ ...atual, dados: [...atual.dados, professor] }))
+      definirCriando(false)
+      definirMensagem('Professor cadastrado.')
+    } catch (falha) {
+      definirErro(falha.message)
+    } finally {
+      definirOcupado(false)
+    }
+  }
+  async function remover() {
+    if (ocupado || !exclusao) return
+    definirOcupado(true)
+    definirErro('')
+    definirMensagem('')
+    try {
+      await excluirProfessor(token, exclusao.id)
+      definirConsulta((atual) => ({
+        ...atual,
+        dados: atual.dados.filter((item) => item.id !== exclusao.id),
+      }))
+      definirExclusao(null)
+      definirMensagem('Professor excluído.')
+    } catch (falha) {
+      definirErro(falha.message)
+    } finally {
+      definirOcupado(false)
+    }
+  }
+  const itens = consulta.dados.filter((item) =>
+    `${item.nome} ${item.email}`
+      .toLocaleLowerCase('pt-BR')
+      .includes(busca.trim().toLocaleLowerCase('pt-BR')),
+  )
+  return (
+    <>
+      <header className="painel-titulo">
+        <div>
+          <h1>Professores</h1>
+          <p>Cadastre docentes e acompanhe os vínculos acadêmicos.</p>
+        </div>
+        <button
+          className="botao-primario"
+          onClick={() => {
+            definirCriando(true)
+            definirErro('')
+            definirExclusao(null)
+          }}
+          disabled={criando || ocupado || consulta.estado !== 'pronto'}
+        >
+          Novo professor
+        </button>
+      </header>
+      {mensagem && (
+        <p className="gestao-aviso" role="status">
+          {mensagem}
+        </p>
+      )}
+      {criando && (
+        <FormularioProfessor
+          aoSalvar={salvar}
+          aoCancelar={() => {
+            definirCriando(false)
+            definirErro('')
+          }}
+          ocupado={ocupado}
+          erro={erro}
+        />
+      )}
+      {exclusao && (
+        <ConfirmacaoGestao rotulo="titulo-excluir-professor">
+          <h2 id="titulo-excluir-professor">Excluir {exclusao.nome}?</h2>
+          <p>
+            O cadastro será removido do serviço de professores. Esta ação não pode ser desfeita
+            aqui.
+          </p>
+          {erro && <p role="alert">{erro}</p>}
+          <div className="gestao-acoes">
+            <button
+              className="botao-secundario"
+              onClick={() => {
+                definirExclusao(null)
+                definirErro('')
+              }}
+              disabled={ocupado}
+            >
+              Manter professor
+            </button>
+            <button className="gestao-excluir" onClick={remover} disabled={ocupado}>
+              {ocupado ? 'Excluindo…' : 'Confirmar exclusão'}
+            </button>
+          </div>
+        </ConfirmacaoGestao>
+      )}
+      {consulta.estado === 'carregando' && <p role="status">Carregando professores…</p>}
+      {consulta.estado === 'erro' && (
+        <div className="gestao-aviso" role="alert">
+          <p>{consulta.erro}</p>
+          <button
+            className="botao-secundario"
+            onClick={() => {
+              definirConsulta({ estado: 'carregando', dados: [], erro: '' })
+              definirTentativa((valor) => valor + 1)
+            }}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+      {consulta.estado === 'pronto' && (
+        <section className="painel-secao">
+          <label className="gestao-busca">
+            Buscar professor
+            <input
+              type="search"
+              value={busca}
+              onChange={(e) => definirBusca(e.target.value)}
+              placeholder="Nome ou e-mail"
+            />
+          </label>
+          <div
+            className="tabela-submissoes"
+            role="region"
+            aria-label="Professores cadastrados"
+            tabIndex={0}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Professor</th>
+                  <th scope="col">Titulação</th>
+                  <th scope="col">Curso</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itens.map((item) => (
+                  <tr key={item.id}>
+                    <th scope="row">
+                      {item.nome}
+                      <span>{item.email}</span>
+                    </th>
+                    <td>{item.titulacao}</td>
+                    <td>{item.cursoId}</td>
+                    <td>
+                      <button
+                        className="gestao-excluir"
+                        onClick={() => {
+                          definirExclusao(item)
+                          definirCriando(false)
+                          definirErro('')
+                        }}
+                        disabled={ocupado}
+                      >
+                        Excluir<span className="somente-leitores"> {item.nome}</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!itens.length && (
+            <p className="painel-vazio">
+              {busca ? 'Nenhum professor encontrado nesta busca.' : 'Nenhum professor cadastrado.'}
+            </p>
+          )}
+        </section>
+      )}
+      <p className="gestao-nota">
+        A edição de dados de professor por administrador depende de liberação no contrato atual da
+        API. O professor continua editando somente o próprio perfil.
+      </p>
+    </>
+  )
+}
