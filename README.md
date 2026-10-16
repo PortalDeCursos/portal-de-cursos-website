@@ -77,7 +77,8 @@ O frontend usa navegação por hash. As rotas são acessadas depois do `#` na UR
 | `#submeter`                | Fluxo de submissão de produção acadêmica |
 | `/professor/feed`          | Feed de avaliações do professor          |
 | `/professor/submissao/:id` | Detalhes de uma submissão                |
-| `/login`                   | Login independente do professor          |
+| `/professor/login`         | Login da área do professor (`/login`)    |
+| `/administracao/login`     | Login da equipe de administração         |
 
 ## Configuração de dados
 
@@ -148,14 +149,13 @@ npm run build
 
 ## Limitações atuais
 
-A página `/login` implementa o formulário de entrada do professor e a barreira de navegação
-das rotas `/professor/feed` e `/professor/submissao/:id`. Para conectar a autenticação, execute o serviço de Usuários conforme
+A página `/login` usa o mesmo serviço de autenticação para as duas áreas: professor entra no feed `/professor/feed`, administrador entra em `/administracao/painel`. O papel é consultado nos endpoints existentes do serviço, sem seletor de papel no cliente. Para conectar a autenticação, execute o serviço de Usuários conforme
 [o contrato de integração](docs/autenticacao-professor.md). O proxy local aponta para `http://127.0.0.1:8080`; altere `USUARIOS_API_URL` se necessário. Sem serviço disponível, a interface informa a falha e não cria uma sessão demonstrativa.
 
 O frontend ainda não possui:
 
 - backend ou persistência de dados;
-- autenticação real;
+- integração de publicação de cursos/projetos e autorização nos serviços acadêmicos correspondentes;
 - upload e armazenamento de documentos;
 - envio de notificações;
 - decisão de professor persistida em serviço;
