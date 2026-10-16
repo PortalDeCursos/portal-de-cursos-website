@@ -75,9 +75,9 @@ O frontend usa navegação por hash. As rotas são acessadas depois do `#` na UR
 | `#curso/redes`             | Detalhes do curso de Redes               |
 | `#projetos`                | Biblioteca de projetos                   |
 | `#submeter`                | Fluxo de submissão de produção acadêmica |
-| `#professor`               | Feed de avaliações do professor          |
-| `#professor/submissao/:id` | Detalhes de uma submissão                |
-| `#acesso`                  | Informações de acesso à área restrita    |
+| `/professor/feed`          | Feed de avaliações do professor          |
+| `/professor/submissao/:id` | Detalhes de uma submissão                |
+| `/login`                   | Login independente do professor          |
 
 ## Configuração de dados
 
@@ -147,6 +147,10 @@ npm run build
 ```
 
 ## Limitações atuais
+
+A página `/login` implementa o formulário de entrada do professor e a barreira de navegação
+das rotas `/professor/feed` e `/professor/submissao/:id`. Para conectar a autenticação, execute o serviço de Usuários conforme
+[o contrato de integração](docs/autenticacao-professor.md). O proxy local aponta para `http://127.0.0.1:8080`; altere `USUARIOS_API_URL` se necessário. Sem serviço disponível, a interface informa a falha e não cria uma sessão demonstrativa.
 
 O frontend ainda não possui:
 
