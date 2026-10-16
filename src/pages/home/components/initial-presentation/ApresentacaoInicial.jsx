@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { cursos } from '../../../../data/cursos.js'
 import { projetos } from '../../../../data/projetos.js'
-import Ligacao from '../../../../shared/components/link/Ligacao.jsx'
 import ConteudoDestaque from './ConteudoDestaque.jsx'
 import './apresentacao-inicial.css'
 
@@ -9,6 +8,9 @@ const destaques = [
   {
     titulo: 'Análise e Desenvolvimento de Sistemas',
     categoria: 'Curso em destaque',
+    tituloCurto: 'TADS',
+    seletor: 'Curso',
+    resumo: 'Aprenda a desenvolver aplicações, bancos de dados e sistemas web.',
     destino: '#curso/tads',
     acao: 'Conhecer o curso',
     tipo: 'curso',
@@ -16,7 +18,10 @@ const destaques = [
   },
   {
     titulo: 'Portal de Cursos',
-    categoria: 'Projeto Integrador em destaque',
+    categoria: 'Projeto integrador em destaque',
+    tituloCurto: 'Portal de Cursos',
+    seletor: 'Projeto',
+    resumo: 'Cursos, disciplinas e produções acadêmicas reunidos em um portal.',
     destino: '#projeto/portal-cursos',
     acao: 'Conhecer o projeto',
     tipo: 'integrador',
@@ -25,6 +30,9 @@ const destaques = [
   {
     titulo: 'Acessibilidade em aplicações web',
     categoria: 'TCC em destaque',
+    tituloCurto: 'Acessibilidade web',
+    seletor: 'TCC',
+    resumo: 'Um estudo sobre barreiras de acessibilidade em interfaces web.',
     destino: '#projeto/acessibilidade-web',
     acao: 'Conhecer o TCC',
     tipo: 'tcc',
@@ -93,33 +101,29 @@ export default function ApresentacaoInicial() {
     <section id="inicio" className="hero-inicial" aria-labelledby="titulo-inicial">
       <div className="hero-inicial__texto">
         <h1 id="titulo-inicial">
-          Do primeiro módulo ao <span>projeto final.</span>
+          Da formação
+          <br />à criação.
         </h1>
         <p className="hero-inicial__descricao">
-          Encontre uma formação para seguir, acompanhe as disciplinas e conheça as produções que
-          nascem durante o percurso acadêmico.
+          Conheça os cursos, explore as disciplinas e veja o que os estudantes criam ao longo da
+          formação.
         </p>
         <div className="hero-inicial__acoes">
           <a className="botao-primario" href="#cursos">
-            Ver cursos{' '}
-            <span className="botao-primario__icone" aria-hidden="true">
-              ↗
-            </span>
+            Explorar cursos <span aria-hidden="true">→</span>
           </a>
-          <Ligacao destino="#projetos">Ver produções acadêmicas</Ligacao>
+          <a className="hero-inicial__acao-secundaria" href="#projetos">
+            Conhecer os projetos
+          </a>
         </div>
         <dl className="hero-inicial__numeros">
           <div>
-            <dd>{String(cursos.length).padStart(2, '0')}</dd>
-            <dt>Cursos para explorar</dt>
+            <dd>{cursos.length}</dd>
+            <dt>cursos disponíveis</dt>
           </div>
           <div>
-            <dd>{String(aprovados.length).padStart(2, '0')}</dd>
-            <dt>Projetos aprovados</dt>
-          </div>
-          <div>
-            <dd>04</dd>
-            <dt>Tipos de produção</dt>
+            <dd>{aprovados.length}</dd>
+            <dt>projetos aprovados</dt>
           </div>
         </dl>
       </div>
@@ -132,6 +136,17 @@ export default function ApresentacaoInicial() {
         onMouseLeave={() => definirSobre(false)}
         onFocusCapture={() => definirAutomatico(false)}
       >
+        <div className="hero-carrossel__selecao" role="group" aria-label="Escolher destaque">
+          {destaques.map((destaque, posicao) => (
+            <button
+              key={destaque.tipo}
+              aria-pressed={posicao === indice}
+              onClick={() => selecionar(posicao)}
+            >
+              {destaque.seletor}
+            </button>
+          ))}
+        </div>
         <div
           className="hero-carrossel__janela"
           onPointerDown={iniciarGesto}
@@ -171,43 +186,6 @@ export default function ApresentacaoInicial() {
               />
             </article>
           ))}
-        </div>
-        <div className="hero-carrossel__controles">
-          <div className="hero-carrossel__indicadores" role="group" aria-label="Escolher destaque">
-            {destaques.map((destaque, posicao) => (
-              <button
-                key={destaque.tipo}
-                className={posicao === indice ? 'selecionado' : ''}
-                aria-label={`Mostrar destaque ${posicao + 1}: ${destaque.titulo}`}
-                aria-pressed={posicao === indice}
-                onClick={() => selecionar(posicao)}
-              />
-            ))}
-          </div>
-          <span className="hero-carrossel__modo">
-            {automatico ? 'Descubra o portal' : 'Explore no seu ritmo'}
-          </span>
-          <div className="hero-carrossel__setas">
-            {automatico && (
-              <button aria-label="Pausar carrossel" onClick={() => definirAutomatico(false)}>
-                Ⅱ
-              </button>
-            )}
-            <button
-              aria-label="Destaque anterior"
-              disabled={indice === 0}
-              onClick={() => selecionar(indice - 1)}
-            >
-              ←
-            </button>
-            <button
-              aria-label="Próximo destaque"
-              disabled={indice === destaques.length - 1}
-              onClick={() => selecionar(indice + 1)}
-            >
-              →
-            </button>
-          </div>
         </div>
         <p className="somente-leitores" role="status" aria-live={automatico ? 'off' : 'polite'}>
           Destaque {indice + 1} de {destaques.length}. {destaques[indice].titulo}.
