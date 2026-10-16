@@ -24,6 +24,13 @@ jobs:
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
           VITE_ROUTER_MODE: hash
+      - name: Preparar rotas da área do professor
+        run: |
+          mkdir -p dist/login dist/professor/feed dist/professor/perfil
+          cp dist/index.html dist/login/index.html
+          cp dist/index.html dist/professor/feed/index.html
+          cp dist/index.html dist/professor/perfil/index.html
+          cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

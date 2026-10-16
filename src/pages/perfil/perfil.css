@@ -1,0 +1,158 @@
+.pagina-perfil {
+  max-width: 960px;
+  padding-block: 32px 64px;
+}
+.perfil-voltar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--azul);
+  font-size: 16px;
+}
+.perfil-titulo {
+  margin: 20px 0 32px;
+}
+.perfil-titulo h1 {
+  margin: 0 0 12px;
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+.perfil-titulo p {
+  margin: 0;
+  color: var(--texto);
+  font-size: 17px;
+}
+.perfil-formulario {
+  display: grid;
+  gap: 28px;
+  padding: 32px;
+  border-radius: 20px;
+  background: var(--superficie);
+}
+.perfil-foto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+.perfil-foto__imagem {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--suave);
+}
+.perfil-foto__imagem > img:not(.icone) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfil-foto__imagem .icone {
+  width: 40px;
+  height: 40px;
+}
+.perfil-foto h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+.perfil-foto p {
+  margin: 0 0 8px;
+  color: var(--texto);
+  font-size: 14px;
+}
+.perfil-foto__acoes,
+.perfil-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.perfil-formulario button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--suave);
+  color: var(--azul);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.perfil-formulario .botao-primario {
+  background: var(--azul);
+  color: var(--superficie);
+}
+.perfil-formulario button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.perfil-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.perfil-campos label {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  color: var(--titulo);
+  font-size: 16px;
+  font-weight: 600;
+}
+.perfil-campos label:last-child {
+  grid-column: 1/-1;
+}
+.perfil-campos input,
+.perfil-campos textarea {
+  min-width: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  color: var(--titulo);
+  background: var(--fundo);
+  font-size: 16px;
+  font-weight: 400;
+}
+.perfil-campos textarea {
+  resize: vertical;
+}
+.perfil-campos input:focus-visible,
+.perfil-campos textarea:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+.perfil-campos small,
+.perfil-nota {
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.perfil-nota {
+  margin: 0;
+}
+.perfil-aviso {
+  margin: 0;
+  padding: 16px;
+  background: var(--suave);
+  border-radius: 8px;
+  color: var(--titulo);
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .perfil-formulario {
+    padding: 24px;
+  }
+  .perfil-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .perfil-titulo h1 {
+    font-size: 30px;
+  }
+}

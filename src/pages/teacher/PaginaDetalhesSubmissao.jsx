@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { submissoes } from '../../data/submissoes.js'
 import './professor.css'
+import { enderecoPrivado } from '../../app/rotas.js'
 
 export default function PaginaDetalhesSubmissao({ identificador }) {
   const item = submissoes.find((submissao) => submissao.identificador === identificador)
@@ -11,7 +12,7 @@ export default function PaginaDetalhesSubmissao({ identificador }) {
   if (!item) {
     return (
       <main id="conteudo" className="limite pagina-detalhes-submissao">
-        <a className="pagina-detalhes-submissao__voltar" href="#professor">
+        <a className="pagina-detalhes-submissao__voltar" href={enderecoPrivado('professor/feed')}>
           Voltar para submissões
         </a>
         <h1>Submissão não encontrada</h1>
@@ -32,7 +33,7 @@ export default function PaginaDetalhesSubmissao({ identificador }) {
 
   return (
     <main id="conteudo" className="limite pagina-detalhes-submissao">
-      <a className="pagina-detalhes-submissao__voltar" href="#professor">
+      <a className="pagina-detalhes-submissao__voltar" href={enderecoPrivado('professor/feed')}>
         Voltar para submissões
       </a>
       <header className="pagina-detalhes-submissao__cabecalho">
