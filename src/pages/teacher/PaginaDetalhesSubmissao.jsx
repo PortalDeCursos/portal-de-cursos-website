@@ -3,9 +3,9 @@ import { submissoes } from '../../data/submissoes.js'
 import './professor.css'
 import { enderecoPrivado } from '../../app/rotas.js'
 
-export default function PaginaDetalhesSubmissao({ identificador }) {
+export default function PaginaDetalhesSubmissao({ identificador, decisao, aoDecidir }) {
   const item = submissoes.find((submissao) => submissao.identificador === identificador)
-  const [status, definirStatus] = useState(item?.status || 'Em análise')
+  const status = decisao || item?.status || 'Em análise'
   const [justificativa, definirJustificativa] = useState('')
   const [erro, definirErro] = useState('')
 
@@ -26,7 +26,7 @@ export default function PaginaDetalhesSubmissao({ identificador }) {
       definirErro('Informe uma justificativa para registrar esta decisão.')
       return
     }
-    definirStatus(proximaStatus)
+    aoDecidir(proximaStatus)
     definirJustificativa('')
     definirErro('')
   }
@@ -73,7 +73,7 @@ export default function PaginaDetalhesSubmissao({ identificador }) {
                 <li key={documento}>
                   <span aria-hidden="true">PDF</span>
                   <strong>{documento}</strong>
-                  <button type="button">Visualizar</button>
+                  <span className="documento-indisponivel">Arquivo indisponível</span>
                 </li>
               ))}
             </ul>
@@ -98,6 +98,9 @@ export default function PaginaDetalhesSubmissao({ identificador }) {
               <h2>Registrar orientação</h2>
               <p className="pagina-detalhes-submissao__decisao-intro">
                 Leia o projeto e indique se poderá acompanhar esta produção.
+              </p>
+              <p>
+                Decisões mantidas apenas nesta sessão, até a integração com o serviço de submissões.
               </p>
               <label htmlFor={`justificativa-${item.identificador}`}>
                 Justificativa <small>obrigatória para recusar</small>

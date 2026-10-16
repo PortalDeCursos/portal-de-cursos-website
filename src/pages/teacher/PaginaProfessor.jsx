@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { submissoes } from '../../data/submissoes.js'
 import './professor.css'
 import { enderecoPrivado } from '../../app/rotas.js'
 
@@ -9,7 +8,7 @@ function statusDaSubmissao(item, decisoes) {
   return decisoes[item.identificador] || item.status
 }
 
-export default function PaginaProfessor() {
+export default function PaginaProfessor({ submissoes }) {
   const [filtro, definirFiltro] = useState('Todas')
   const [tipoFiltro, definirTipoFiltro] = useState('Todos')
   const [decisoes] = useState({})
@@ -21,7 +20,7 @@ export default function PaginaProfessor() {
           (filtro === 'Todas' || statusDaSubmissao(item, decisoes) === filtro) &&
           (tipoFiltro === 'Todos' || item.tipo === tipoFiltro),
       ),
-    [decisoes, filtro, tipoFiltro],
+    [decisoes, filtro, tipoFiltro, submissoes],
   )
 
   const tipos = ['Todos', ...new Set(submissoes.map((item) => item.tipo))]
