@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { autenticarProfessor } from './servicos/autenticarProfessor.js'
+import { autenticarConta } from './servicos/autenticarConta.js'
+import { enderecoPrivado } from '../../app/rotas.js'
 import './acesso.css'
 import logoPortal from '../../assets/marca/logo-portal.png'
 
-export default function PaginaAcesso({ aoEntrar, sessaoExpirada = false }) {
+export default function PaginaAcesso({
+  aoEntrar,
+  sessaoExpirada = false,
+  tipoAcesso = 'PROFESSOR',
+}) {
+  const eAdmin = tipoAcesso === 'ADMIN'
   const [identificacao, definirIdentificacao] = useState('')
   const [senha, definirSenha] = useState('')
   const [mostrarSenha, definirMostrarSenha] = useState(false)
@@ -38,8 +44,16 @@ export default function PaginaAcesso({ aoEntrar, sessaoExpirada = false }) {
     requisicao.current = controle
     const limite = window.setTimeout(() => controle.abort('tempo-esgotado'), 15000)
     try {
-      const sessao = await autenticarProfessor(identificacao.trim(), senha, controle.signal)
+      const sessao = await autenticarConta(identificacao.trim(), senha, controle.signal)
       if (!controle.signal.aborted) {
+        if (eAdmin && sessao.tipoUsuario !== 'ADMIN') {
+          definirErro(
+            'Esta conta possui perfil de Professor e não tem acesso administrativo. Utilize a Área do Professor.',
+          )
+          definirSenha('')
+          window.requestAnimationFrame(() => aviso.current?.focus())
+          return
+        }
         definirSenha('')
         aoEntrar(sessao)
       }
@@ -62,25 +76,56 @@ export default function PaginaAcesso({ aoEntrar, sessaoExpirada = false }) {
 
   return (
     <main id="conteudo" className="limite pagina-acesso">
-      <div className="acesso-painel">
-        <aside className="acesso-identidade" aria-label="Portal de Cursos">
+      <div
+        className={`acesso-painel ${eAdmin ? 'acesso-painel--admin' : 'acesso-painel--professor'}`}
+      >
+        <aside
+          className="acesso-identidade"
+          aria-label={eAdmin ? 'Administração do Portal' : 'Área do Professor'}
+        >
           <div className="acesso-marca">
             <span className="acesso-marca__simbolo">
               <img src={logoPortal} alt="" width="48" height="48" />
             </span>
-            <span>Portal de Cursos</span>
+            <span>{eAdmin ? 'Portal · Gestão' : 'Portal de Cursos'}</span>
           </div>
           <div className="acesso-identidade__mensagem">
-            <p>
-              Bem-vindo <br />à sua área.
-            </p>
-            <span>Um espaço para acompanhar projetos e orientar novas ideias.</span>
+            {eAdmin ? (
+              <>
+                <p>
+                  Painel da <br />
+                  Administração.
+                </p>
+                <span>Gestão institucional de cursos, docentes, projetos e configurações.</span>
+              </>
+            ) : (
+              <>
+                <p>
+                  Área do <br />
+                  Professor.
+                </p>
+                <span>
+                  Um espaço dedicado para orientar ideias, avaliar submissões e acompanhar projetos.
+                </span>
+              </>
+            )}
           </div>
-          <span className="acesso-identidade__assinatura">Ensino. Projetos. Conhecimento.</span>
+          <span className="acesso-identidade__assinatura">
+            {eAdmin ? 'Gestão · Governança · Coordenação' : 'Ensino · Projetos · Conhecimento'}
+          </span>
         </aside>
         <section className="acesso-formulario" aria-labelledby="titulo-entrar">
-          <h1 id="titulo-entrar">Acesso do professor</h1>
-          <p>Entre com sua conta institucional.</p>
+          <div className="acesso-cabecalho-form">
+            <span className="acesso-distintivo">
+              {eAdmin ? 'Acesso Administrativo' : 'Área Docente'}
+            </span>
+            <h1 id="titulo-entrar">{eAdmin ? 'Acesso Administrativo' : 'Área do Professor'}</h1>
+            <p>
+              {eAdmin
+                ? 'Entre com suas credenciais de gestão institucional.'
+                : 'Entre com seu e-mail institucional de professor.'}
+            </p>
+          </div>
           {sessaoExpirada && (
             <p className="acesso-aviso" role="status">
               Sua sessão expirou. Entre novamente para continuar.
@@ -150,13 +195,36 @@ export default function PaginaAcesso({ aoEntrar, sessaoExpirada = false }) {
               </p>
             )}
             <button className="botao-primario acesso-entrar" type="submit" disabled={enviando}>
-              {enviando ? 'Entrando…' : 'Entrar'}
+              {enviando
+                ? 'Entrando…'
+                : eAdmin
+                  ? 'Entrar na Administração'
+                  : 'Entrar como Professor'}
             </button>
             <span className="somente-leitores" role="status">
               {enviando ? 'Verificando seus dados de acesso.' : ''}
             </span>
           </form>
-          <p className="acesso-ajuda">Precisa de ajuda? Procure a administração do portal.</p>
+          <div className="acesso-alternar">
+            {eAdmin ? (
+              <p>
+                É professor ou orientador?{' '}
+                <a href={enderecoPrivado('professor/login')}>Ir para a Área do Professor →</a>
+              </p>
+            ) : (
+              <p>
+                Precisa gerenciar a plataforma?{' '}
+                <a href={enderecoPrivado('administracao/login')}>
+                  Ir para o Acesso Administrativo →
+                </a>
+              </p>
+            )}
+          </div>
+          <p className="acesso-ajuda">
+            {eAdmin
+              ? 'Dúvidas sobre privilégios de acesso? Consulte a equipe técnica.'
+              : 'Precisa de ajuda? Procure a coordenação ou a administração do portal.'}
+          </p>
         </section>
       </div>
     </main>

@@ -1,24 +1,33 @@
-# Login com o backend original — TADS-184 / TADS-197
+# Autenticação e identificação de área — TADS-184 / TADS-197
 
-Por orientação do usuário, o backend usuarioService não deve ser modificado. As alterações que o assistente havia feito em controllers, service, security, exception handler, DTO e testes foram desfeitas; application.properties do usuário foi preservado.
+Por orientação do usuário, o backend usuarioService não deve ser alterado. O login é o mesmo para administrador e professor: POST /auth/login com email e senha. O formulário /login mantém o layout anterior dividido e o título Acesso institucional.
 
-## Contrato existente
+## Contratos existentes utilizados
 
-- POST /auth/login com `{ "email": "email-cadastrado", "senha": "senha-digitada" }`.
-- Resposta: `{ "token": "JWT", "expiracao": 3600000 }`, duração em milissegundos.
-- Não existe chamada a /auth/me. O backend original não oferece essa rota.
-- O backend aceita e-mail, não nome de usuário.
+- POST /auth/login: recebe `{ "email": "email-cadastrado", "senha": "senha-digitada" }`, retorna `{ "token": "JWT", "expiracao": 3600000 }`, duração em milissegundos.
+- GET /usuarios: exige ADMIN no backend. A resposta permite localizar a própria conta com tipoUsuario ADMIN.
+- GET /professores/buscar: permite localizar o perfil de professor da própria conta com tipoUsuario PROFESSOR.
+- Nenhuma chamada a /auth/me, endpoint que não existe no contrato atual.
 
-O frontend mantém token e expiração somente em memória. Recarregar exige novo login; sair remove a sessão. Senhas e tokens não são persistidos nem registrados. Rotas de interface exigem uma sessão e a aplicação trata erros e timeout de 15 segundos.
+O cliente src/pages/acesso/servicos/autenticarConta.js delega a identificação a identificarConta.js. As consultas de identidade usam Bearer e mantêm apenas campos necessários, descartando senha e outros campos da resposta. Falhas, papel desconhecido ou conta não localizada impedem a criação da sessão. Não há fallback de administrador nem escolha de papel pelo usuário. Nenhuma permissão é deduzida pelo formato do e-mail ou pelo conteúdo do JWT.
 
-A resposta original não contém id, nome nem perfil. A identidade exibida é o e-mail informado ao autenticar; o frontend não fabrica perfil nem decodifica o JWT para conceder permissões. A sessão indica autenticação, **não comprova que o usuário é professor**. O feed permanece demonstrativo. Autorizações de dados e ações precisam ser aplicadas pelos serviços existentes; não há alegação de autorização por perfil no frontend.
+A sessão fica apenas em memória. Recarregar exige login; logout e expiração removem a sessão. O fluxo completo tem timeout de 15 segundos. Token e senha não são gravados em storage ou logs.
 
-## Executar localmente
+## Destino após entrar
 
-O proxy Vite encaminha /api/usuarios para http://127.0.0.1:8080, removendo o prefixo. Se necessário, configure USUARIOS_API_URL em .env.local e reinicie o Vite. Inicie o usuarioService original com Java 21 e seu banco PostgreSQL configurado. VITE_API_AUTENTICACAO é opcional e pode apontar diretamente para a URL completa HTTPS de /auth/login; nesse caso, a API precisa oferecer CORS.
+- ADMIN: /administracao/painel.
+- PROFESSOR: /professor/feed.
+- O retorno solicitado precisa pertencer à área do papel autenticado. Professor não abre administração por URL; administrador não entra no feed de orientação do professor.
+- A separação visual não substitui a autorização dos serviços.
 
-O proxy do Vite só funciona em desenvolvimento. GitHub Pages precisa de API HTTPS acessível com CORS ou de outra hospedagem com reverse proxy. Login e feed continuam em /login e /professor/feed, com layout independente e retorno aos detalhes solicitados.
+## Execução
 
-Credenciais inválidas no backend original podem chegar como 500 por causa do tratamento genérico de exceções. O frontend informa a falha sem exibir detalhes internos; não altera o servidor para corrigir esse status.
+O proxy Vite encaminha /api/usuarios para http://127.0.0.1:8080, removendo o prefixo. Assim, a consulta do frontend /api/usuarios/usuarios corresponde ao GET /usuarios do backend. USUARIOS_API_URL permite alterar o destino em desenvolvimento. VITE_API_AUTENTICACAO permite usar a URL HTTPS completa de /auth/login; as consultas de identidade usam a mesma base do serviço, que precisa permitir CORS.
 
-Tickets: TADS-184 e TADS-197. Nenhuma alteração de status no Jira ou publicação remota realizada.
+O proxy não funciona no GitHub Pages: produção precisa de serviço HTTPS com CORS ou hospedagem com reverse proxy. Credenciais inválidas podem chegar como 500 no tratamento atual do backend; o frontend informa a falha sem exibir detalhes internos.
+
+## Limites
+
+O professor altera o próprio perfil somente no estado da sessão; foto/upload e gravação de perfil não estão integrados. Submissões são demonstrativas e aguardam consulta por orientador e persistência de decisões. Professores são consultados, cadastrados e excluídos pela administração através dos endpoints existentes. Edição por ADMIN não é oferecida porque PUT /professores/:id exige PROFESSOR atualmente.
+
+Nenhuma alteração de backend, publicação remota ou atualização de ticket foi realizada nesta etapa.

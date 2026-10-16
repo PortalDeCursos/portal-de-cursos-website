@@ -73,6 +73,43 @@
   padding: 6px 0;
 }
 
+.cabecalho__admin-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  background: transparent;
+  transition: all 180ms ease;
+}
+
+.cabecalho__admin-link:hover {
+  background: var(--suave);
+  color: var(--azul);
+  border-color: var(--azul);
+}
+
+:root[data-tema='escuro'] .cabecalho__admin-link {
+  color: #dce2ed;
+  border-color: #343a46;
+}
+
+:root[data-tema='escuro'] .cabecalho__admin-link:hover {
+  color: #8eafff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #5579cc;
+}
+
+@media (max-width: 960px) {
+  .cabecalho__admin-link {
+    display: none;
+  }
+}
+
 @media (max-width: 1100px) and (min-width: 761px) {
   .cabecalho__conteudo {
     gap: 16px;
