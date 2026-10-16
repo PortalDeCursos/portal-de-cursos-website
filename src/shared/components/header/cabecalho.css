@@ -185,3 +185,197 @@
     bottom: 0;
   }
 }
+
+/* Estados de navegação sem deslocar a linha do cabeçalho. */
+.cabecalho .navegacao a,
+.cabecalho__acoes > a {
+  isolation: isolate;
+  min-height: 44px;
+  transition: color 180ms ease;
+}
+.cabecalho .navegacao a::before,
+.cabecalho__acoes > a::before {
+  content: '';
+  position: absolute;
+  inset: 10px -8px;
+  z-index: -1;
+  border-radius: 8px;
+  background: var(--suave);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.cabecalho .navegacao a::after,
+.cabecalho .cabecalho__acoes > a::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--azul);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms ease;
+}
+.cabecalho .navegacao a[aria-current='page']::after,
+.cabecalho .cabecalho__acoes > a[aria-current='page']::after,
+.cabecalho .navegacao a:hover::after,
+.cabecalho .cabecalho__acoes > a:hover::after,
+.cabecalho .navegacao a:focus-visible::after,
+.cabecalho .cabecalho__acoes > a:focus-visible::after {
+  background: var(--azul);
+  transform: scaleX(1);
+}
+.cabecalho .navegacao a:hover::before,
+.cabecalho__acoes > a:hover::before,
+.cabecalho .navegacao a:focus-visible::before,
+.cabecalho__acoes > a:focus-visible::before {
+  opacity: 1;
+}
+.cabecalho .navegacao a:hover,
+.cabecalho__acoes > a:hover,
+:root[data-tema='escuro'] .cabecalho .navegacao a:hover,
+:root[data-tema='escuro'] .cabecalho .acesso-restrito:hover {
+  color: var(--azul);
+}
+.cabecalho a:focus-visible,
+.cabecalho button:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.cabecalho .navegacao a:active::before,
+.cabecalho__acoes > a:active::before {
+  background: var(--etiqueta);
+  opacity: 1;
+}
+.cabecalho .alternador-tema,
+.cabecalho .botao-menu {
+  border-radius: 8px;
+  transition: background-color 180ms ease;
+}
+.cabecalho .alternador-tema:hover,
+.cabecalho .botao-menu:hover {
+  background: var(--suave);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cabecalho a,
+  .cabecalho a::before,
+  .cabecalho a::after,
+  .cabecalho button {
+    transition: none;
+  }
+}
+
+/* A área autenticada usa o mesmo componente e os mesmos estados do portal. */
+.cabecalho__sair,
+.navegacao__sair {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--texto);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+.cabecalho__sair:hover,
+.navegacao__sair:hover {
+  background: var(--suave);
+  color: var(--azul);
+}
+.cabecalho__sair:active,
+.navegacao__sair:active {
+  background: var(--etiqueta);
+}
+.navegacao__sair {
+  display: none;
+}
+@media (max-width: 760px) {
+  .cabecalho__sair {
+    display: none;
+  }
+  .cabecalho .navegacao {
+    top: 60px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .navegacao__sair {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cabecalho__sair,
+  .navegacao__sair {
+    transition: none;
+  }
+}
+
+.cabecalho--professor .cabecalho__conteudo {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.cabecalho--professor .cabecalho__acoes {
+  grid-column: 2;
+}
+.cabecalho--professor .cabecalho__portal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cabecalho--professor .navegacao {
+  display: none;
+}
+.cabecalho--professor .cabecalho__perfil {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--suave);
+  flex-shrink: 0;
+}
+.cabecalho__perfil > img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cabecalho--professor .cabecalho__perfil::before,
+.cabecalho--professor .cabecalho__perfil::after {
+  display: none;
+}
+.cabecalho--professor .cabecalho__perfil:hover {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .cabecalho--professor .cabecalho__conteudo {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .cabecalho--professor .cabecalho__portal {
+    display: none;
+  }
+  .cabecalho--professor .navegacao--aberta {
+    display: flex;
+  }
+  .cabecalho--professor .cabecalho__acoes {
+    gap: 4px;
+  }
+  .cabecalho--professor .cabecalho__perfil {
+    width: 40px;
+    height: 40px;
+  }
+}
+@media (max-width: 360px) {
+  .cabecalho--professor .marca--cabecalho {
+    font-size: 13px;
+  }
+  .cabecalho--professor .marca__simbolo {
+    width: 26px;
+    height: 26px;
+  }
+}

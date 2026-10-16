@@ -1,3 +1,4 @@
+import { enderecoPrivado } from '../../../../app/rotas.js'
 import './rodape-catalogo.css'
 
 export default function RodapeCatalogo({ pagina = 'cursos' }) {
@@ -13,14 +14,17 @@ export default function RodapeCatalogo({ pagina = 'cursos' }) {
           </div>
           <nav aria-label="Navegação no rodapé">
             <a href="#inicio">Início</a>
-            <a href="#cursos" aria-current={pagina !== 'projetos' ? 'page' : undefined}>
+            <a
+              href="#cursos"
+              aria-current={['cursos', 'detalhes-curso'].includes(pagina) ? 'page' : undefined}
+            >
               Cursos
             </a>
             <a href="#projetos" aria-current={pagina === 'projetos' ? 'page' : undefined}>
               Projetos
             </a>
             <a href="#submeter">Submeter projeto</a>
-            <a href="#acesso">Área restrita</a>
+            <a href={enderecoPrivado('login')}>Área restrita</a>
           </nav>
         </div>
         <div className="rodape-catalogo__base">

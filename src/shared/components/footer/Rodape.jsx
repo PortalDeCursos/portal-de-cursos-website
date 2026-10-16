@@ -1,3 +1,4 @@
+import { enderecoPrivado } from '../../../app/rotas.js'
 import '../../styles/estrutura.css'
 
 export default function Rodape() {
@@ -23,7 +24,7 @@ export default function Rodape() {
           </nav>
           <div>
             <h2>Acesso ao portal</h2>
-            <a href="#acesso">Área de professores e administradores</a>
+            <a href={enderecoPrivado('login')}>Área de professores e administradores</a>
             <p>Os trabalhos são publicados após a aprovação do orientador.</p>
           </div>
         </div>

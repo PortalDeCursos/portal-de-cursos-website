@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { submissoes } from '../../data/submissoes.js'
 import './professor.css'
+import { enderecoPrivado } from '../../app/rotas.js'
 
 const filtros = ['Todas', 'Em análise', 'Aceito', 'Recusado']
 
@@ -29,7 +30,6 @@ export default function PaginaProfessor() {
     <main id="conteudo" className="limite pagina-professor">
       <div className="pagina-professor__topo">
         <div>
-          <p className="pagina-professor__rotulo">Área do professor</p>
           <h1>Submissões para acompanhar</h1>
           <p>Abra um projeto para revisar os detalhes e registrar sua decisão.</p>
         </div>
@@ -48,6 +48,7 @@ export default function PaginaProfessor() {
                 className={filtro === opcao ? 'pagina-professor__filtro--ativo' : ''}
                 type="button"
                 key={opcao}
+                aria-pressed={filtro === opcao}
                 onClick={() => definirFiltro(opcao)}
               >
                 <span>{opcao}</span>
@@ -86,7 +87,7 @@ export default function PaginaProfessor() {
               return (
                 <article className="submissao-feed" key={item.identificador}>
                   <a
-                    href={`#professor/submissao/${item.identificador}`}
+                    href={enderecoPrivado(`professor/submissao/${item.identificador}`)}
                     className="submissao-feed__gatilho"
                   >
                     <span className="submissao-feed__marcador" aria-hidden="true" />

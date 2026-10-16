@@ -5,7 +5,7 @@ import './janela-contexto.css'
 export default function JanelaContexto({ rota, destinoAoFechar = 'inicio' }) {
   const janela = useRef(null)
   const projeto = projetos.find((item) => rota === `projeto/${item.identificador}`)
-  const aberta = Boolean(projeto || rota === 'acesso')
+  const aberta = Boolean(projeto)
   useEffect(() => {
     if (aberta && !janela.current.open) janela.current.showModal()
     if (!aberta && janela.current.open) janela.current.close()
@@ -68,21 +68,6 @@ export default function JanelaContexto({ rota, destinoAoFechar = 'inicio' }) {
             O envio será habilitado após a conexão com os microsserviços. Nenhum arquivo ou dado
             pessoal é coletado nesta etapa.
           </p>
-        </>
-      )}
-      {rota === 'acesso' && (
-        <>
-          <p>Espaço destinado a professores e administradores.</p>
-          <p>
-            Professores podem atualizar o próprio perfil e avaliar as produções sob sua orientação.
-            Administradores gerenciam os cadastros do portal.
-          </p>
-          <p className="aviso">
-            A autenticação será disponibilizada com a integração ao serviço de Usuários.
-          </p>
-          <a className="botao-primario" href="#professor" onClick={fechar}>
-            Abrir avaliações
-          </a>
         </>
       )}
     </dialog>

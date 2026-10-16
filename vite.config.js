@@ -1,9 +1,21 @@
 import react from '@vitejs/plugin-react'
 import process from 'node:process'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
-// https://vite.dev/config/
-export default defineConfig({
-  base: process.env.VITE_BASE_PATH || '/',
-  plugins: [react()],
+export default defineConfig(({ mode }) => {
+  const ambiente = loadEnv(mode, process.cwd(), '')
+  return {
+    base: process.env.VITE_BASE_PATH || ambiente.VITE_BASE_PATH || '/',
+    plugins: [react()],
+    server: {
+      proxy: {
+        '/api/usuarios': {
+          target:
+            process.env.USUARIOS_API_URL || ambiente.USUARIOS_API_URL || 'http://127.0.0.1:8080',
+          changeOrigin: true,
+          rewrite: (caminho) => caminho.replace(/^\/api\/usuarios/, ''),
+        },
+      },
+    },
+  }
 })
