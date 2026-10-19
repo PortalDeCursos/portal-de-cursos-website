@@ -132,15 +132,22 @@ export default function PaginaSubmissao() {
         orientador: 'professor orientador',
       }
       registrarErros(
-        Object.fromEntries(camposFaltantes.map((campo) => [campo, `Informe ${nomesCampos[campo]}.`])),
+        Object.fromEntries(
+          camposFaltantes.map((campo) => [campo, `Informe ${nomesCampos[campo]}.`]),
+        ),
       )
       return false
     }
     if (
       etapa === 1 &&
-      projetos.some((projeto) => projeto.titulo?.trim().toLowerCase() === formulario.titulo.trim().toLowerCase())
+      projetos.some(
+        (projeto) =>
+          projeto.titulo?.trim().toLowerCase() === formulario.titulo.trim().toLowerCase(),
+      )
     ) {
-      registrarErros({ titulo: 'Já existe um projeto com este título. Escolha um título diferente.' })
+      registrarErros({
+        titulo: 'Já existe um projeto com este título. Escolha um título diferente.',
+      })
       return false
     }
     const documentosObrigatorios =
@@ -324,7 +331,11 @@ export default function PaginaSubmissao() {
                   value={formulario.nome}
                   onChange={(e) => alterar('nome', e.target.value)}
                 />
-                {erros.nome && <small id="erro-nome" className="formulario-submissao__erro-campo">{erros.nome}</small>}
+                {erros.nome && (
+                  <small id="erro-nome" className="formulario-submissao__erro-campo">
+                    {erros.nome}
+                  </small>
+                )}
               </label>
               {formulario.tipo && (
                 <label className="formulario-submissao__campo-largo">
@@ -348,7 +359,11 @@ export default function PaginaSubmissao() {
                   value={formulario.email}
                   onChange={(e) => alterar('email', e.target.value)}
                 />
-                {erros.email && <small id="erro-email" className="formulario-submissao__erro-campo">{erros.email}</small>}
+                {erros.email && (
+                  <small id="erro-email" className="formulario-submissao__erro-campo">
+                    {erros.email}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Curso <span aria-hidden="true">*</span>
@@ -369,7 +384,11 @@ export default function PaginaSubmissao() {
                     </option>
                   ))}
                 </select>
-                {erros.curso && <small id="erro-curso" className="formulario-submissao__erro-campo">{erros.curso}</small>}
+                {erros.curso && (
+                  <small id="erro-curso" className="formulario-submissao__erro-campo">
+                    {erros.curso}
+                  </small>
+                )}
               </label>
               <p className="formulario-submissao__privacidade formulario-submissao__campo-largo">
                 Usamos seu nome e e-mail somente para identificar sua submissão e permitir o contato
@@ -405,7 +424,11 @@ export default function PaginaSubmissao() {
                     </option>
                   ))}
                 </select>
-                {erros.tipo && <small id="erro-tipo" className="formulario-submissao__erro-campo">{erros.tipo}</small>}
+                {erros.tipo && (
+                  <small id="erro-tipo" className="formulario-submissao__erro-campo">
+                    {erros.tipo}
+                  </small>
+                )}
               </label>
               <label>
                 Título <span aria-hidden="true">*</span>
@@ -417,7 +440,11 @@ export default function PaginaSubmissao() {
                   value={formulario.titulo}
                   onChange={(e) => alterar('titulo', e.target.value)}
                 />
-                {erros.titulo && <small id="erro-titulo" className="formulario-submissao__erro-campo">{erros.titulo}</small>}
+                {erros.titulo && (
+                  <small id="erro-titulo" className="formulario-submissao__erro-campo">
+                    {erros.titulo}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Resumo <span aria-hidden="true">*</span>
@@ -430,7 +457,11 @@ export default function PaginaSubmissao() {
                   value={formulario.resumo}
                   onChange={(e) => alterar('resumo', e.target.value)}
                 />
-                {erros.resumo && <small id="erro-resumo" className="formulario-submissao__erro-campo">{erros.resumo}</small>}
+                {erros.resumo && (
+                  <small id="erro-resumo" className="formulario-submissao__erro-campo">
+                    {erros.resumo}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Objetivos e resultados <span aria-hidden="true">*</span>
@@ -443,7 +474,11 @@ export default function PaginaSubmissao() {
                   value={formulario.objetivos}
                   onChange={(e) => alterar('objetivos', e.target.value)}
                 />
-                {erros.objetivos && <small id="erro-objetivos" className="formulario-submissao__erro-campo">{erros.objetivos}</small>}
+                {erros.objetivos && (
+                  <small id="erro-objetivos" className="formulario-submissao__erro-campo">
+                    {erros.objetivos}
+                  </small>
+                )}
               </label>
             </div>
           </section>
@@ -485,7 +520,11 @@ export default function PaginaSubmissao() {
                     Não há professor disponível para este curso no momento.
                   </small>
                 )}
-                {erros.orientador && <small id="erro-orientador" className="formulario-submissao__erro-campo">{erros.orientador}</small>}
+                {erros.orientador && (
+                  <small id="erro-orientador" className="formulario-submissao__erro-campo">
+                    {erros.orientador}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Adicionar disciplina
@@ -583,7 +622,10 @@ export default function PaginaSubmissao() {
                       onChange={(e) => alterarDocumentos(documento, e.target.files)}
                     />
                     {erros[documento.id] && (
-                      <small id={`erro-${documento.id}`} className="formulario-submissao__erro-campo">
+                      <small
+                        id={`erro-${documento.id}`}
+                        className="formulario-submissao__erro-campo"
+                      >
                         {erros[documento.id]}
                       </small>
                     )}
@@ -632,7 +674,8 @@ export default function PaginaSubmissao() {
             )}
             {etapa < etapas.length - 1 ? (
               <button className="botao-primario" type="button" onClick={avancar}>
-                Continuar para {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
+                Continuar para{' '}
+                {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
               </button>
             ) : (
               <button className="botao-primario" type="submit">

@@ -17,20 +17,21 @@ deferred_scope: Persistência de perfil, publicação de cursos/projetos e mudan
 feature_flag: Não definido; avaliar antes de rollout se a área autenticada já estiver em produção.
 rollback: Reverter somente o conjunto de alterações de navegação e guarda de rota; não remover nem invalidar sessões no backend.
 required_artifacts:
+
 - Decisão de contrato de identidade autenticada.
 - Matriz de rotas e perfis aprovada.
 - Relatório de validação de navegação, teclado e URLs diretas.
-wiki_updates:
+  wiki_updates:
 - docs/regras-interface.md
 - docs/autenticacao-professor.md
 
 ## 2. Comportamento aceito
 
-| Estado | Navegação principal | Ações à direita | Rotas privadas permitidas |
-| --- | --- | --- | --- |
-| Visitante | Início, Cursos, Projetos, Submeter projeto | Entrar e tema | Nenhuma |
-| Professor | Início, Cursos, Projetos, Submeter projeto e Área do Professor | Nome/foto, tema e saída | `/professor/feed`, `/professor/perfil`, `/professor/submissao/:id` |
-| Administrador | Início, Cursos, Projetos, Submeter projeto e Administração | Nome/foto, tema e saída | `/administracao/painel`, `/administracao/professores`, `/administracao/cursos`, `/administracao/projetos`, `/administracao/submissoes`, `/administracao/perfil` |
+| Estado        | Navegação principal                                            | Ações à direita         | Rotas privadas permitidas                                                                                                                                       |
+| ------------- | -------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visitante     | Início, Cursos, Projetos, Submeter projeto                     | Entrar e tema           | Nenhuma                                                                                                                                                         |
+| Professor     | Início, Cursos, Projetos, Submeter projeto e Área do Professor | Nome/foto, tema e saída | `/professor/feed`, `/professor/perfil`, `/professor/submissao/:id`                                                                                              |
+| Administrador | Início, Cursos, Projetos, Submeter projeto e Administração     | Nome/foto, tema e saída | `/administracao/painel`, `/administracao/professores`, `/administracao/cursos`, `/administracao/projetos`, `/administracao/submissoes`, `/administracao/perfil` |
 
 Regras de interação:
 
@@ -43,6 +44,7 @@ Regras de interação:
 ## 3. Inventário técnico e limites
 
 changed_subsystems:
+
 - `src/shared/components/header/Cabecalho.jsx`
 - `src/app/Aplicacao.jsx`
 - `src/app/rotas.js`
@@ -51,26 +53,31 @@ changed_subsystems:
 - `.github/workflows/pages.yml`
 
 constraints:
+
 - Somente frontend está autorizado; não alterar `usuarioService`.
 - Não conceder perfil por e-mail, escolha de tela ou decodificação local de JWT.
 - Não gravar senha nem token em logs.
 - React e CSS permanecem separados e os temas claro/AMOLED continuam disponíveis.
 
 assumptions:
+
 - O backend continua validando Bearer em toda operação protegida.
 - A página de login comum pode retornar para as duas áreas após identificar o perfil no servidor.
 
 open_questions:
+
 - Qual contrato oficial identifica o usuário autenticado e seu papel sem listar todos os usuários/professores: resposta do login enriquecida ou `GET /auth/me`? **Bloqueante.**
 - Como a sessão válida será retomada após atualização da página sem expor o JWT indevidamente? **Bloqueante.**
 - O deploy do GitHub Pages deve gerar HTML para todas as rotas privadas de administração ou migrar essas rotas para hash? **Bloqueante para URL direta publicada.**
 
 security_privacy_notes:
+
 - A interface pode orientar e redirecionar, mas não substitui autorização do backend.
 - A verificação de identidade deve ser feita por resposta autenticada do servidor; o frontend não deve confiar em conteúdo decodificado do token para liberar área.
 - Capturas e relatórios não devem registrar token, e-mail real ou dados de professor.
 
 non_functional_requirements:
+
 - Sem overflow horizontal em 320 px, 390 px e desktop.
 - Todos os links e botões operáveis por teclado, com foco visível.
 - O redirecionamento não pode aceitar URL externa no parâmetro `retorno`.
@@ -94,11 +101,12 @@ replacement_target: Uma resposta autenticada mínima com `id`, `nome`, `email` e
 replacement_plan: Formalizar o contrato com a equipe de backend, validar CORS e usar somente a identidade da própria sessão para montar o estado do cliente.
 owner_role: product_owner
 blocks:
+
 - ready
 - in_progress
 - approved
 - done
-must_propagate: true
+  must_propagate: true
 
 ### A-DEPLOY-001
 
@@ -117,11 +125,12 @@ replacement_target: Todas as rotas privadas previstas devem carregar a aplicaç�
 replacement_plan: Atualizar o mecanismo de fallback no workflow ou adotar URLs hash para as áreas privadas, então testar URLs publicadas em janela anônima.
 owner_role: devops_owner
 blocks:
+
 - ready
 - in_progress
 - approved
 - done
-must_propagate: true
+  must_propagate: true
 
 ## 5. Critérios de aceite do recurso
 
