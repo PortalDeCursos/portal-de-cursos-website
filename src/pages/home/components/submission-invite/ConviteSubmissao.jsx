@@ -17,7 +17,7 @@ export default function ConviteSubmissao() {
       </div>
       <a className="botao-primario" href="#submeter">
         <Icone nome="adicionar" />
-        Submeter projeto
+        Enviar projeto
       </a>
     </section>
   )

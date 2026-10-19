@@ -307,6 +307,10 @@ export default function Aplicacao() {
       </a>
       <Cabecalho
         destinoArea={sessao?.tipoUsuario === 'ADMIN' ? 'administracao/painel' : 'professor/feed'}
+        destinoPerfil={sessao?.tipoUsuario === 'ADMIN' ? 'administracao/perfil' : 'professor/perfil'}
+        tipoUsuario={sessao?.tipoUsuario}
+        usuario={sessao?.usuario}
+        aoSair={sair}
         pagina={secaoAtiva}
         autenticado={Boolean(sessao)}
         tema={tema}

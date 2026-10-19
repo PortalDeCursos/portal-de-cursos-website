@@ -105,7 +105,7 @@ domínio permanecem em português do Brasil, sem acentos em nomes de arquivos ou
 
 ```text
 public/
-  data/                  # Mocks consumidos pela aplicação
+  data/                  # Dados locais consumidos pela aplicação
 src/
   app/                   # Roteamento e composição global
   assets/                # Fontes e recursos locais
@@ -133,8 +133,8 @@ O fluxo recomendado é:
 6. Executar `npm run check` e `npm run format:check`.
 7. Abrir o pull request para `develop`, descrevendo comportamento, validação e limitações.
 
-Consulte [CONTRIBUTING.md](./CONTRIBUTING.md) para as regras completas de contribuição e
-[DESIGN-E-REGRAS.md](./DESIGN-E-REGRAS.md) para as decisões de organização e interface.
+Consulte [as regras de interface](./docs/regras-interface.md) e
+[o fluxo de autenticação](./docs/autenticacao-professor.md) antes de alterar telas compartilhadas.
 
 ## CI
 
@@ -144,6 +144,7 @@ essas branches. Ele utiliza Node.js 24 e executa:
 ```bash
 npm ci
 npm run lint
+npm run format:check
 npm run build
 ```
 
