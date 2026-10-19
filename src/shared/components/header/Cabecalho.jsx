@@ -133,7 +133,9 @@ export default function Cabecalho({
                   className="navegacao__entrar-mobile"
                   href={enderecoPrivado('login')}
                   aria-current={
-                    ['acesso-professor', 'acesso-administracao'].includes(pagina) ? 'page' : undefined
+                    ['acesso-professor', 'acesso-administracao'].includes(pagina)
+                      ? 'page'
+                      : undefined
                   }
                 >
                   Entrar
