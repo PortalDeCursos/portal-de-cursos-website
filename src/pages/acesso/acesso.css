@@ -46,10 +46,13 @@
   background: var(--superficie);
 }
 .acesso-painel--admin {
-  --acesso-azul: #0b2545;
+  --acesso-azul: linear-gradient(165deg, #0d357a 0%, #071c42 100%);
 }
 .acesso-painel--professor {
   --acesso-azul: #003da8;
+}
+:root[data-tema='escuro'] .acesso-painel {
+  border: 1px solid var(--borda);
 }
 .acesso-identidade {
   display: flex;
@@ -228,13 +231,25 @@
   opacity: 0.65;
   cursor: wait;
 }
-.acesso-alternar {
-  margin-top: 24px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--borda);
-  background: var(--fundo);
+.acesso-voltar-portal {
+  margin-top: 20px;
+  text-align: center;
+}
+.acesso-voltar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 160ms ease;
+}
+.acesso-voltar-link:hover {
+  color: var(--azul);
+  background: var(--suave);
 }
 .acesso-alternar p {
   margin: 0;
