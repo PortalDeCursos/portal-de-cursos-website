@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { cursos } from '../../data/cursos.js'
+import { projetos } from '../../data/projetos.js'
+import { submissoes } from '../../data/submissoes.js'
 import './submissao.css'
 
 const formularioInicial = {
@@ -19,6 +22,15 @@ const formularioInicial = {
 }
 
 const etapas = ['Identificação', 'Projeto', 'Equipe', 'Documentos']
+const TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024
+
+const orientadoresPorCurso = submissoes.reduce((resultado, submissao) => {
+  if (!resultado[submissao.curso]) resultado[submissao.curso] = []
+  if (!resultado[submissao.curso].includes(submissao.orientador)) {
+    resultado[submissao.curso].push(submissao.orientador)
+  }
+  return resultado
+}, {})
 
 const nomesTiposProjeto = {
   'Projeto Integrador': 'Projeto Integrador',
@@ -70,11 +82,31 @@ export default function PaginaSubmissao() {
   const [formulario, definirFormulario] = useState(formularioInicial)
   const [etapa, definirEtapa] = useState(0)
   const [erro, definirErro] = useState('')
+  const [erros, definirErros] = useState({})
   const [enviado, definirEnviado] = useState(false)
+  const resumoErros = useRef(null)
 
   function alterar(campo, valor) {
     definirFormulario((anterior) => ({ ...anterior, [campo]: valor }))
     definirErro('')
+    definirErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
+  }
+
+  function registrarErros(proximosErros, mensagem = 'Revise os campos destacados para continuar.') {
+    definirErros(proximosErros)
+    definirErro(mensagem)
+    window.requestAnimationFrame(() => resumoErros.current?.focus())
+  }
+
+  function erroDoCampo(campo) {
+    return erros[campo] ? `erro-${campo}` : undefined
+  }
+
+  function validarArquivo(arquivo) {
+    const arquivoPdf = arquivo?.type === 'application/pdf' || /\.pdf$/i.test(arquivo?.name || '')
+    if (!arquivoPdf) return 'Envie um arquivo PDF.'
+    if (arquivo.size > TAMANHO_MAXIMO_DOCUMENTO) return 'O PDF deve ter no máximo 10 MB.'
+    return ''
   }
 
   function validarEtapa() {
@@ -99,7 +131,23 @@ export default function PaginaSubmissao() {
         informacoesEspecificas: 'informações específicas do projeto',
         orientador: 'professor orientador',
       }
-      definirErro(`Preencha: ${camposFaltantes.map((campo) => nomesCampos[campo]).join(', ')}.`)
+      registrarErros(
+        Object.fromEntries(
+          camposFaltantes.map((campo) => [campo, `Informe ${nomesCampos[campo]}.`]),
+        ),
+      )
+      return false
+    }
+    if (
+      etapa === 1 &&
+      projetos.some(
+        (projeto) =>
+          projeto.titulo?.trim().toLowerCase() === formulario.titulo.trim().toLowerCase(),
+      )
+    ) {
+      registrarErros({
+        titulo: 'Já existe um projeto com este título. Escolha um título diferente.',
+      })
       return false
     }
     const documentosObrigatorios =
@@ -111,11 +159,21 @@ export default function PaginaSubmissao() {
       etapa === 3 &&
       documentosObrigatorios.some((documento) => !formulario.documentos[documento.id])
     ) {
-      definirErro('Anexe todos os documentos obrigatórios para o tipo de projeto escolhido.')
+      registrarErros(
+        Object.fromEntries(
+          documentosObrigatorios
+            .filter((documento) => !formulario.documentos[documento.id])
+            .map((documento) => [documento.id, `Anexe ${documento.nome}.`]),
+        ),
+        'Anexe os documentos obrigatórios para continuar.',
+      )
       return false
     }
     if (etapa === 3 && !formulario.aceitaPublicacao) {
-      definirErro('Confirme a autorização para publicação antes de continuar.')
+      registrarErros(
+        { aceitaPublicacao: 'Confirme a autorização de publicação para continuar.' },
+        'Confirme a autorização de publicação para continuar.',
+      )
       return false
     }
     return true
@@ -124,18 +182,33 @@ export default function PaginaSubmissao() {
   function avancar() {
     if (validarEtapa()) {
       definirErro('')
-      definirEtapa((anterior) => Math.min(anterior + 1, etapas.length))
+      definirErros({})
+      definirEtapa((anterior) => Math.min(anterior + 1, etapas.length - 1))
     }
   }
 
   function voltar() {
     definirErro('')
+    definirErros({})
     definirEtapa((anterior) => Math.max(anterior - 1, 0))
   }
 
   function submeter(evento) {
     evento.preventDefault()
     if (validarEtapa()) definirEnviado(true)
+  }
+
+  function alterarDocumentos(documento, arquivos) {
+    const listaArquivos = documento.multiplo ? [...arquivos] : [arquivos?.[0]].filter(Boolean)
+    const arquivoInvalido = listaArquivos.find(validarArquivo)
+    if (arquivoInvalido) {
+      registrarErros({ [documento.id]: validarArquivo(arquivoInvalido) })
+      return
+    }
+    alterar('documentos', {
+      ...formulario.documentos,
+      [documento.id]: documento.multiplo ? listaArquivos : listaArquivos[0] || null,
+    })
   }
 
   function adicionarAutor() {
@@ -208,11 +281,11 @@ export default function PaginaSubmissao() {
         <div>
           <p className="pagina-submissao__rotulo">Produção acadêmica</p>
           <h1>Compartilhe seu projeto</h1>
-          <p>Organize a submissão em etapas e envie uma produção pronta para avaliação.</p>
+          <p>Preencha quatro etapas rápidas e envie seu projeto para avaliação do orientador.</p>
         </div>
         <aside className="submissao-aviso">
-          <strong>Fluxo em 4 etapas</strong>
-          <span>Você pode revisar todas as informações antes da confirmação.</span>
+          <strong>4 etapas antes do envio</strong>
+          <span>Seus dados, projeto, equipe e documentos. Você revisa tudo antes de enviar.</span>
         </aside>
       </div>
 
@@ -244,7 +317,7 @@ export default function PaginaSubmissao() {
               <span>01</span>
               <div>
                 <h2 id="dados-identificacao">Identificação</h2>
-                <p>Informe quem está iniciando a submissão e qual formação está relacionada.</p>
+                <p>Diga quem você é e a qual curso o projeto pertence.</p>
               </div>
             </div>
             <div className="formulario-submissao__grade">
@@ -252,9 +325,17 @@ export default function PaginaSubmissao() {
                 Nome completo <span aria-hidden="true">*</span>
                 <input
                   required
+                  aria-invalid={Boolean(erros.nome)}
+                  aria-describedby={erroDoCampo('nome')}
+                  placeholder="Seu nome completo"
                   value={formulario.nome}
                   onChange={(e) => alterar('nome', e.target.value)}
                 />
+                {erros.nome && (
+                  <small id="erro-nome" className="formulario-submissao__erro-campo">
+                    {erros.nome}
+                  </small>
+                )}
               </label>
               {formulario.tipo && (
                 <label className="formulario-submissao__campo-largo">
@@ -272,18 +353,47 @@ export default function PaginaSubmissao() {
                 <input
                   required
                   type="email"
+                  aria-invalid={Boolean(erros.email)}
+                  aria-describedby={erroDoCampo('email')}
+                  placeholder="voce@email.com"
                   value={formulario.email}
                   onChange={(e) => alterar('email', e.target.value)}
                 />
+                {erros.email && (
+                  <small id="erro-email" className="formulario-submissao__erro-campo">
+                    {erros.email}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Curso <span aria-hidden="true">*</span>
-                <input
+                <select
                   required
+                  aria-invalid={Boolean(erros.curso)}
+                  aria-describedby={erroDoCampo('curso')}
                   value={formulario.curso}
-                  onChange={(e) => alterar('curso', e.target.value)}
-                />
+                  onChange={(e) => {
+                    alterar('curso', e.target.value)
+                    alterar('orientador', '')
+                  }}
+                >
+                  <option value="">Selecione o curso</option>
+                  {cursos.map((curso) => (
+                    <option key={curso.identificador} value={curso.sigla}>
+                      {curso.nome}
+                    </option>
+                  ))}
+                </select>
+                {erros.curso && (
+                  <small id="erro-curso" className="formulario-submissao__erro-campo">
+                    {erros.curso}
+                  </small>
+                )}
               </label>
+              <p className="formulario-submissao__privacidade formulario-submissao__campo-largo">
+                Usamos seu nome e e-mail somente para identificar sua submissão e permitir o contato
+                sobre a avaliação.
+              </p>
             </div>
           </section>
         )}
@@ -302,6 +412,8 @@ export default function PaginaSubmissao() {
                 Tipo de produção <span aria-hidden="true">*</span>
                 <select
                   required
+                  aria-invalid={Boolean(erros.tipo)}
+                  aria-describedby={erroDoCampo('tipo')}
                   value={formulario.tipo}
                   onChange={(e) => alterar('tipo', e.target.value)}
                 >
@@ -312,32 +424,61 @@ export default function PaginaSubmissao() {
                     </option>
                   ))}
                 </select>
+                {erros.tipo && (
+                  <small id="erro-tipo" className="formulario-submissao__erro-campo">
+                    {erros.tipo}
+                  </small>
+                )}
               </label>
               <label>
                 Título <span aria-hidden="true">*</span>
                 <input
                   required
+                  aria-invalid={Boolean(erros.titulo)}
+                  aria-describedby={erroDoCampo('titulo')}
+                  placeholder="Título do projeto"
                   value={formulario.titulo}
                   onChange={(e) => alterar('titulo', e.target.value)}
                 />
+                {erros.titulo && (
+                  <small id="erro-titulo" className="formulario-submissao__erro-campo">
+                    {erros.titulo}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Resumo <span aria-hidden="true">*</span>
                 <textarea
                   required
+                  aria-invalid={Boolean(erros.resumo)}
+                  aria-describedby={erroDoCampo('resumo')}
+                  placeholder="Apresente o problema, a proposta e o contexto do projeto."
                   rows="5"
                   value={formulario.resumo}
                   onChange={(e) => alterar('resumo', e.target.value)}
                 />
+                {erros.resumo && (
+                  <small id="erro-resumo" className="formulario-submissao__erro-campo">
+                    {erros.resumo}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Objetivos e resultados <span aria-hidden="true">*</span>
                 <textarea
                   required
+                  aria-invalid={Boolean(erros.objetivos)}
+                  aria-describedby={erroDoCampo('objetivos')}
+                  placeholder="Quais resultados o projeto pretende alcançar?"
                   rows="5"
                   value={formulario.objetivos}
                   onChange={(e) => alterar('objetivos', e.target.value)}
                 />
+                {erros.objetivos && (
+                  <small id="erro-objetivos" className="formulario-submissao__erro-campo">
+                    {erros.objetivos}
+                  </small>
+                )}
               </label>
             </div>
           </section>
@@ -355,11 +496,35 @@ export default function PaginaSubmissao() {
             <div className="formulario-submissao__grade">
               <label className="formulario-submissao__campo-largo">
                 Professor orientador <span aria-hidden="true">*</span>
-                <input
+                <select
                   required
+                  disabled={!formulario.curso}
+                  aria-invalid={Boolean(erros.orientador)}
+                  aria-describedby={erroDoCampo('orientador')}
                   value={formulario.orientador}
                   onChange={(e) => alterar('orientador', e.target.value)}
-                />
+                >
+                  <option value="">
+                    {formulario.curso
+                      ? 'Selecione o professor orientador'
+                      : 'Selecione o curso primeiro'}
+                  </option>
+                  {(orientadoresPorCurso[formulario.curso] || []).map((orientador) => (
+                    <option key={orientador} value={orientador}>
+                      {orientador}
+                    </option>
+                  ))}
+                </select>
+                {formulario.curso && !orientadoresPorCurso[formulario.curso]?.length && (
+                  <small className="formulario-submissao__erro-campo">
+                    Não há professor disponível para este curso no momento.
+                  </small>
+                )}
+                {erros.orientador && (
+                  <small id="erro-orientador" className="formulario-submissao__erro-campo">
+                    {erros.orientador}
+                  </small>
+                )}
               </label>
               <label className="formulario-submissao__campo-largo">
                 Adicionar disciplina
@@ -401,12 +566,14 @@ export default function PaginaSubmissao() {
                   <div className="autores-submissao__linha" key={indice}>
                     <input
                       placeholder="Nome do coautor"
+                      aria-label={`Nome do coautor ${indice + 1}`}
                       value={autor.nome}
                       onChange={(e) => alterarAutor(indice, 'nome', e.target.value)}
                     />
                     <input
                       placeholder="E-mail"
                       type="email"
+                      aria-label={`E-mail do coautor ${indice + 1}`}
                       value={autor.email}
                       onChange={(e) => alterarAutor(indice, 'email', e.target.value)}
                     />
@@ -449,16 +616,19 @@ export default function PaginaSubmissao() {
                       required={documento.obrigatorio}
                       type="file"
                       multiple={documento.multiplo}
-                      accept={documento.multiplo ? undefined : 'application/pdf,.pdf'}
-                      onChange={(e) =>
-                        alterar('documentos', {
-                          ...formulario.documentos,
-                          [documento.id]: documento.multiplo
-                            ? [...e.target.files]
-                            : e.target.files?.[0] || null,
-                        })
-                      }
+                      accept="application/pdf,.pdf"
+                      aria-invalid={Boolean(erros[documento.id])}
+                      aria-describedby={erroDoCampo(documento.id)}
+                      onChange={(e) => alterarDocumentos(documento, e.target.files)}
                     />
+                    {erros[documento.id] && (
+                      <small
+                        id={`erro-${documento.id}`}
+                        className="formulario-submissao__erro-campo"
+                      >
+                        {erros[documento.id]}
+                      </small>
+                    )}
                   </label>
                 )
               })}
@@ -471,6 +641,7 @@ export default function PaginaSubmissao() {
               <input
                 type="checkbox"
                 checked={formulario.aceitaPublicacao}
+                aria-describedby={erroDoCampo('aceitaPublicacao')}
                 onChange={(e) => alterar('aceitaPublicacao', e.target.checked)}
               />
               <span className="consentimento-submissao__texto">
@@ -481,11 +652,16 @@ export default function PaginaSubmissao() {
                 </span>
               </span>
             </label>
+            {erros.aceitaPublicacao && (
+              <small id="erro-aceitaPublicacao" className="formulario-submissao__erro-campo">
+                {erros.aceitaPublicacao}
+              </small>
+            )}
           </section>
         )}
 
         {erro && (
-          <p className="formulario-submissao__erro" role="alert">
+          <p className="formulario-submissao__erro" ref={resumoErros} role="alert" tabIndex="-1">
             {erro}
           </p>
         )}
@@ -498,11 +674,12 @@ export default function PaginaSubmissao() {
             )}
             {etapa < etapas.length - 1 ? (
               <button className="botao-primario" type="button" onClick={avancar}>
-                Continuar
+                Continuar para{' '}
+                {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
               </button>
             ) : (
               <button className="botao-primario" type="submit">
-                Confirmar submissão
+                Enviar projeto
               </button>
             )}
           </div>

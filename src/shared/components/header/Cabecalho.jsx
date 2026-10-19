@@ -10,6 +10,7 @@ export default function Cabecalho({
   alternarTema,
   pagina = 'inicio',
   autenticado = false,
+  tipoUsuario,
   areaProfessor = false,
   aoSair,
   usuario,
@@ -103,26 +104,48 @@ export default function Cabecalho({
                 href="#submeter"
                 aria-current={pagina === 'submeter' ? 'page' : undefined}
               >
-                Submeter projeto
+                Enviar projeto
               </a>
-              <a
-                className="navegacao__acesso"
-                href={enderecoPrivado(autenticado ? destinoArea : 'professor/login')}
-                aria-current={
-                  ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
-                }
-              >
-                Área do Professor
-              </a>
-              <a
-                className="navegacao__admin"
-                href={enderecoPrivado(autenticado ? destinoArea : 'administracao/login')}
-                aria-current={
-                  ['acesso-administracao', 'administracao'].includes(pagina) ? 'page' : undefined
-                }
-              >
-                Administração
-              </a>
+              {autenticado && tipoUsuario === 'ADMIN' && (
+                <a
+                  className="navegacao__admin"
+                  href={enderecoPrivado('administracao/painel')}
+                  aria-current={
+                    ['acesso-administracao', 'administracao'].includes(pagina) ? 'page' : undefined
+                  }
+                >
+                  Administração
+                </a>
+              )}
+              {autenticado && tipoUsuario === 'PROFESSOR' && (
+                <a
+                  className="navegacao__acesso"
+                  href={enderecoPrivado('professor/feed')}
+                  aria-current={
+                    ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
+                  }
+                >
+                  Área do Professor
+                </a>
+              )}
+              {!autenticado && (
+                <a
+                  className="navegacao__entrar-mobile"
+                  href={enderecoPrivado('login')}
+                  aria-current={
+                    ['acesso-professor', 'acesso-administracao'].includes(pagina)
+                      ? 'page'
+                      : undefined
+                  }
+                >
+                  Entrar
+                </a>
+              )}
+              {autenticado && (
+                <button className="navegacao__sair" type="button" onClick={aoSair}>
+                  Sair da conta
+                </button>
+              )}
             </>
           )}
         </nav>
@@ -151,37 +174,46 @@ export default function Cabecalho({
                 )}
               </a>
             </>
-          ) : (
+          ) : autenticado ? (
             <>
               <a
-                className="cabecalho__submissao"
-                href="#submeter"
-                aria-current={pagina === 'submeter' ? 'page' : undefined}
+                className="cabecalho__perfil"
+                href={enderecoPrivado(destinoPerfil)}
+                aria-label="Meu perfil"
+                title={tipoUsuario === 'ADMIN' ? 'Painel Administrativo' : 'Meu perfil'}
+                aria-current={pagina === 'perfil' ? 'page' : undefined}
               >
-                Submeter projeto
+                {usuario?.foto ? (
+                  <img src={usuario.foto} alt="" />
+                ) : (
+                  <span className="avatar">
+                    <Icone nome="usuario" />
+                  </span>
+                )}
               </a>
-              <a
-                className="cabecalho__admin-link"
-                href={enderecoPrivado(autenticado ? destinoArea : 'administracao/login')}
-                aria-current={pagina === 'acesso-administracao' ? 'page' : undefined}
-                title="Acesso Administrativo"
+              <button
+                className="cabecalho__sair"
+                type="button"
+                onClick={aoSair}
+                title="Sair da conta"
               >
-                Administração
-              </a>
-              <a
-                className="acesso-restrito"
-                href={enderecoPrivado(autenticado ? destinoArea : 'professor/login')}
-                aria-current={
-                  ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
-                }
-                title="Área do Professor"
-              >
-                Área do Professor{' '}
-                <span className="avatar">
-                  <Icone nome="usuario" />
-                </span>
-              </a>
+                Sair
+              </button>
             </>
+          ) : (
+            <a
+              className="acesso-restrito"
+              href={enderecoPrivado('login')}
+              aria-current={
+                ['acesso-professor', 'acesso-administracao'].includes(pagina) ? 'page' : undefined
+              }
+              title="Entrar no Portal"
+            >
+              <span>Entrar</span>
+              <span className="avatar">
+                <Icone nome="usuario" />
+              </span>
+            </a>
           )}
           <div className="seletor-tema" ref={seletorTema}>
             <button
