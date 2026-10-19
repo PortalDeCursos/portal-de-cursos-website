@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { autenticarConta } from './servicos/autenticarConta.js'
-import { enderecoPrivado } from '../../app/rotas.js'
+import { basePortal } from '../../app/rotas.js'
 import './acesso.css'
 import logoPortal from '../../assets/marca/logo-portal.png'
 
@@ -205,20 +205,10 @@ export default function PaginaAcesso({
               {enviando ? 'Verificando seus dados de acesso.' : ''}
             </span>
           </form>
-          <div className="acesso-alternar">
-            {eAdmin ? (
-              <p>
-                É professor ou orientador?{' '}
-                <a href={enderecoPrivado('professor/login')}>Ir para a Área do Professor →</a>
-              </p>
-            ) : (
-              <p>
-                Precisa gerenciar a plataforma?{' '}
-                <a href={enderecoPrivado('administracao/login')}>
-                  Ir para o Acesso Administrativo →
-                </a>
-              </p>
-            )}
+          <div className="acesso-voltar-portal">
+            <a href={basePortal} className="acesso-voltar-link">
+              ← Voltar ao Portal de Cursos
+            </a>
           </div>
           <p className="acesso-ajuda">
             {eAdmin

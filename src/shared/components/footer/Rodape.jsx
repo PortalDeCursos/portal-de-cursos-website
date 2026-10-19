@@ -20,12 +20,12 @@ export default function Rodape() {
             <a href="#inicio">Página inicial</a>
             <a href="#cursos">Catálogo de cursos</a>
             <a href="#projetos">Produções acadêmicas</a>
-            <a href="#submeter">Submeter projeto</a>
+            <a href="#submeter">Enviar projeto</a>
           </nav>
           <div>
             <h2>Acesso restrito</h2>
             <a href={enderecoPrivado('professor/login')}>Área do Professor</a>
-            <a href={enderecoPrivado('administracao/login')}>Acesso Administrativo</a>
+            <a href={enderecoPrivado('administracao/login')}>Área do Administrador</a>
             <p>Os trabalhos são publicados após a aprovação do orientador.</p>
           </div>
         </div>
