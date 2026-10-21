@@ -4,13 +4,13 @@ import ItemProjeto from '../../shared/components/project-item/ItemProjeto.jsx'
 import FiltrosProjetos from './components/FiltrosProjetos.jsx'
 import './projetos.css'
 
-export default function PaginaProjetos() {
+export default function PaginaProjetos({ itens = projetos }) {
   const [filtrosAbertos, definirFiltrosAbertos] = useState(false)
   const [ordem, definirOrdem] = useState('nome')
   const [busca, definirBusca] = useState('')
   const [tipo, definirTipo] = useState('')
   const [curso, definirCurso] = useState('')
-  const publicados = projetos.filter((item) => item.status === 'Aprovado')
+  const publicados = itens.filter((item) => item.status === 'Aprovado')
   const normalizar = (texto) =>
     texto
       .normalize('NFD')
@@ -48,7 +48,7 @@ export default function PaginaProjetos() {
         <div>
           <p className="pagina-projetos__rotulo">Produção acadêmica</p>
           <h1>Produções acadêmicas</h1>
-          <p>Explore os trabalhos avaliados e aprovados pelos professores orientadores.</p>
+          <p>Explore os trabalhos avaliados e aprovados pelos orientadores e coordenadores.</p>
         </div>
         <a className="botao-primario" href="#submeter">
           Submeter projeto

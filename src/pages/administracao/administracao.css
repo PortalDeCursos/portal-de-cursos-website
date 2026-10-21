@@ -1,27 +1,139 @@
-.administracao-atalhos {
+.administracao-visao {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.65fr) minmax(270px, 0.75fr);
+  align-items: start;
+  gap: 16px;
 }
-.administracao-atalhos > a {
-  padding: 28px;
-  border: 1px solid var(--borda);
-  border-radius: 14px;
-  background: var(--superficie);
-  transition: border-color 160ms;
+.administracao-visao > * {
+  min-width: 0;
 }
-.administracao-atalhos > a:hover {
-  border-color: var(--azul);
+.administracao-submissoes > header,
+.administracao-etapas > header {
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 72%, transparent);
 }
-.administracao-atalhos p {
-  min-height: 48px;
+.administracao-etapas dl {
+  display: grid;
+  margin: 0;
+  padding: 0 24px;
+}
+.administracao-etapas dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid color-mix(in srgb, var(--borda) 68%, transparent);
+}
+.administracao-etapas dt {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.administracao-etapas dd {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.administracao-etapas .administracao-etapas__total {
+  margin-top: 4px;
+  border-top-color: var(--borda);
+}
+.administracao-etapas__nota {
+  margin: 0;
+  padding: 12px 24px 22px;
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.administracao-secao-atalhos > header {
+  margin-bottom: 10px;
+}
+.administracao-secao-atalhos > header h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.administracao-secao-atalhos > header {
+  margin-bottom: 14px;
+}
+.administracao-secao-atalhos > header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.administracao-categorias {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 40px;
+  padding-top: 4px;
+}
+.administracao-categoria h3 {
+  margin: 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+.administracao-categoria ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.administracao-categoria li + li {
+  border-top: 1px solid color-mix(in srgb, var(--borda) 68%, transparent);
+}
+.administracao-categoria a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  padding: 10px 4px;
+  border-radius: 6px;
+  transition:
+    color 140ms,
+    background-color 140ms;
+}
+.administracao-categoria a:hover {
+  background: color-mix(in srgb, var(--azul) 4%, var(--fundo));
+}
+.administracao-categoria__texto {
+  display: grid;
+  gap: 3px;
+}
+.administracao-categoria__texto strong {
+  color: var(--titulo);
   font-size: 14px;
-  line-height: 1.7;
 }
-.administracao-atalhos > a > span {
-  color: var(--azul);
+.administracao-categoria__texto small {
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.administracao-categoria a svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  flex: 0 0 auto;
+}
+.administracao-vazio {
+  padding: 28px 24px;
+  border-top: 1px solid var(--borda);
+}
+.administracao-vazio strong {
+  color: var(--titulo);
   font-size: 14px;
-  font-weight: 600;
+}
+.administracao-vazio p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
 }
 .gestao-busca {
   display: grid;
@@ -32,39 +144,153 @@
   font-weight: 600;
 }
 .gestao-busca input,
+.gestao-busca select,
 .gestao-campos input,
 .gestao-campos select,
 .gestao-campos textarea {
   width: 100%;
   min-width: 0;
-  min-height: 46px;
-  padding: 12px;
-  border: 1px solid var(--borda);
-  border-radius: 8px;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--borda) 82%, transparent);
+  border-radius: 9px;
   background: var(--fundo);
   color: var(--titulo);
-  font-size: 16px;
+  font-size: 14px;
+  transition:
+    border-color 140ms,
+    box-shadow 140ms,
+    background-color 140ms;
+}
+.gestao-campos textarea {
+  min-height: 112px;
+  line-height: 1.6;
+}
+.gestao-campos input:hover,
+.gestao-campos select:hover,
+.gestao-campos textarea:hover,
+.gestao-busca input:hover,
+.gestao-busca select:hover {
+  border-color: color-mix(in srgb, var(--azul) 48%, var(--borda));
+}
+.gestao-campos input:disabled,
+.gestao-campos select:disabled,
+.gestao-campos textarea:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
 }
 .gestao-campos input:focus-visible,
 .gestao-campos select:focus-visible,
 .gestao-campos textarea:focus-visible,
-.gestao-busca input:focus-visible {
-  outline: 2px solid var(--azul);
-  outline-offset: 3px;
+.gestao-busca input:focus-visible,
+.gestao-busca select:focus-visible {
+  border-color: var(--azul);
+  outline: 3px solid color-mix(in srgb, var(--azul) 25%, transparent);
+  outline-offset: 1px;
+  background: var(--superficie);
+}
+.gestao-filtros {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+.gestao-filtros .gestao-busca {
+  max-width: none;
+  padding: 16px 12px 20px;
+}
+.gestao-campos select[multiple] {
+  min-height: 150px;
+  padding: 8px;
+  background: var(--superficie);
+  accent-color: var(--azul);
+  line-height: 1.55;
+}
+.gestao-campos select[multiple] option {
+  padding: 8px 10px;
+  border-radius: 5px;
+}
+.gestao-campos select[multiple] option:checked {
+  color: var(--titulo);
+  background: color-mix(in srgb, var(--azul) 16%, var(--superficie));
+}
+.gestao-campo-ajuda {
+  color: var(--texto);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .gestao-formulario,
 .gestao-confirmacao {
-  padding: 28px;
-  border: 1px solid var(--borda);
-  border-radius: 14px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid color-mix(in srgb, var(--borda) 78%, transparent);
+  border-radius: 12px;
   background: var(--superficie);
   display: grid;
   gap: 24px;
 }
+.gestao-formulario > h2 {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 22px;
+  line-height: 1.25;
+}
+.gestao-formulario__grupo {
+  display: grid;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, var(--borda) 58%, transparent);
+}
+.gestao-formulario__grupo > header h3 {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 17px;
+  font-weight: 700;
+}
+.gestao-formulario__grupo > header p {
+  margin: 5px 0 0;
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.gestao-formulario__grupo > header {
+  max-width: 72ch;
+}
 .gestao-campos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 18px 22px;
+}
+.gestao-relacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--azul);
+  background: var(--suave);
+  color: var(--titulo);
+  font-size: 14px;
+  font-weight: 600;
+}
+.gestao-relacao [aria-hidden='true'] {
+  color: var(--azul);
+  font-size: 18px;
+}
+.gestao-relacao__resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -14px;
+  padding: 0 18px 14px 21px;
+  background: var(--suave);
+}
+.gestao-relacao__resumo span {
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--superficie);
+  color: var(--titulo);
+  font-size: 12px;
+  line-height: 1.4;
 }
 .gestao-campos label {
   display: grid;
@@ -131,11 +357,36 @@
   color: var(--texto);
 }
 @media (max-width: 1100px) {
-  .administracao-atalhos {
+  .administracao-visao {
     grid-template-columns: 1fr;
   }
-  .administracao-atalhos p {
-    min-height: 0;
+  .administracao-etapas dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .administracao-etapas dl > div {
+    align-items: start;
+    flex-direction: column;
+  }
+  .administracao-etapas .administracao-etapas__total {
+    margin-top: 0;
+  }
+}
+@media (max-width: 760px) {
+  .administracao-categorias {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .administracao-etapas dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+    padding-inline: 20px;
+  }
+  .administracao-etapas .administracao-etapas__total {
+    grid-column: 1 / -1;
+  }
+  .administracao-etapas__nota {
+    padding-inline: 20px;
   }
 }
 @media (max-width: 760px) {
@@ -146,12 +397,21 @@
   .gestao-confirmacao {
     padding: 20px;
   }
+  .gestao-formulario__grupo {
+    padding-top: 18px;
+  }
+  .gestao-filtros {
+    grid-template-columns: 1fr;
+  }
   .painel-navegacao nav a {
     flex: 0 0 auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .administracao-atalhos > a {
+  .administracao-categoria a,
+  .gestao-campos input,
+  .gestao-campos select,
+  .gestao-campos textarea {
     transition: none;
   }
 }

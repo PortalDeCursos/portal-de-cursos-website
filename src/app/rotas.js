@@ -8,13 +8,25 @@ export function lerRota() {
     .slice(basePortal.length)
     .replace(/^\//, '')
     .replace(/\/$/, '')
-  if (['administracao/login', 'login/admin', 'admin/login'].includes(caminho))
-    return 'acesso-administracao'
-  if (['professor/login', 'login/professor', 'login'].includes(caminho)) return 'acesso-professor'
+  if (
+    [
+      'administracao/login',
+      'login/admin',
+      'admin/login',
+      'professor/login',
+      'login/professor',
+      'coordenacao/login',
+      'aluno/login',
+      'login',
+    ].includes(caminho)
+  )
+    return 'acesso'
   if (['professor', 'professor/feed', 'professor/painel'].includes(caminho)) return 'professor'
   if (caminho === 'professor/perfil') return caminho
   if (caminho === 'administracao' || caminho.startsWith('administracao/')) return caminho
   if (caminho.startsWith('professor/submissao/')) return caminho
+  if (caminho === 'coordenacao' || caminho.startsWith('coordenacao/')) return caminho
+  if (caminho === 'aluno/cadastro' || caminho === 'aluno/painel') return caminho
   return window.location.hash.slice(1)
 }
 export function navegar(endereco, substituir = false) {
@@ -25,11 +37,19 @@ export function retornoAutenticado(tipoUsuario) {
   const retorno = new URLSearchParams(window.location.search).get('retorno')
   const permitido =
     tipoUsuario === 'ADMIN'
-      ? /^administracao\/(painel|professores|cursos|projetos|submissoes|perfil)$/
-      : /^professor\/(feed|perfil|submissao\/[a-zA-Z0-9_-]+)$/
+      ? /^administracao\/(painel|usuarios|professores|cursos|disciplinas|projetos|submissoes|perfil)$/
+      : tipoUsuario === 'COORDENADOR'
+        ? /^coordenacao\/(painel|curso|disciplinas|professores|projetos|submissoes|perfil|submissao\/[a-zA-Z0-9_-]+)$/
+        : tipoUsuario === 'ALUNO'
+          ? /^aluno\/painel$/
+          : /^professor\/(feed|perfil|submissao\/[a-zA-Z0-9_-]+)$/
   return retorno && permitido.test(retorno)
     ? retorno
     : tipoUsuario === 'ADMIN'
       ? 'administracao/painel'
-      : 'professor/feed'
+      : tipoUsuario === 'COORDENADOR'
+        ? 'coordenacao/painel'
+        : tipoUsuario === 'ALUNO'
+          ? 'aluno/painel'
+          : 'professor/feed'
 }

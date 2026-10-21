@@ -24,8 +24,7 @@ export default function RodapeCatalogo({ pagina = 'cursos' }) {
               Projetos
             </a>
             <a href="#submeter">Enviar projeto</a>
-            <a href={enderecoPrivado('professor/login')}>Área do Professor</a>
-            <a href={enderecoPrivado('administracao/login')}>Área do Administrador</a>
+            <a href={enderecoPrivado('login')}>Entrar no portal</a>
           </nav>
         </div>
         <div className="rodape-catalogo__base">
