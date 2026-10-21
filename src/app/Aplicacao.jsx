@@ -14,6 +14,9 @@ import PaginaAcesso from '../pages/acesso/PaginaAcesso.jsx'
 import PaginaPerfil from '../pages/perfil/PaginaPerfil.jsx'
 import PaginaProfessor from '../pages/teacher/PaginaProfessor.jsx'
 import PaginaAdministracao from '../pages/administracao/PaginaAdministracao.jsx'
+import PaginaCoordenacao from '../pages/coordenacao/PaginaCoordenacao.jsx'
+import PaginaCadastroAluno from '../pages/aluno/PaginaCadastroAluno.jsx'
+import PaginaPainelAluno from '../pages/aluno/PaginaPainelAluno.jsx'
 import { cursos } from '../data/cursos.js'
 import { projetos } from '../data/projetos.js'
 import { submissoes } from '../data/submissoes.js'
@@ -21,9 +24,11 @@ import PaginaDetalhesSubmissao from '../pages/teacher/PaginaDetalhesSubmissao.js
 
 function identificarPagina(rota) {
   if (['projetos', 'biblioteca'].includes(rota)) return 'projetos'
-  if (['acesso', 'acesso-professor'].includes(rota)) return 'acesso-professor'
-  if (rota === 'acesso-administracao') return 'acesso-administracao'
+  if (['acesso', 'acesso-professor', 'acesso-administracao'].includes(rota)) return 'acesso'
+  if (rota === 'aluno/cadastro') return 'aluno-cadastro'
+  if (rota === 'aluno/painel') return 'aluno-painel'
   if (rota === 'administracao' || rota.startsWith('administracao/')) return 'administracao'
+  if (rota === 'coordenacao' || rota.startsWith('coordenacao/')) return 'coordenacao'
   if (rota === 'submeter') return 'submissao'
   if (
     rota === 'professor' ||
@@ -51,7 +56,9 @@ function lerTema() {
 export default function Aplicacao() {
   const [sessao, definirSessao] = useState(null)
   const [decisoes, definirDecisoes] = useState({})
-  const [rascunhos, definirRascunhos] = useState({ cursos, projetos })
+  const [listaSubmissoes, definirListaSubmissoes] = useState(submissoes)
+  const [listaProjetos, definirListaProjetos] = useState(projetos)
+  const [rascunhos, definirRascunhos] = useState({ cursos, projetos, disciplinas: [] })
   const [sessaoExpirada, definirSessaoExpirada] = useState(false)
   const [tema, definirTema] = useState(lerTema)
   const [rota, definirRota] = useState(lerRota)
@@ -101,11 +108,19 @@ export default function Aplicacao() {
         url.pathname === enderecoPrivado('professor/login') ||
         url.pathname === enderecoPrivado('administracao/login') ||
         url.pathname.startsWith(enderecoPrivado('professor')) ||
-        url.pathname.startsWith(enderecoPrivado('administracao'))
+        url.pathname.startsWith(enderecoPrivado('administracao')) ||
+        url.pathname.startsWith(enderecoPrivado('coordenacao')) ||
+        url.pathname.startsWith(enderecoPrivado('aluno'))
       const sairDoPainel =
-        ['acesso-professor', 'acesso-administracao', 'professor', 'administracao'].includes(
-          identificarPagina(lerRota()),
-        ) && url.pathname === basePortal
+        [
+          'acesso-professor',
+          'acesso-administracao',
+          'professor',
+          'administracao',
+          'coordenacao',
+          'aluno-cadastro',
+          'aluno-painel',
+        ].includes(identificarPagina(lerRota())) && url.pathname === basePortal
       if (privado || sairDoPainel) {
         evento.preventDefault()
         navegar(url.pathname + url.search + url.hash)
@@ -131,15 +146,13 @@ export default function Aplicacao() {
               ? 'Submeter projeto — Portal de Cursos'
               : pagina === 'administracao'
                 ? 'Administração — Portal de Cursos'
-                : pagina === 'acesso-administracao'
-                  ? 'Acesso Administrativo — Portal de Cursos'
-                  : pagina === 'acesso-professor'
-                    ? 'Acesso do Professor — Portal de Cursos'
-                    : pagina === 'professor'
-                      ? sessao
-                        ? 'Avaliações — Portal de Cursos'
-                        : 'Entrar — Portal de Cursos'
-                      : 'Portal de Cursos — Formação e produção acadêmica'
+                : pagina === 'acesso'
+                  ? 'Entrar — Portal de Cursos'
+                  : pagina === 'professor'
+                    ? sessao
+                      ? 'Avaliações — Portal de Cursos'
+                      : 'Entrar — Portal de Cursos'
+                    : 'Portal de Cursos — Formação e produção acadêmica'
   }, [pagina, sessao])
   useEffect(() => {
     if (!sessao) return
@@ -164,44 +177,68 @@ export default function Aplicacao() {
 
   function entrar(novaSessao) {
     definirDecisoes({})
-    definirRascunhos({ cursos, projetos })
+    definirListaSubmissoes(submissoes)
+    definirListaProjetos(projetos)
+    definirRascunhos({ cursos, projetos, disciplinas: [] })
     definirSessao(novaSessao)
     definirSessaoExpirada(false)
-    navegar(enderecoPrivado(retornoAutenticado(novaSessao.tipoUsuario)), true)
+    if (novaSessao.tipoUsuario === 'ALUNO') {
+      navegar(enderecoPrivado('aluno/painel'), true)
+    } else {
+      navegar(enderecoPrivado(retornoAutenticado(novaSessao.tipoUsuario)), true)
+    }
   }
   function sair() {
-    const eraAdmin = sessao?.tipoUsuario === 'ADMIN'
     definirSessao(null)
     definirDecisoes({})
-    definirRascunhos({ cursos, projetos })
+    definirRascunhos({ cursos, projetos, disciplinas: [] })
     definirSessaoExpirada(false)
-    navegar(enderecoPrivado(eraAdmin ? 'administracao/login' : 'professor/login'), true)
+    navegar(enderecoPrivado('login'), true)
   }
   useEffect(() => {
     const noSitePublico = window.location.pathname === basePortal
-    const ePaginaLogin = ['acesso-professor', 'acesso-administracao'].includes(pagina)
-    if (pagina === 'administracao' && !sessao) {
-      const retorno = rota === 'administracao' ? 'administracao/painel' : rota
-      navegar(
-        `${enderecoPrivado('administracao/login')}?retorno=${encodeURIComponent(retorno)}`,
-        true,
-      )
-    } else if (pagina === 'professor' && !sessao) {
-      const retorno =
-        rota.startsWith('professor/submissao/') ||
-        ['professor/perfil', 'professor/painel'].includes(rota)
-          ? rota
-          : 'professor/feed'
-      navegar(`${enderecoPrivado('professor/login')}?retorno=${encodeURIComponent(retorno)}`, true)
+    const ePaginaLogin = pagina === 'acesso'
+    const areaDaSessao =
+      sessao?.tipoUsuario === 'ADMIN'
+        ? 'administracao'
+        : sessao?.tipoUsuario === 'COORDENADOR'
+          ? 'coordenacao'
+          : sessao?.tipoUsuario === 'ALUNO'
+            ? 'aluno-painel'
+            : 'professor'
+    if (['administracao', 'coordenacao', 'professor', 'aluno-painel'].includes(pagina) && !sessao) {
+      const destino =
+        pagina === 'administracao'
+          ? rota === 'administracao'
+            ? 'administracao/painel'
+            : rota
+          : pagina === 'coordenacao'
+            ? rota === 'coordenacao'
+              ? 'coordenacao/painel'
+              : rota
+            : pagina === 'aluno-painel'
+              ? 'aluno/painel'
+              : rota.startsWith('professor/submissao/') ||
+                  ['professor/perfil', 'professor/painel'].includes(rota)
+                ? rota
+                : 'professor/feed'
+      const login = 'login'
+      navegar(`${enderecoPrivado(login)}?retorno=${encodeURIComponent(destino)}`, true)
     } else if (ePaginaLogin && sessao) {
       navegar(enderecoPrivado(retornoAutenticado(sessao.tipoUsuario)), true)
     } else if (
       sessao &&
-      ['professor', 'administracao'].includes(pagina) &&
-      pagina !== (sessao.tipoUsuario === 'ADMIN' ? 'administracao' : 'professor')
+      ['professor', 'administracao', 'coordenacao', 'aluno-painel'].includes(pagina) &&
+      pagina !== areaDaSessao
     ) {
       navegar(
-        enderecoPrivado(sessao.tipoUsuario === 'ADMIN' ? 'administracao/painel' : 'professor/feed'),
+        enderecoPrivado(
+          areaDaSessao === 'professor'
+            ? 'professor/feed'
+            : areaDaSessao === 'aluno-painel'
+              ? 'aluno/painel'
+              : `${areaDaSessao}/painel`,
+        ),
         true,
       )
     } else if (
@@ -211,33 +248,42 @@ export default function Aplicacao() {
     ) {
       navegar(enderecoPrivado('professor/feed'), true)
     } else if (ePaginaLogin && noSitePublico) {
-      navegar(
-        enderecoPrivado(
-          pagina === 'acesso-administracao' ? 'administracao/login' : 'professor/login',
-        ),
-        true,
-      )
+      navegar(enderecoPrivado('login'), true)
     } else if (pagina === 'professor' && noSitePublico) {
       navegar(enderecoPrivado(rota === 'professor' ? 'professor/feed' : rota), true)
     }
   }, [pagina, rota, sessao])
   const [, identificador, aba] = rotaCurso.split('/')
-  const identificadorSubmissao = rota.startsWith('professor/submissao/') ? rota.split('/')[2] : ''
+  const identificadorSubmissao =
+    rota.startsWith('professor/submissao/') || rota.startsWith('coordenacao/submissao/')
+      ? rota.split('/')[2]
+      : ''
   const secaoAtiva =
     rota === 'biblioteca' || rota.startsWith('projeto/')
       ? 'projetos'
       : rota === 'submeter'
         ? 'submeter'
-        : ['acesso-professor', 'acesso-administracao'].includes(pagina)
+        : pagina === 'acesso'
           ? pagina
           : pagina === 'detalhes-curso'
             ? 'cursos'
             : pagina
-  const ePaginaLogin = ['acesso-professor', 'acesso-administracao'].includes(pagina)
-  if (ePaginaLogin || pagina === 'professor' || pagina === 'administracao') {
-    const tipoAcesso = pagina === 'acesso-administracao' ? 'ADMIN' : 'PROFESSOR'
+  const ePaginaLogin = pagina === 'acesso'
+  if (
+    ePaginaLogin ||
+    ['professor', 'administracao', 'coordenacao', 'aluno-painel'].includes(pagina)
+  ) {
     const administrador = sessao?.tipoUsuario === 'ADMIN'
-    if (sessao && (ePaginaLogin || pagina !== (administrador ? 'administracao' : 'professor')))
+    const coordenador = sessao?.tipoUsuario === 'COORDENADOR'
+    const aluno = sessao?.tipoUsuario === 'ALUNO'
+    const areaDaSessao = administrador
+      ? 'administracao'
+      : coordenador
+        ? 'coordenacao'
+        : aluno
+          ? 'aluno-painel'
+          : 'professor'
+    if (sessao && (ePaginaLogin || pagina !== areaDaSessao))
       return (
         <main id="conteudo" className="limite pagina-painel" role="status">
           Abrindo sua área…
@@ -246,22 +292,31 @@ export default function Aplicacao() {
     return (
       <EstruturaProfessor
         administrador={administrador}
+        coordenador={coordenador}
+        aluno={aluno}
         rota={rota}
-        perfilAtivo={['professor/perfil', 'administracao/perfil'].includes(rota)}
+        perfilAtivo={['professor/perfil', 'administracao/perfil', 'coordenacao/perfil'].includes(
+          rota,
+        )}
         usuario={sessao?.usuario}
         aoSair={sair}
         tema={tema}
         alternarTema={definirTema}
-        tipoAcesso={tipoAcesso}
       >
         <a className="pular-conteudo" href="#conteudo">
           Pular para o conteúdo
         </a>
         {!sessao ? (
-          <PaginaAcesso tipoAcesso={tipoAcesso} aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
-        ) : ['professor/perfil', 'administracao/perfil'].includes(rota) ? (
+          <PaginaAcesso aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
+        ) : ['professor/perfil', 'administracao/perfil', 'coordenacao/perfil'].includes(rota) ? (
           <PaginaPerfil
-            destinoVoltar={administrador ? 'administracao/painel' : 'professor/feed'}
+            destinoVoltar={
+              areaDaSessao === 'professor'
+                ? 'professor/feed'
+                : areaDaSessao === 'aluno-painel'
+                  ? 'aluno/painel'
+                  : `${areaDaSessao}/painel`
+            }
             usuario={sessao.usuario}
             aoSalvar={(perfil) =>
               definirSessao((atual) => ({ ...atual, usuario: { ...atual.usuario, ...perfil } }))
@@ -275,25 +330,130 @@ export default function Aplicacao() {
             aoAlterar={(dominio, itens) =>
               definirRascunhos((atual) => ({ ...atual, [dominio]: itens }))
             }
-            submissoes={submissoes.map((item) => ({
+            submissoes={listaSubmissoes.map((item) => ({
               ...item,
-              status: decisoes[item.identificador] || item.status,
+              status:
+                decisoes[item.identificador]?.status || decisoes[item.identificador] || item.status,
+            }))}
+          />
+        ) : aluno && pagina === 'aluno-painel' ? (
+          <PaginaPainelAluno
+            sessao={sessao}
+            submissoes={listaSubmissoes.map((item) => ({
+              ...item,
+              status: decisoes[item.identificador]?.status || item.status,
+            }))}
+            aoSubmeter={(novaSubmissao) =>
+              definirListaSubmissoes((atuais) => [novaSubmissao, ...atuais])
+            }
+          />
+        ) : coordenador && !identificadorSubmissao ? (
+          <PaginaCoordenacao
+            secao={rota.split('/')[1] || 'painel'}
+            sessao={sessao}
+            rascunhos={rascunhos}
+            aoAlterar={(dominio, itens) =>
+              definirRascunhos((atual) => ({ ...atual, [dominio]: itens }))
+            }
+            submissoes={listaSubmissoes.map((item) => ({
+              ...item,
+              status:
+                decisoes[item.identificador]?.status || decisoes[item.identificador] || item.status,
             }))}
           />
         ) : identificadorSubmissao ? (
           <PaginaDetalhesSubmissao
             key={identificadorSubmissao}
-            identificador={identificadorSubmissao}
+            item={listaSubmissoes.find((item) => item.identificador === identificadorSubmissao)}
+            tipoUsuario={sessao.tipoUsuario}
+            usuario={sessao.usuario}
+            cursoId={sessao.usuario.cursoId}
             decisao={decisoes[identificadorSubmissao]}
-            aoDecidir={(status) =>
-              definirDecisoes((atuais) => ({ ...atuais, [identificadorSubmissao]: status }))
-            }
+            aoDecidir={(status, justificativa) => {
+              const submissao = listaSubmissoes.find(
+                (item) => item.identificador === identificadorSubmissao,
+              )
+              if (sessao.tipoUsuario === 'COORDENADOR' && status === 'Aprovado' && submissao) {
+                const curso = cursos.find((item) =>
+                  [item.identificador, item.sigla, item.nome].includes(
+                    submissao.identificadorCurso || submissao.curso,
+                  ),
+                )
+                const projetoPublicado = {
+                  identificador: submissao.identificador,
+                  identificadorCurso: submissao.identificadorCurso || curso?.identificador,
+                  nome: submissao.titulo,
+                  tipo: submissao.tipo,
+                  curso: submissao.curso,
+                  cursoCompleto: submissao.cursoCompleto,
+                  descricao: submissao.objetivo || submissao.resumo,
+                  autores: submissao.autores
+                    .map((autor) => (typeof autor === 'string' ? autor : autor.nome))
+                    .join(' e '),
+                  orientador: submissao.orientador,
+                  status: 'Aprovado',
+                }
+                definirListaProjetos((atuais) => [
+                  ...atuais.filter((item) => item.identificador !== submissao.identificador),
+                  projetoPublicado,
+                ])
+              }
+              definirDecisoes((atuais) => ({
+                ...atuais,
+                [identificadorSubmissao]: {
+                  status,
+                  justificativa,
+                  papel: sessao.tipoUsuario,
+                  usuarioId: sessao.usuario.id,
+                  cursoId: submissao?.identificadorCurso || submissao?.cursoId || submissao?.curso,
+                  registradoEm: new Date().toISOString(),
+                },
+              }))
+            }}
+            aoEditar={(alteracoes) => {
+              definirListaSubmissoes((itens) =>
+                itens.map((item) =>
+                  item.identificador === identificadorSubmissao ? { ...item, ...alteracoes } : item,
+                ),
+              )
+              definirListaProjetos((itens) =>
+                itens.map((projeto) =>
+                  projeto.identificador === identificadorSubmissao
+                    ? {
+                        ...projeto,
+                        nome: alteracoes.titulo,
+                        descricao: alteracoes.objetivo,
+                        tipo: alteracoes.tipo,
+                        autores: (alteracoes.autores || [])
+                          .map((autor) => (typeof autor === 'string' ? autor : autor.nome))
+                          .join(' e '),
+                        orientador: alteracoes.orientador,
+                      }
+                    : projeto,
+                ),
+              )
+            }}
+            aoRemover={() => {
+              definirListaSubmissoes((itens) =>
+                itens.filter((item) => item.identificador !== identificadorSubmissao),
+              )
+              definirDecisoes((atuais) => {
+                const proxima = { ...atuais }
+                delete proxima[identificadorSubmissao]
+                return proxima
+              })
+              definirListaProjetos((itens) =>
+                itens.filter((projeto) => projeto.identificador !== identificadorSubmissao),
+              )
+            }}
           />
         ) : (
           <PaginaProfessor
-            submissoes={submissoes.map((item) => ({
+            usuario={sessao.usuario}
+            submissoes={listaSubmissoes.map((item) => ({
               ...item,
-              status: decisoes[item.identificador] || item.status,
+              status:
+                decisoes[item.identificador]?.status || decisoes[item.identificador] || item.status,
             }))}
           />
         )}
@@ -306,9 +466,19 @@ export default function Aplicacao() {
         Pular para o conteúdo
       </a>
       <Cabecalho
-        destinoArea={sessao?.tipoUsuario === 'ADMIN' ? 'administracao/painel' : 'professor/feed'}
+        destinoArea={
+          sessao?.tipoUsuario === 'ADMIN'
+            ? 'administracao/painel'
+            : sessao?.tipoUsuario === 'COORDENADOR'
+              ? 'coordenacao/painel'
+              : 'professor/feed'
+        }
         destinoPerfil={
-          sessao?.tipoUsuario === 'ADMIN' ? 'administracao/perfil' : 'professor/perfil'
+          sessao?.tipoUsuario === 'ADMIN'
+            ? 'administracao/perfil'
+            : sessao?.tipoUsuario === 'COORDENADOR'
+              ? 'coordenacao/perfil'
+              : 'professor/perfil'
         }
         tipoUsuario={sessao?.tipoUsuario}
         usuario={sessao?.usuario}
@@ -319,11 +489,24 @@ export default function Aplicacao() {
         alternarTema={(proximoTema) => definirTema(proximoTema)}
       />
       {pagina === 'cursos' && <PaginaCursos />}
-      {pagina === 'projetos' && <PaginaProjetos />}
+      {pagina === 'projetos' && <PaginaProjetos itens={listaProjetos} />}
       {pagina === 'detalhes-curso' && (
-        <PaginaDetalhesCurso key={identificador} identificador={identificador} aba={aba} />
+        <PaginaDetalhesCurso
+          key={identificador}
+          identificador={identificador}
+          aba={aba}
+          projetosPublicados={listaProjetos}
+        />
       )}
-      {pagina === 'submissao' && <PaginaSubmissao />}
+      {pagina === 'submissao' && (
+        <PaginaSubmissao
+          sessao={sessao}
+          aoSubmeter={(novaSubmissao) =>
+            definirListaSubmissoes((atuais) => [novaSubmissao, ...atuais])
+          }
+        />
+      )}
+      {pagina === 'aluno-cadastro' && <PaginaCadastroAluno />}
       {pagina === 'inicio' && <PaginaInicial />}
       {pagina === 'inicio' ? <Rodape /> : <RodapeCatalogo pagina={pagina} />}
       <JanelaContexto

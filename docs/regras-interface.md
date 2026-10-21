@@ -10,13 +10,23 @@ Na área do professor: sem link central de Submissões. Ver portal e Sair da con
 
 A tela de login conserva o layout anterior dividido: identidade azul e logo à esquerda, formulário à direita. O título é Acesso institucional, atendendo professor e administrador pelo mesmo POST /auth/login. A barra utilitária permanece compacta. Não substituir novamente pelo card central do kit.
 
+## Hierarquia e fluxo de submissões
+
+- ADMIN gere o portal e os coordenadores, administra as contas e os conteúdos de qualquer curso e consulta todas as submissões sem avaliá-las.
+- COORDENADOR é um professor designado para um curso. A área de coordenação filtra cursos, disciplinas, professores, projetos e submissões pelo `cursoId` associado à conta. Pode submeter projetos e aceitar, recusar, editar ou remover as submissões do curso.
+- PROFESSOR vê as submissões em que aparece como orientador, faz a avaliação inicial das submissões de alunos e também pode submeter projetos diretamente à etapa do coordenador.
+- A submissão de aluno aguarda o orientador. Quando aceita, segue para avaliação do coordenador. A aprovação do coordenador publica o projeto; a recusa exige justificativa.
+- Aluno autenticado acompanha somente submissões em que consta como autor ou integrante, não edita submissões e não avalia projetos. Cadastro e autenticação próprios dependem do serviço de contas de aluno.
+- O administrador designa coordenadores ao cadastrar cursos escolhendo um professor. A associação do curso e a gestão de contas dependem de endpoints administrativos ainda ausentes no contrato frontend.
+- A notificação por e-mail à coordenação após o aceite do orientador depende de integração de notificações; a interface não simula envio de e-mail.
+
 ## Painel acadêmico
 
-O professor usa o feed anterior em cards, com filtros à esquerda, e gerencia apenas seu próprio perfil e as submissões. Não apresentar dashboard ou navegação de gestão ao professor. A sidebar pertence exclusivamente à administração, com Visão geral, Professores, Cursos, Projetos, Submissões e Meu perfil. No celular, ela passa para uma faixa horizontal abaixo do header. Reutilizar os tokens, a fonte Manrope, o logo e os temas claro e AMOLED do portal. React e CSS permanecem separados.
+O professor usa o feed anterior em cards, com filtros à esquerda, e gerencia apenas seu próprio perfil e as submissões que orienta. A coordenação tem uma sidebar própria para o curso designado; a sidebar administrativa fica reservada ao ADMIN. No celular, as sidebars passam para uma faixa horizontal abaixo do header. Reutilizar os tokens, a fonte Manrope, o logo e os temas claro e AMOLED do portal. React e CSS permanecem separados.
 
-Após autenticação e consulta do papel no servidor, ADMIN entra em /administracao/painel e PROFESSOR entra em /professor/feed. /professor/painel redireciona ao feed. O retorno após login deve pertencer à área correta. Não permitir trocar de papel escolhendo uma opção ou digitando outra rota. O header aponta para a área e perfil correspondentes à conta.
+Após autenticação e consulta do papel no servidor, ADMIN entra em /administracao/painel, COORDENADOR em /coordenacao/painel e PROFESSOR em /professor/feed. /professor/painel redireciona ao feed. O retorno após login deve pertencer à área correta. Não permitir trocar de papel escolhendo uma opção ou digitando outra rota. O header aponta para a área e perfil correspondentes à conta.
 
-As decisões de orientação pertencem ao professor; o administrador acompanha as submissões em consulta, sem assumir o papel do orientador. Cursos e projetos ainda são rascunhos em memória, com essa condição explícita antes da edição. Cadastro/exclusão de professores usa os endpoints existentes; não oferecer edição por ADMIN enquanto o backend restringir PUT /professores/:id a PROFESSOR. Não apresentar gráficos temporais, tendências ou percentuais de crescimento sem dados de origem. Não adicionar páginas de vendas, produtos, estoque, preços, faturas ou mensagens do kit.
+As decisões são separadas por etapa: o professor orientador faz a avaliação inicial e o coordenador decide a publicação. O administrador consulta submissões, sem avaliá-las. Cursos, disciplinas, projetos e decisões desta interface são rascunhos em memória até a integração com os serviços correspondentes. Não apresentar gráficos temporais, tendências ou percentuais de crescimento sem dados de origem. Não adicionar páginas de vendas, produtos, estoque, preços, faturas ou mensagens do kit.
 
 ## Limite de implementação
 

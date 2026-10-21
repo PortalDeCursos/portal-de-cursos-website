@@ -24,8 +24,7 @@ export default function Rodape() {
           </nav>
           <div>
             <h2>Acesso restrito</h2>
-            <a href={enderecoPrivado('professor/login')}>Área do Professor</a>
-            <a href={enderecoPrivado('administracao/login')}>Área do Administrador</a>
+            <a href={enderecoPrivado('login')}>Entrar no portal</a>
             <p>Os trabalhos são publicados após a aprovação do orientador.</p>
           </div>
         </div>

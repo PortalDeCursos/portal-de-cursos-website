@@ -51,6 +51,33 @@
 .acesso-painel--professor {
   --acesso-azul: #003da8;
 }
+.acesso-painel--unificado {
+  max-width: 1060px;
+}
+.acesso-painel--cadastro .acesso-formulario {
+  padding-block: 40px;
+}
+.acesso-painel--unificado .acesso-identidade {
+  background:
+    radial-gradient(ellipse at 18% 86%, rgb(0 215 191 / 24%), transparent 43%),
+    linear-gradient(155deg, #123f7a 0%, #071d42 100%);
+}
+.acesso-aluno-alternativa {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px;
+  color: var(--texto-secundario);
+  font-size: 14px;
+}
+.acesso-aluno-alternativa a {
+  color: var(--azul);
+  font-weight: 650;
+}
+.acesso-aluno-alternativa a:hover {
+  text-decoration: underline;
+}
 :root[data-tema='escuro'] .acesso-painel {
   border: 1px solid var(--borda);
 }
@@ -272,6 +299,14 @@
   line-height: 1.6;
   text-wrap: balance;
   color: var(--texto-mutado, #6b7280);
+}
+.acesso-formulario .acesso-ajuda a {
+  color: var(--azul);
+  font-weight: 650;
+  text-decoration: none;
+}
+.acesso-formulario .acesso-ajuda a:hover {
+  text-decoration: underline;
 }
 .area-professor--entrada .acesso-rodape {
   padding: 20px 24px;

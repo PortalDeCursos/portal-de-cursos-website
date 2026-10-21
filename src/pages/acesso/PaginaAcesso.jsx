@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { autenticarConta } from './servicos/autenticarConta.js'
-import { basePortal } from '../../app/rotas.js'
+import { basePortal, enderecoPrivado } from '../../app/rotas.js'
 import './acesso.css'
 import logoPortal from '../../assets/marca/logo-portal.png'
 
-export default function PaginaAcesso({
-  aoEntrar,
-  sessaoExpirada = false,
-  tipoAcesso = 'PROFESSOR',
-}) {
-  const eAdmin = tipoAcesso === 'ADMIN'
+export default function PaginaAcesso({ aoEntrar, sessaoExpirada = false }) {
   const [identificacao, definirIdentificacao] = useState('')
   const [senha, definirSenha] = useState('')
   const [mostrarSenha, definirMostrarSenha] = useState(false)
@@ -46,14 +41,6 @@ export default function PaginaAcesso({
     try {
       const sessao = await autenticarConta(identificacao.trim(), senha, controle.signal)
       if (!controle.signal.aborted) {
-        if (eAdmin && sessao.tipoUsuario !== 'ADMIN') {
-          definirErro(
-            'Esta conta possui perfil de Professor e não tem acesso administrativo. Utilize a Área do Professor.',
-          )
-          definirSenha('')
-          window.requestAnimationFrame(() => aviso.current?.focus())
-          return
-        }
         definirSenha('')
         aoEntrar(sessao)
       }
@@ -76,55 +63,28 @@ export default function PaginaAcesso({
 
   return (
     <main id="conteudo" className="limite pagina-acesso">
-      <div
-        className={`acesso-painel ${eAdmin ? 'acesso-painel--admin' : 'acesso-painel--professor'}`}
-      >
-        <aside
-          className="acesso-identidade"
-          aria-label={eAdmin ? 'Administração do Portal' : 'Área do Professor'}
-        >
+      <div className="acesso-painel acesso-painel--unificado">
+        <aside className="acesso-identidade" aria-label="Acesso ao Portal de Cursos">
           <div className="acesso-marca">
             <span className="acesso-marca__simbolo">
               <img src={logoPortal} alt="" width="48" height="48" />
             </span>
-            <span>{eAdmin ? 'Portal · Gestão' : 'Portal de Cursos'}</span>
+            <span>Portal de Cursos</span>
           </div>
           <div className="acesso-identidade__mensagem">
-            {eAdmin ? (
-              <>
-                <p>
-                  Painel da <br />
-                  Administração.
-                </p>
-                <span>Gestão institucional de cursos, docentes, projetos e configurações.</span>
-              </>
-            ) : (
-              <>
-                <p>
-                  Área do <br />
-                  Professor.
-                </p>
-                <span>
-                  Um espaço dedicado para orientar ideias, avaliar submissões e acompanhar projetos.
-                </span>
-              </>
-            )}
+            <p>
+              Ideias que <br />
+              viram projetos.
+            </p>
+            <span>Acompanhe a produção acadêmica dos cursos e contribua com novas ideias.</span>
           </div>
-          <span className="acesso-identidade__assinatura">
-            {eAdmin ? 'Gestão · Governança · Coordenação' : 'Ensino · Projetos · Conhecimento'}
-          </span>
+          <span className="acesso-identidade__assinatura">Ensino · Projetos · Conhecimento</span>
         </aside>
         <section className="acesso-formulario" aria-labelledby="titulo-entrar">
           <div className="acesso-cabecalho-form">
-            <span className="acesso-distintivo">
-              {eAdmin ? 'Acesso Administrativo' : 'Área Docente'}
-            </span>
-            <h1 id="titulo-entrar">{eAdmin ? 'Acesso Administrativo' : 'Área do Professor'}</h1>
-            <p>
-              {eAdmin
-                ? 'Entre com suas credenciais de gestão institucional.'
-                : 'Entre com seu e-mail institucional de professor.'}
-            </p>
+            <span className="acesso-distintivo">Portal de Cursos</span>
+            <h1 id="titulo-entrar">Boas-vindas</h1>
+            <p>Entre para acompanhar e compartilhar projetos acadêmicos.</p>
           </div>
           {sessaoExpirada && (
             <p className="acesso-aviso" role="status">
@@ -195,25 +155,23 @@ export default function PaginaAcesso({
               </p>
             )}
             <button className="botao-primario acesso-entrar" type="submit" disabled={enviando}>
-              {enviando
-                ? 'Entrando…'
-                : eAdmin
-                  ? 'Entrar na Administração'
-                  : 'Entrar como Professor'}
+              {enviando ? 'Entrando…' : 'Entrar'}
             </button>
             <span className="somente-leitores" role="status">
               {enviando ? 'Verificando seus dados de acesso.' : ''}
             </span>
           </form>
+          <div className="acesso-aluno-alternativa">
+            <span>Primeiro acesso?</span>
+            <a href={enderecoPrivado('aluno/cadastro')}>Crie sua conta de aluno</a>
+          </div>
           <div className="acesso-voltar-portal">
             <a href={basePortal} className="acesso-voltar-link">
               ← Voltar ao Portal de Cursos
             </a>
           </div>
           <p className="acesso-ajuda">
-            {eAdmin
-              ? 'Dúvidas sobre privilégios de acesso? Consulte a equipe técnica.'
-              : 'Precisa de ajuda? Procure a coordenação ou a administração do portal.'}
+            Professores, coordenadores e administradores acessam com suas contas institucionais.
           </p>
         </section>
       </div>

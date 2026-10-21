@@ -1,4 +1,4 @@
-export default function TabelaSubmissoes({ itens }) {
+export default function TabelaSubmissoes({ itens, baseDetalhes }) {
   return (
     <div className="tabela-submissoes" role="region" aria-label="Lista de submissões" tabIndex={0}>
       <table>
@@ -15,7 +15,13 @@ export default function TabelaSubmissoes({ itens }) {
           {itens.map((item) => (
             <tr key={item.identificador}>
               <th scope="row">
-                {item.titulo}
+                {baseDetalhes ? (
+                  <a href={`${baseDetalhes}/${encodeURIComponent(item.identificador)}`}>
+                    {item.titulo}
+                  </a>
+                ) : (
+                  item.titulo
+                )}
                 <span>
                   {item.autor} · {item.tipo}
                 </span>
