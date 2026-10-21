@@ -70,7 +70,7 @@ export default function Cabecalho({
         <nav
           id="navegacao-principal"
           className={`navegacao ${menuAberto ? 'navegacao--aberta' : ''}`}
-          aria-label={areaProfessor ? 'Navegação da área do professor' : 'Navegação principal'}
+          aria-label={areaProfessor ? 'Navegação da área autenticada' : 'Navegação principal'}
           onClick={() => definirMenuAberto(false)}
         >
           {areaProfessor ? (
@@ -111,7 +111,9 @@ export default function Cabecalho({
                   className="navegacao__admin"
                   href={enderecoPrivado('administracao/painel')}
                   aria-current={
-                    ['acesso-administracao', 'administracao'].includes(pagina) ? 'page' : undefined
+                    ['acesso', 'acesso-administracao', 'administracao'].includes(pagina)
+                      ? 'page'
+                      : undefined
                   }
                 >
                   Administração
@@ -122,10 +124,30 @@ export default function Cabecalho({
                   className="navegacao__acesso"
                   href={enderecoPrivado('professor/feed')}
                   aria-current={
-                    ['acesso-professor', 'professor'].includes(pagina) ? 'page' : undefined
+                    ['acesso', 'acesso-professor', 'professor'].includes(pagina)
+                      ? 'page'
+                      : undefined
                   }
                 >
                   Área do Professor
+                </a>
+              )}
+              {autenticado && tipoUsuario === 'COORDENADOR' && (
+                <a
+                  className="navegacao__acesso"
+                  href={enderecoPrivado('coordenacao/painel')}
+                  aria-current={pagina === 'coordenacao' ? 'page' : undefined}
+                >
+                  Coordenação do curso
+                </a>
+              )}
+              {autenticado && tipoUsuario === 'ALUNO' && (
+                <a
+                  className="navegacao__acesso"
+                  href={enderecoPrivado('aluno/painel')}
+                  aria-current={pagina === 'aluno-painel' ? 'page' : undefined}
+                >
+                  Meus projetos
                 </a>
               )}
               {!autenticado && (
@@ -133,7 +155,7 @@ export default function Cabecalho({
                   className="navegacao__entrar-mobile"
                   href={enderecoPrivado('login')}
                   aria-current={
-                    ['acesso-professor', 'acesso-administracao'].includes(pagina)
+                    ['acesso', 'acesso-professor', 'acesso-administracao'].includes(pagina)
                       ? 'page'
                       : undefined
                   }
@@ -205,7 +227,9 @@ export default function Cabecalho({
               className="acesso-restrito"
               href={enderecoPrivado('login')}
               aria-current={
-                ['acesso-professor', 'acesso-administracao'].includes(pagina) ? 'page' : undefined
+                ['acesso', 'acesso-professor', 'acesso-administracao'].includes(pagina)
+                  ? 'page'
+                  : undefined
               }
               title="Entrar no Portal"
             >

@@ -7,7 +7,7 @@ import {
 import FormularioProfessor from './FormularioProfessor.jsx'
 import ConfirmacaoGestao from './ConfirmacaoGestao.jsx'
 
-export default function GestaoProfessores({ token }) {
+export default function GestaoProfessores({ token, cursoId }) {
   const [consulta, definirConsulta] = useState({ estado: 'carregando', dados: [], erro: '' })
   const [tentativa, definirTentativa] = useState(0)
   const [busca, definirBusca] = useState('')
@@ -63,17 +63,30 @@ export default function GestaoProfessores({ token }) {
       definirOcupado(false)
     }
   }
-  const itens = consulta.dados.filter((item) =>
-    `${item.nome} ${item.email}`
-      .toLocaleLowerCase('pt-BR')
-      .includes(busca.trim().toLocaleLowerCase('pt-BR')),
-  )
+  const itens = consulta.dados
+    .filter((item) => !cursoId || String(item.cursoId) === String(cursoId))
+    .filter((item) =>
+      `${item.nome} ${item.email}`
+        .toLocaleLowerCase('pt-BR')
+        .includes(busca.trim().toLocaleLowerCase('pt-BR')),
+    )
+  const cursosVinculados = [
+    ...new Map(
+      consulta.dados
+        .filter((item) => item.cursoId)
+        .map((item) => [String(item.cursoId), { id: item.cursoId }]),
+    ).values(),
+  ]
   return (
     <>
       <header className="painel-titulo">
         <div>
           <h1>Professores</h1>
-          <p>Cadastre docentes e acompanhe os vínculos acadêmicos.</p>
+          <p>
+            {cursoId
+              ? 'Cadastre e gerencie os professores vinculados ao seu curso.'
+              : 'Cadastre docentes e acompanhe os vínculos acadêmicos.'}
+          </p>
         </div>
         <button
           className="botao-primario"
@@ -101,6 +114,8 @@ export default function GestaoProfessores({ token }) {
           }}
           ocupado={ocupado}
           erro={erro}
+          cursoIdInicial={cursoId || ''}
+          cursosVinculados={cursosVinculados}
         />
       )}
       {exclusao && (
@@ -204,8 +219,9 @@ export default function GestaoProfessores({ token }) {
         </section>
       )}
       <p className="gestao-nota">
-        A edição de dados de professor por administrador depende de liberação no contrato atual da
-        API. O professor continua editando somente o próprio perfil.
+        {cursoId
+          ? 'A lista e os cadastros estão limitados ao curso vinculado à coordenação.'
+          : 'A edição de dados de professor por administrador depende de liberação no contrato atual da API.'}
       </p>
     </>
   )

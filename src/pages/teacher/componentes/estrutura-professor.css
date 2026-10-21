@@ -1,6 +1,6 @@
 .painel-estrutura {
   display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: calc(100dvh - 64px);
 }
 .painel-estrutura__conteudo {
@@ -10,59 +10,114 @@
   position: sticky;
   top: 64px;
   height: calc(100dvh - 64px);
-  padding: 32px 16px;
+  min-height: 620px;
+  padding: 34px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
   background: var(--superficie);
   border-right: 1px solid var(--borda);
 }
 .painel-navegacao__titulo {
-  color: var(--texto);
-  font-size: 13px;
-  padding-inline: 14px;
+  color: var(--titulo);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 0 12px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 55%, transparent);
 }
 .painel-navegacao nav {
   display: grid;
-  gap: 8px;
+  align-content: start;
+  gap: 18px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--borda) 65%, transparent) transparent;
+  padding: 0 2px 8px;
+}
+.painel-navegacao__grupo {
+  display: grid;
+  gap: 5px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 48%, transparent);
+}
+.painel-navegacao__grupo:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.painel-navegacao__grupo h2 {
+  margin: 0 10px 4px;
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 .painel-navegacao nav a {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
-  border-radius: 8px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border-radius: 9px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--texto);
+  color: var(--titulo);
+  text-decoration: none;
   transition:
     background 160ms,
     color 160ms;
 }
+.painel-navegacao__texto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.painel-navegacao__texto strong {
+  color: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.painel-navegacao__texto small {
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: 0.92;
+}
 .painel-navegacao .icone {
+  flex: 0 0 20px;
   width: 20px;
   height: 20px;
-  filter: brightness(0) saturate(100%) invert(25%);
+  filter: brightness(0) saturate(100%) invert(12%);
 }
 :root[data-tema='escuro'] .painel-navegacao .icone {
-  filter: brightness(0) invert(0.75);
+  filter: brightness(0) invert(0.92);
 }
 .painel-navegacao nav a:hover {
   background: var(--suave);
   color: var(--azul);
 }
+.painel-navegacao nav a:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
 .painel-navegacao nav a[aria-current] {
   background: #003da8;
   color: #fff;
+}
+.painel-navegacao nav a[aria-current] small {
+  color: #fff;
+  opacity: 0.78;
 }
 .painel-navegacao nav a[aria-current] .icone {
   filter: brightness(0) invert(1);
 }
 .painel-navegacao__nota {
-  margin: auto 14px 0;
+  margin: auto 10px 0;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--borda) 48%, transparent);
   color: var(--texto);
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.5;
 }
 .area-professor {
   min-height: 100dvh;
@@ -125,10 +180,10 @@
 }
 @media (max-width: 1000px) {
   .painel-estrutura {
-    grid-template-columns: 190px minmax(0, 1fr);
+    grid-template-columns: 248px minmax(0, 1fr);
   }
   .painel-navegacao {
-    padding-inline: 10px;
+    padding-inline: 14px;
   }
 }
 @media (max-width: 760px) {
@@ -148,15 +203,28 @@
   }
   .painel-navegacao nav {
     display: flex;
-    gap: 6px;
+    align-items: stretch;
+    gap: 14px;
     overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+  }
+  .painel-navegacao__grupo {
+    display: contents;
+  }
+  .painel-navegacao__grupo h2 {
+    display: none;
   }
   .painel-navegacao nav a {
-    flex: 1;
+    flex: 0 0 auto;
     justify-content: center;
     white-space: nowrap;
-    padding: 12px 10px;
-    font-size: 13px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .painel-navegacao__texto small {
+    display: none;
   }
   .painel-navegacao .icone {
     display: none;

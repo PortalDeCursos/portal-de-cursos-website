@@ -3,6 +3,7 @@ import logo from '../../../assets/marca/logo-portal.png'
 import './estrutura-professor.css'
 import Cabecalho from '../../../shared/components/header/Cabecalho.jsx'
 import NavegacaoAdministracao from '../../administracao/componentes/NavegacaoAdministracao.jsx'
+import NavegacaoCoordenacao from '../../coordenacao/componentes/NavegacaoCoordenacao.jsx'
 
 export default function EstruturaProfessor({
   usuario,
@@ -13,9 +14,31 @@ export default function EstruturaProfessor({
   perfilAtivo = false,
   rota = 'professor',
   administrador = false,
-  tipoAcesso = 'PROFESSOR',
+  coordenador = false,
+  aluno = false,
 }) {
-  const rotuloAcesso = tipoAcesso === 'ADMIN' ? 'Acesso Administrativo' : 'Área do Professor'
+  const rotuloAcesso =
+    usuario?.tipoUsuario === 'ADMIN'
+      ? 'Acesso Administrativo'
+      : usuario?.tipoUsuario === 'COORDENADOR'
+        ? 'Acesso da Coordenação'
+        : aluno
+          ? 'Área do Aluno'
+          : 'Acesso unificado'
+  const destinoArea = administrador
+    ? 'administracao/painel'
+    : coordenador
+      ? 'coordenacao/painel'
+      : aluno
+        ? 'aluno/painel'
+        : 'professor/feed'
+  const destinoPerfil = administrador
+    ? 'administracao/perfil'
+    : coordenador
+      ? 'coordenacao/perfil'
+      : aluno
+        ? 'aluno/painel'
+        : 'professor/perfil'
   return (
     <div
       className={`area-professor ${usuario ? 'area-professor--conectada' : 'area-professor--entrada'}`}
@@ -29,8 +52,8 @@ export default function EstruturaProfessor({
           tema={tema}
           alternarTema={alternarTema}
           aoSair={aoSair}
-          destinoArea={administrador ? 'administracao/painel' : 'professor/feed'}
-          destinoPerfil={administrador ? 'administracao/perfil' : 'professor/perfil'}
+          destinoArea={destinoArea}
+          destinoPerfil={destinoPerfil}
         />
       ) : (
         <header className="barra-professor">
@@ -43,12 +66,7 @@ export default function EstruturaProfessor({
               Portal de Cursos<strong>{rotuloAcesso}</strong>
             </span>
           </a>
-          <nav className="barra-professor__acoes" aria-label="Navegação da área do professor">
-            {usuario && (
-              <a href={enderecoPrivado('professor/feed')} aria-current="page">
-                Submissões
-              </a>
-            )}
+          <nav className="barra-professor__acoes" aria-label="Navegação do portal">
             <a href={`${basePortal}#inicio`}>
               Ver portal <span aria-hidden="true">↗</span>
             </a>
@@ -67,9 +85,13 @@ export default function EstruturaProfessor({
           </nav>
         </header>
       )}
-      {usuario && administrador ? (
+      {usuario && (administrador || coordenador) ? (
         <div className="painel-estrutura">
-          <NavegacaoAdministracao rota={rota} />
+          {administrador ? (
+            <NavegacaoAdministracao rota={rota} />
+          ) : (
+            <NavegacaoCoordenacao rota={rota} />
+          )}
           <div className="painel-estrutura__conteudo">{children}</div>
         </div>
       ) : (

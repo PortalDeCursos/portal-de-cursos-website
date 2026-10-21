@@ -1,12 +1,12 @@
 # Autenticação e identificação de área — TADS-184 / TADS-197
 
-Por orientação do usuário, o backend usuarioService não deve ser alterado. O login é o mesmo para administrador e professor: POST /auth/login com email e senha. O formulário /login mantém o layout anterior dividido e o título Acesso institucional.
+Por orientação do usuário, o backend usuarioService não deve ser alterado. A entrada é unificada em `/login` para aluno, professor, coordenador e administrador: todos usam o mesmo formulário e a área é determinada pelo papel associado à conta após a autenticação. Os caminhos antigos de entrada são aliases para essa tela. O formulário preserva o design global dividido do portal.
 
 ## Contratos existentes utilizados
 
 - POST /auth/login: recebe `{ "email": "email-cadastrado", "senha": "senha-digitada" }`, retorna `{ "token": "JWT", "expiracao": 3600000 }`, duração em milissegundos.
 - GET /usuarios: exige ADMIN no backend. A resposta permite localizar a própria conta com tipoUsuario ADMIN.
-- GET /professores/buscar: permite localizar o perfil de professor da própria conta com tipoUsuario PROFESSOR.
+- GET /professores/buscar: permite localizar o perfil da própria conta, incluindo `tipoUsuario` e `cursoId`. `PROFESSOR` identifica o orientador; `COORDENADOR` identifica o professor designado a um curso.
 - Nenhuma chamada a /auth/me, endpoint que não existe no contrato atual.
 
 O cliente src/pages/acesso/servicos/autenticarConta.js delega a identificação a identificarConta.js. As consultas de identidade usam Bearer e mantêm apenas campos necessários, descartando senha e outros campos da resposta. Falhas, papel desconhecido ou conta não localizada impedem a criação da sessão. Não há fallback de administrador nem escolha de papel pelo usuário. Nenhuma permissão é deduzida pelo formato do e-mail ou pelo conteúdo do JWT.
@@ -16,7 +16,9 @@ A sessão fica apenas em memória. Recarregar exige login; logout e expiração 
 ## Destino após entrar
 
 - ADMIN: /administracao/painel.
+- COORDENADOR: /coordenacao/painel, com escopo limitado ao `cursoId` do perfil.
 - PROFESSOR: /professor/feed.
+- ALUNO: /aluno/painel.
 - O retorno solicitado precisa pertencer à área do papel autenticado. Professor não abre administração por URL; administrador não entra no feed de orientação do professor.
 - A separação visual não substitui a autorização dos serviços.
 
@@ -28,6 +30,6 @@ O proxy não funciona no GitHub Pages: produção precisa de serviço HTTPS com 
 
 ## Limites
 
-O professor altera o próprio perfil somente no estado da sessão; foto/upload e gravação de perfil não estão integrados. Submissões são demonstrativas e aguardam consulta por orientador e persistência de decisões. Professores são consultados, cadastrados e excluídos pela administração através dos endpoints existentes. Edição por ADMIN não é oferecida porque PUT /professores/:id exige PROFESSOR atualmente.
+O aluno ainda não pode autenticar por este fluxo: o backend atual não fornece endpoint de autenticação/identificação de aluno e a tela de cadastro não cria contas nem sessões. A interface direciona uma conta autenticada com papel `ALUNO` para `/aluno/painel`, assim que o contrato de backend passar a suportá-la. O professor altera o próprio perfil somente no estado da sessão; foto/upload e gravação de perfil não estão integrados. O fluxo de submissões, estados e decisões é mantido em memória até a integração de endpoints de submissão; a notificação de e-mail à coordenação também depende de um serviço de notificações. Os endpoints de gestão de contas, cursos e disciplinas não estão presentes no contrato frontend atual. Professores são consultados, cadastrados e excluídos pelos endpoints existentes; edição por ADMIN não é oferecida porque PUT /professores/:id exige PROFESSOR atualmente.
 
 Nenhuma alteração de backend, publicação remota ou atualização de ticket foi realizada nesta etapa.

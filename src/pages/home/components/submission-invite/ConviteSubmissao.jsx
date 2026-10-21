@@ -10,10 +10,10 @@ export default function ConviteSubmissao() {
         </p>
         <h2 id="titulo-convite">Seu projeto também pode fazer parte.</h2>
         <p>
-          Envie sua produção acadêmica em PDF. Após a avaliação do orientador, os projetos aprovados
-          ficam disponíveis para consulta pública.
+          Compartilhe seu projeto com a comunidade acadêmica. Após a avaliação, os trabalhos
+          aprovados passam a fazer parte do acervo público do portal.
         </p>
-        <small>Não é necessário ter uma conta para enviar.</small>
+        <small>Em caso de recusa, o estudante recebe o motivo da decisão.</small>
       </div>
       <a className="botao-primario" href="#submeter">
         <Icone nome="adicionar" />

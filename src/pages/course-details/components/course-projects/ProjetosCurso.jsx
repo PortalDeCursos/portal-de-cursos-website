@@ -27,7 +27,7 @@ export default function ProjetosCurso({ curso, projetos }) {
       </div>
       <p className="projetos-curso__aviso">
         <Icone nome="aviso-projetos-detalhe" />
-        Apenas produções avaliadas e aprovadas pelo professor orientador ficam disponíveis para
+        Apenas produções aceitas pelo orientador e aprovadas pelo coordenador ficam disponíveis para
         consulta pública.
       </p>
       <p className="somente-leitores" role="status" aria-live="polite">
@@ -49,8 +49,8 @@ export default function ProjetosCurso({ curso, projetos }) {
             {tipo !== 'Todos' && <small>Tipo selecionado: {tipo}</small>}
           </h3>
           <p>
-            Os trabalhos acadêmicos de estudantes de {curso.sigla} serão exibidos aqui assim que
-            forem avaliados e aprovados pelo professor orientador.
+            Os trabalhos acadêmicos de estudantes de {curso.sigla} serão exibidos aqui após a
+            avaliação do orientador e a aprovação do coordenador.
           </p>
           <div className="projetos-curso__acoes">
             <a className="botao-secundario" href="#biblioteca">
@@ -74,7 +74,7 @@ export default function ProjetosCurso({ curso, projetos }) {
           [
             'criterios-detalhe',
             'Critérios de publicação',
-            'Os projetos são disponibilizados ao público após a análise e aprovação do professor orientador.',
+            'Os projetos de alunos seguem pelo orientador e pelo coordenador; envios de professores seguem direto ao coordenador.',
           ],
           [
             'diretrizes-detalhe',
@@ -84,7 +84,7 @@ export default function ProjetosCurso({ curso, projetos }) {
           [
             'duvidas-detalhe',
             'Dúvidas frequentes',
-            'Não é necessário ter uma conta para enviar. Os tipos aceitos são TCC, Projeto Integrador, Pesquisa e Extensão.',
+            'Estudantes e professores podem compartilhar trabalhos de conclusão, projetos integradores, de pesquisa e de extensão.',
           ],
         ].map(([icone, titulo, texto]) => (
           <article className="bloco-detalhe" key={titulo}>
