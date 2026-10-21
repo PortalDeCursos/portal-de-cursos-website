@@ -9,7 +9,7 @@ export const submissoes = [
     autores: ['Beatriz Nascimento', 'Rafael Moura'],
     orientador: 'Prof. Carlos Almeida',
     enviadoEm: 'Hoje, 09:42',
-    status: 'Em análise',
+    status: 'Aguardando Orientador',
     resumo:
       'Uma análise empírica de barreiras e melhorias ergonômicas em interfaces digitais com base nas diretrizes WCAG 2.1 AA.',
     objetivo:
@@ -26,7 +26,7 @@ export const submissoes = [
     autores: ['Lucas Ferreira', 'Ana Clara Dias'],
     orientador: 'Prof. Carlos Almeida',
     enviadoEm: 'Ontem, 16:18',
-    status: 'Em análise',
+    status: 'Aguardando Orientador',
     resumo:
       'Uma plataforma para organizar atividades práticas, acompanhamento de equipes e apresentação dos resultados de projetos integradores.',
     objetivo:
@@ -43,7 +43,7 @@ export const submissoes = [
     autores: ['Marina Oliveira'],
     orientador: 'Prof. Carlos Almeida',
     enviadoEm: '12 out., 14:05',
-    status: 'Aceito',
+    status: 'Em análise',
     resumo:
       'Estudo de práticas de monitoramento para identificar padrões de indisponibilidade em redes de laboratórios.',
     objetivo:

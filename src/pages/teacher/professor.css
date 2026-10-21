@@ -250,12 +250,14 @@
   font-weight: 800;
 }
 
-.status--em-análise {
+.status--em-análise,
+.status--aguardando-orientador {
   color: #855f00;
   background: #fff3c4;
 }
 
-.status--aceito {
+.status--aceito,
+.status--aprovado {
   color: #17633d;
   background: #dff3e7;
 }

@@ -63,14 +63,29 @@ export async function identificarConta(token, email, sinal) {
 
   if (Array.isArray(listaProfessores)) {
     const professor = listaProfessores.find(
-      (item) => corresponde(item.usuario) && item.usuario.tipoUsuario === 'PROFESSOR',
+      (item) =>
+        corresponde(item.usuario) &&
+        ['PROFESSOR', 'COORDENADOR'].includes(item.usuario.tipoUsuario),
     )
     if (professor) {
+      const cursoId = professor.cursoId ?? professor.curso?.id ?? professor.curso?.identificador
+      if (professor.usuario.tipoUsuario === 'COORDENADOR' && !cursoId) {
+        throw new ErroApi('A conta de coordenação não possui um curso vinculado.', { status: 403 })
+      }
       return {
-        tipoUsuario: 'PROFESSOR',
+        tipoUsuario: professor.usuario.tipoUsuario,
         usuario: {
           id: professor.usuario.id,
           professorId: professor.id,
+          cursoId,
+          curso: professor.curso
+            ? {
+                id: professor.curso.id,
+                identificador: professor.curso.identificador,
+                nome: professor.curso.nome,
+                sigla: professor.curso.sigla,
+              }
+            : null,
           nome: professor.usuario.nome || email,
           email: professor.usuario.email,
           titulacao: professor.titulacao || '',

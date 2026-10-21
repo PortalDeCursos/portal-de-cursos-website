@@ -1,37 +1,57 @@
 import { useMemo, useState } from 'react'
 import './professor.css'
-import { enderecoPrivado } from '../../app/rotas.js'
+import { basePortal, enderecoPrivado } from '../../app/rotas.js'
 
-const filtros = ['Todas', 'Em análise', 'Aceito', 'Recusado']
+const filtros = ['Todas', 'Aguardando Orientador', 'Em análise', 'Aprovado', 'Recusado']
 
-function statusDaSubmissao(item, decisoes) {
-  return decisoes[item.identificador] || item.status
+function orientaSubmissao(item, usuario) {
+  if (item.orientadorId && usuario?.professorId) {
+    return String(item.orientadorId) === String(usuario.professorId)
+  }
+  const nomeOrientador = item.orientador?.toLocaleLowerCase('pt-BR') || ''
+  const nomeUsuario = usuario?.nome?.toLocaleLowerCase('pt-BR') || ''
+  return Boolean(nomeOrientador && nomeUsuario && nomeOrientador.includes(nomeUsuario))
 }
 
-export default function PaginaProfessor({ submissoes }) {
+export default function PaginaProfessor({ submissoes, usuario }) {
   const [filtro, definirFiltro] = useState('Todas')
   const [tipoFiltro, definirTipoFiltro] = useState('Todos')
-  const [decisoes] = useState({})
-
-  const resultados = useMemo(
+  const orientacoes = useMemo(
     () =>
       submissoes.filter(
         (item) =>
-          (filtro === 'Todas' || statusDaSubmissao(item, decisoes) === filtro) &&
-          (tipoFiltro === 'Todos' || item.tipo === tipoFiltro),
+          orientaSubmissao(item, usuario) &&
+          item.tipoAutor !== 'PROFESSOR' &&
+          item.tipoAutor !== 'COORDENADOR',
       ),
-    [decisoes, filtro, tipoFiltro, submissoes],
+    [submissoes, usuario],
   )
 
-  const tipos = ['Todos', ...new Set(submissoes.map((item) => item.tipo))]
+  const resultados = useMemo(
+    () =>
+      orientacoes.filter(
+        (item) =>
+          (filtro === 'Todas' || item.status === filtro) &&
+          (tipoFiltro === 'Todos' || item.tipo === tipoFiltro),
+      ),
+    [filtro, orientacoes, tipoFiltro],
+  )
+
+  const tipos = ['Todos', ...new Set(orientacoes.map((item) => item.tipo))]
 
   return (
     <main id="conteudo" className="limite pagina-professor">
       <div className="pagina-professor__topo">
         <div>
           <h1>Submissões para acompanhar</h1>
-          <p>Abra um projeto para revisar os detalhes e registrar sua decisão.</p>
+          <p>
+            Veja somente as submissões em que você consta como orientador e faça a avaliação
+            inicial.
+          </p>
         </div>
+        <a className="botao-primario" href={`${basePortal}#submeter`}>
+          Submeter projeto
+        </a>
       </div>
 
       <div className="pagina-professor__layout">
@@ -39,7 +59,7 @@ export default function PaginaProfessor({ submissoes }) {
           <div>
             <span className="pagina-professor__filtro-etiqueta">Visualização</span>
             <strong>Filtrar submissões</strong>
-            <p>Encontre projetos por tipo ou etapa de avaliação.</p>
+            <p>Encontre projetos por tipo ou etapa da orientação.</p>
           </div>
           <nav className="pagina-professor__filtros" aria-label="Filtrar por status">
             {filtros.map((opcao) => (
@@ -53,9 +73,8 @@ export default function PaginaProfessor({ submissoes }) {
                 <span>{opcao}</span>
                 <small>
                   {opcao === 'Todas'
-                    ? submissoes.length
-                    : submissoes.filter((item) => statusDaSubmissao(item, decisoes) === opcao)
-                        .length}
+                    ? orientacoes.length
+                    : orientacoes.filter((item) => item.status === opcao).length}
                 </small>
               </button>
             ))}
@@ -82,7 +101,7 @@ export default function PaginaProfessor({ submissoes }) {
           </div>
           <div className="lista-submissoes">
             {resultados.map((item) => {
-              const status = statusDaSubmissao(item, decisoes)
+              const status = item.status
               return (
                 <article className="submissao-feed" key={item.identificador}>
                   <a

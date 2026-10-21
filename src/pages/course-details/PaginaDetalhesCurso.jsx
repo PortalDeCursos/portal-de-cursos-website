@@ -12,7 +12,11 @@ import './detalhes-curso.css'
 
 const abasValidas = ['visao-geral', 'grade-curricular', 'professores', 'projetos']
 
-export default function PaginaDetalhesCurso({ identificador, aba = 'visao-geral' }) {
+export default function PaginaDetalhesCurso({
+  identificador,
+  aba = 'visao-geral',
+  projetosPublicados = projetos,
+}) {
   const [consulta, definirConsulta] = useState({ estado: 'carregando', curso: null, erro: null })
   const [tentativa, definirTentativa] = useState(0)
   const selecionada = abasValidas.includes(aba) ? aba : 'visao-geral'
@@ -38,7 +42,7 @@ export default function PaginaDetalhesCurso({ identificador, aba = 'visao-geral'
     definirConsulta({ estado: 'carregando', curso: null, erro: null })
     definirTentativa((valor) => valor + 1)
   }
-  const aprovados = projetos.filter(
+  const aprovados = projetosPublicados.filter(
     (projeto) => projeto.identificadorCurso === identificador && projeto.status === 'Aprovado',
   )
   const { curso } = consulta

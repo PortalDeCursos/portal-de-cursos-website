@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { cursos } from '../../data/cursos.js'
 import { projetos } from '../../data/projetos.js'
 import { submissoes } from '../../data/submissoes.js'
+import { enderecoPrivado } from '../../app/rotas.js'
 import './submissao.css'
 
 const formularioInicial = {
@@ -17,20 +18,13 @@ const formularioInicial = {
   disciplinas: [],
   autores: [],
   documentos: {},
+  linkMemoria: '',
   arquivosComplementares: [],
   aceitaPublicacao: false,
 }
 
 const etapas = ['Identificação', 'Projeto', 'Equipe', 'Documentos']
 const TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024
-
-const orientadoresPorCurso = submissoes.reduce((resultado, submissao) => {
-  if (!resultado[submissao.curso]) resultado[submissao.curso] = []
-  if (!resultado[submissao.curso].includes(submissao.orientador)) {
-    resultado[submissao.curso].push(submissao.orientador)
-  }
-  return resultado
-}, {})
 
 const nomesTiposProjeto = {
   'Projeto Integrador': 'Projeto Integrador',
@@ -52,11 +46,8 @@ const tiposProjeto = {
   TCC: {
     descricao: 'Trabalho de conclusão com pesquisa, fundamentação e resultados.',
     campoEspecifico: 'Problema de pesquisa, metodologia e resultados esperados',
-    documentos: [
-      { id: 'preProjeto', nome: 'Pré-projeto ou projeto de pesquisa', obrigatorio: true },
-      { id: 'trabalhoFinal', nome: 'Trabalho final do TCC', obrigatorio: true },
-      { id: 'anexos', nome: 'Anexos complementares', obrigatorio: false, multiplo: true },
-    ],
+    usaLinkMemoria: true,
+    documentos: [],
   },
   Pesquisa: {
     descricao: 'Investigação acadêmica com método e resultados documentados.',
@@ -78,8 +69,16 @@ const tiposProjeto = {
   },
 }
 
-export default function PaginaSubmissao() {
-  const [formulario, definirFormulario] = useState(formularioInicial)
+export default function PaginaSubmissao({ sessao, aoSubmeter }) {
+  const [formulario, definirFormulario] = useState(() => ({
+    ...formularioInicial,
+    nome: sessao?.usuario?.nome || '',
+    email: sessao?.usuario?.email || '',
+    curso:
+      sessao?.tipoUsuario === 'ALUNO'
+        ? sessao?.usuario?.cursoId || sessao?.usuario?.curso || ''
+        : '',
+  }))
   const [etapa, definirEtapa] = useState(0)
   const [erro, definirErro] = useState('')
   const [erros, definirErros] = useState({})
@@ -109,10 +108,25 @@ export default function PaginaSubmissao() {
     return ''
   }
 
+  function listaOrientadores(curso) {
+    const relacionados = submissoes
+      .filter((submissao) => submissao.curso === curso)
+      .map((submissao) => submissao.orientador)
+    const doCurso = cursos.find((item) => item.sigla === curso || item.nome === curso)
+    const doProjeto = projetos
+      .filter((projeto) => projeto.curso === curso || projeto.curso === doCurso?.nome)
+      .map((projeto) => projeto.orientador)
+    return [...new Set([...relacionados, ...doProjeto].filter(Boolean))]
+  }
+
   function validarEtapa() {
+    const ehTCC = formulario.tipo === 'TCC'
+    const camposEtapa1 = ehTCC
+      ? ['tipo', 'titulo', 'resumo', 'objetivos']
+      : ['tipo', 'titulo', 'resumo', 'objetivos', 'informacoesEspecificas']
     const obrigatorios = [
       etapa === 0 && ['nome', 'email', 'curso'],
-      etapa === 1 && ['tipo', 'titulo', 'resumo', 'objetivos', 'informacoesEspecificas'],
+      etapa === 1 && camposEtapa1,
       etapa === 2 && ['orientador'],
       etapa === 3 && [],
     ].find(Boolean)
@@ -138,6 +152,15 @@ export default function PaginaSubmissao() {
       )
       return false
     }
+    if (etapa === 2) {
+      const autoresInvalidos = formulario.autores.some(
+        (autor) => !autor.nome.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(autor.email.trim()),
+      )
+      if (autoresInvalidos) {
+        registrarErros({}, 'Informe nome e e-mail válidos para cada integrante.')
+        return false
+      }
+    }
     if (
       etapa === 1 &&
       projetos.some(
@@ -150,13 +173,34 @@ export default function PaginaSubmissao() {
       })
       return false
     }
+    // TCC: valida link do Memória
+    if (etapa === 3 && ehTCC) {
+      const link = formulario.linkMemoria.trim()
+      if (!link) {
+        registrarErros(
+          { linkMemoria: 'Informe o link do repositório Memória.' },
+          'Informe o link do repositório Memória para continuar.',
+        )
+        return false
+      }
+      try {
+        new URL(link)
+      } catch {
+        registrarErros(
+          { linkMemoria: 'Informe uma URL válida (ex.: https://memoria.ifsc.edu.br/...).' },
+          'A URL informada é inválida.',
+        )
+        return false
+      }
+    }
     const documentosObrigatorios =
-      etapa === 3
+      etapa === 3 && !ehTCC
         ? tiposProjeto[formulario.tipo]?.documentos.filter((documento) => documento.obrigatorio) ||
           []
         : []
     if (
       etapa === 3 &&
+      !ehTCC &&
       documentosObrigatorios.some((documento) => !formulario.documentos[documento.id])
     ) {
       registrarErros(
@@ -195,7 +239,50 @@ export default function PaginaSubmissao() {
 
   function submeter(evento) {
     evento.preventDefault()
-    if (validarEtapa()) definirEnviado(true)
+    if (!validarEtapa()) return
+    const cursoProjeto = cursos.find(
+      (item) =>
+        item.sigla === formulario.curso ||
+        item.nome === formulario.curso ||
+        String(item.identificador) === String(formulario.curso),
+    )
+    const autores = formulario.autores
+      .filter((autor) => autor.nome.trim())
+      .map((autor) => ({ nome: autor.nome.trim(), email: autor.email.trim() }))
+    const ehTCC = formulario.tipo === 'TCC'
+    aoSubmeter?.({
+      identificador: crypto.randomUUID(),
+      identificadorCurso: cursoProjeto?.identificador,
+      titulo: formulario.titulo.trim(),
+      tipo: formulario.tipo,
+      curso: cursoProjeto?.sigla || formulario.curso,
+      cursoCompleto: cursoProjeto?.nome || formulario.curso,
+      autor: formulario.nome.trim(),
+      autores:
+        sessao?.tipoUsuario === 'ALUNO'
+          ? [{ nome: formulario.nome.trim(), email: formulario.email.trim() }, ...autores]
+          : autores,
+      orientador: formulario.orientador,
+      enviadoEm: new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(new Date()),
+      status: sessao?.tipoUsuario === 'ALUNO' ? 'Aguardando Orientador' : 'Em análise',
+      email: formulario.email.trim(),
+      disciplinas: [...formulario.disciplinas],
+      resumo: formulario.resumo.trim(),
+      objetivo: formulario.objetivos.trim(),
+      ...(ehTCC
+        ? { linkMemoria: formulario.linkMemoria.trim(), documentos: [] }
+        : {
+            documentos: Object.values(formulario.documentos)
+              .flat()
+              .filter(Boolean)
+              .map((arquivo) => arquivo.name),
+          }),
+      tipoAutor: sessao?.tipoUsuario || 'ALUNO',
+    })
+    definirEnviado(true)
   }
 
   function alterarDocumentos(documento, arquivos) {
@@ -241,8 +328,9 @@ export default function PaginaSubmissao() {
           <p className="pagina-submissao__rotulo">Submissão concluída</p>
           <h1 id="titulo-confirmacao">Submissão pronta para avaliação.</h1>
           <p>
-            As informações foram organizadas e estão prontas para serem analisadas pelo professor
-            orientador.
+            {sessao?.tipoUsuario === 'PROFESSOR' || sessao?.tipoUsuario === 'COORDENADOR'
+              ? 'A submissão foi encaminhada para avaliação do coordenador do curso.'
+              : 'A submissão aguarda a avaliação do professor orientador. Após o aceite, seguirá para o coordenador do curso. O aviso por e-mail depende da integração de notificações.'}
           </p>
           <div className="submissao-confirmacao__resumo">
             <strong>{formulario.titulo}</strong>
@@ -262,7 +350,15 @@ export default function PaginaSubmissao() {
               className="botao-secundario"
               type="button"
               onClick={() => {
-                definirFormulario(formularioInicial)
+                definirFormulario({
+                  ...formularioInicial,
+                  nome: sessao?.usuario?.nome || '',
+                  email: sessao?.usuario?.email || '',
+                  curso:
+                    sessao?.tipoUsuario === 'ALUNO'
+                      ? sessao?.usuario?.cursoId || sessao?.usuario?.curso || ''
+                      : '',
+                })
                 definirEtapa(0)
                 definirEnviado(false)
               }}
@@ -275,13 +371,57 @@ export default function PaginaSubmissao() {
     )
   }
 
+  if (sessao?.tipoUsuario === 'ADMIN') {
+    return (
+      <main className="limite pagina-submissao" id="conteudo">
+        <section className="submissao-confirmacao" aria-labelledby="titulo-sem-envio">
+          <p className="pagina-submissao__rotulo">Acesso de consulta</p>
+          <h1 id="titulo-sem-envio">A administração não submete nem avalia projetos.</h1>
+          <p>Você pode acompanhar todas as submissões na área administrativa.</p>
+          <a className="botao-primario" href={enderecoPrivado('administracao/submissoes')}>
+            Ver submissões
+          </a>
+        </section>
+      </main>
+    )
+  }
+
+  if (!sessao || !['ALUNO', 'PROFESSOR', 'COORDENADOR'].includes(sessao.tipoUsuario)) {
+    return (
+      <main className="limite pagina-submissao" id="conteudo">
+        <section className="submissao-confirmacao" aria-labelledby="titulo-acesso-submissao">
+          <p className="pagina-submissao__rotulo">Acesso necessário</p>
+          <h1 id="titulo-acesso-submissao">Entre para submeter um projeto.</h1>
+          <p>
+            O envio de projetos está disponível para alunos, professores e coordenadores
+            autenticados.
+          </p>
+          <a className="botao-primario" href={enderecoPrivado('aluno/cadastro')}>
+            Criar conta de aluno
+          </a>
+          <a className="botao-secundario" href={enderecoPrivado('login')}>
+            Entrar no portal
+          </a>
+        </section>
+      </main>
+    )
+  }
+
+  const autorSessao = sessao.tipoUsuario === 'ALUNO'
+
   return (
     <main className="limite pagina-submissao" id="conteudo">
       <div className="pagina-submissao__introducao">
         <div>
           <p className="pagina-submissao__rotulo">Produção acadêmica</p>
           <h1>Compartilhe seu projeto</h1>
-          <p>Preencha quatro etapas rápidas e envie seu projeto para avaliação do orientador.</p>
+          <p>
+            Preencha quatro etapas rápidas e envie seu projeto para avaliação do{' '}
+            {sessao?.tipoUsuario === 'PROFESSOR' || sessao?.tipoUsuario === 'COORDENADOR'
+              ? 'coordenador do curso'
+              : 'professor orientador'}
+            .
+          </p>
         </div>
         <aside className="submissao-aviso">
           <strong>4 etapas antes do envio</strong>
@@ -329,6 +469,7 @@ export default function PaginaSubmissao() {
                   aria-describedby={erroDoCampo('nome')}
                   placeholder="Seu nome completo"
                   value={formulario.nome}
+                  readOnly={autorSessao}
                   onChange={(e) => alterar('nome', e.target.value)}
                 />
                 {erros.nome && (
@@ -337,17 +478,6 @@ export default function PaginaSubmissao() {
                   </small>
                 )}
               </label>
-              {formulario.tipo && (
-                <label className="formulario-submissao__campo-largo">
-                  {tiposProjeto[formulario.tipo].campoEspecifico} <span aria-hidden="true">*</span>
-                  <textarea
-                    required
-                    rows="5"
-                    value={formulario.informacoesEspecificas}
-                    onChange={(e) => alterar('informacoesEspecificas', e.target.value)}
-                  />
-                </label>
-              )}
               <label>
                 E-mail <span aria-hidden="true">*</span>
                 <input
@@ -357,6 +487,7 @@ export default function PaginaSubmissao() {
                   aria-describedby={erroDoCampo('email')}
                   placeholder="voce@email.com"
                   value={formulario.email}
+                  readOnly={autorSessao}
                   onChange={(e) => alterar('email', e.target.value)}
                 />
                 {erros.email && (
@@ -372,6 +503,7 @@ export default function PaginaSubmissao() {
                   aria-invalid={Boolean(erros.curso)}
                   aria-describedby={erroDoCampo('curso')}
                   value={formulario.curso}
+                  disabled={autorSessao}
                   onChange={(e) => {
                     alterar('curso', e.target.value)
                     alterar('orientador', '')
@@ -480,6 +612,27 @@ export default function PaginaSubmissao() {
                   </small>
                 )}
               </label>
+              {formulario.tipo && (
+                <label className="formulario-submissao__campo-largo">
+                  {tiposProjeto[formulario.tipo].campoEspecifico} <span aria-hidden="true">*</span>
+                  <textarea
+                    required
+                    aria-invalid={Boolean(erros.informacoesEspecificas)}
+                    aria-describedby={erroDoCampo('informacoesEspecificas')}
+                    rows="5"
+                    value={formulario.informacoesEspecificas}
+                    onChange={(e) => alterar('informacoesEspecificas', e.target.value)}
+                  />
+                  {erros.informacoesEspecificas && (
+                    <small
+                      id="erro-informacoesEspecificas"
+                      className="formulario-submissao__erro-campo"
+                    >
+                      {erros.informacoesEspecificas}
+                    </small>
+                  )}
+                </label>
+              )}
             </div>
           </section>
         )}
@@ -509,13 +662,13 @@ export default function PaginaSubmissao() {
                       ? 'Selecione o professor orientador'
                       : 'Selecione o curso primeiro'}
                   </option>
-                  {(orientadoresPorCurso[formulario.curso] || []).map((orientador) => (
+                  {listaOrientadores(formulario.curso).map((orientador) => (
                     <option key={orientador} value={orientador}>
                       {orientador}
                     </option>
                   ))}
                 </select>
-                {formulario.curso && !orientadoresPorCurso[formulario.curso]?.length && (
+                {formulario.curso && !listaOrientadores(formulario.curso).length && (
                   <small className="formulario-submissao__erro-campo">
                     Não há professor disponível para este curso no momento.
                   </small>
@@ -590,49 +743,79 @@ export default function PaginaSubmissao() {
               <span>04</span>
               <div>
                 <h2 id="dados-documentos">Documentos e revisão</h2>
-                <p>Anexe o material e confirme as condições de publicação.</p>
+                <p>
+                  {formulario.tipo === 'TCC'
+                    ? 'Informe o link do repositório e confirme a publicação.'
+                    : 'Anexe o material e confirme as condições de publicação.'}
+                </p>
               </div>
             </div>
-            <div className="documentos-submissao">
-              {(tiposProjeto[formulario.tipo]?.documentos || []).map((documento) => {
-                const arquivo = formulario.documentos[documento.id]
-                return (
-                  <label className="campo-arquivo" key={documento.id}>
-                    <span className="campo-arquivo__icone" aria-hidden="true">
-                      ↑
-                    </span>
-                    <strong>
-                      {arquivo
-                        ? Array.isArray(arquivo)
-                          ? `${arquivo.length} arquivo(s)`
-                          : arquivo.name
-                        : documento.nome}
-                    </strong>
-                    <small>
-                      {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} ·{' '}
-                      {documento.multiplo ? 'vários arquivos' : 'um PDF'}
+            {formulario.tipo === 'TCC' ? (
+              <div className="formulario-submissao__grade">
+                <label className="formulario-submissao__campo-largo">
+                  Link do repositório Memória <span aria-hidden="true">*</span>
+                  <input
+                    required
+                    type="url"
+                    aria-invalid={Boolean(erros.linkMemoria)}
+                    aria-describedby={erroDoCampo('linkMemoria')}
+                    placeholder="https://memoria.ifsc.edu.br/..."
+                    value={formulario.linkMemoria}
+                    onChange={(e) => alterar('linkMemoria', e.target.value)}
+                  />
+                  {erros.linkMemoria && (
+                    <small id="erro-linkMemoria" className="formulario-submissao__erro-campo">
+                      {erros.linkMemoria}
                     </small>
-                    <input
-                      required={documento.obrigatorio}
-                      type="file"
-                      multiple={documento.multiplo}
-                      accept="application/pdf,.pdf"
-                      aria-invalid={Boolean(erros[documento.id])}
-                      aria-describedby={erroDoCampo(documento.id)}
-                      onChange={(e) => alterarDocumentos(documento, e.target.files)}
-                    />
-                    {erros[documento.id] && (
-                      <small
-                        id={`erro-${documento.id}`}
-                        className="formulario-submissao__erro-campo"
-                      >
-                        {erros[documento.id]}
+                  )}
+                </label>
+                <p className="formulario-submissao__privacidade formulario-submissao__campo-largo">
+                  O TCC deve estar depositado no repositório institucional Memória antes do envio.
+                  Informe a URL pública do trabalho.
+                </p>
+              </div>
+            ) : (
+              <div className="documentos-submissao">
+                {(tiposProjeto[formulario.tipo]?.documentos || []).map((documento) => {
+                  const arquivo = formulario.documentos[documento.id]
+                  return (
+                    <label className="campo-arquivo" key={documento.id}>
+                      <span className="campo-arquivo__icone" aria-hidden="true">
+                        ↑
+                      </span>
+                      <strong>
+                        {arquivo
+                          ? Array.isArray(arquivo)
+                            ? `${arquivo.length} arquivo(s)`
+                            : arquivo.name
+                          : documento.nome}
+                      </strong>
+                      <small>
+                        {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} ·{' '}
+                        {documento.multiplo ? 'vários arquivos' : 'um PDF'}
                       </small>
-                    )}
-                  </label>
-                )
-              })}
-            </div>
+                      <input
+                        required={documento.obrigatorio}
+                        type="file"
+                        multiple={documento.multiplo}
+                        accept="application/pdf,.pdf"
+                        aria-invalid={Boolean(erros[documento.id])}
+                        aria-describedby={erroDoCampo(documento.id)}
+                        onChange={(e) => alterarDocumentos(documento, e.target.files)}
+                      />
+                      {erros[documento.id] && (
+                        <small
+                          id={`erro-${documento.id}`}
+                          className="formulario-submissao__erro-campo"
+                        >
+                          {erros[documento.id]}
+                        </small>
+                      )}
+                    </label>
+                  )
+                })}
+              </div>
+            )}
             <label
               className={`consentimento-submissao ${
                 formulario.aceitaPublicacao ? 'consentimento-submissao--ativo' : ''
