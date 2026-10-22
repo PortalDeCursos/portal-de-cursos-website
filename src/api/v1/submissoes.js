@@ -1,4 +1,3 @@
-import { submissoes as dadosLocais } from '../../data/submissoes.js'
 import { ErroApi, requisitarApi } from '../cliente.js'
 
 export const VERSAO = 'v1'
@@ -6,7 +5,7 @@ export const VERSAO = 'v1'
 export async function listarSubmissoes(sinal) {
   const endpoint = import.meta.env.VITE_API_SUBMISSOES
   if (!endpoint) {
-    return [...dadosLocais]
+    return []
   }
 
   const dados = await requisitarApi(endpoint, {
@@ -26,11 +25,7 @@ export async function listarSubmissoes(sinal) {
 export async function obterSubmissaoPorId(id, sinal) {
   const endpoint = import.meta.env.VITE_API_SUBMISSOES
   if (!endpoint) {
-    const item = dadosLocais.find((submissao) => submissao.identificador === id)
-    if (!item) {
-      throw new ErroApi('Submissão não encontrada.', { status: 404 })
-    }
-    return item
+    throw new ErroApi('O serviço de submissões ainda não está conectado.', { status: 503 })
   }
 
   return requisitarApi(`${endpoint.replace(/\/$/, '')}/${encodeURIComponent(id)}`, {

@@ -33,25 +33,7 @@
   font-weight: 700;
   background: var(--superficie);
 }
-.abas-curso [role='tab'] > span {
-  background: var(--etiqueta);
-  padding: 2px 5px;
-  border-radius: 999px;
-  font-size: 10px;
-}
-.abas-curso__enviar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  font-size: 12px;
-  color: var(--azul);
-  padding: 12px 16px;
-}
 @media (max-width: 950px) {
-  .abas-curso__enviar {
-    display: none;
-  }
   .abas-curso [role='tablist'] {
     width: 100%;
   }

@@ -1,101 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
-import { cursos } from '../../../../data/cursos.js'
-import { projetos } from '../../../../data/projetos.js'
-import ConteudoDestaque from './ConteudoDestaque.jsx'
+import { useEffect, useState } from 'react'
+import { api } from '../../../../api/index.js'
 import './apresentacao-inicial.css'
 
-const destaques = [
-  {
-    titulo: 'Análise e Desenvolvimento de Sistemas',
-    categoria: 'Curso em destaque',
-    tituloCurto: 'TADS',
-    seletor: 'Curso',
-    resumo: 'Aprenda a desenvolver aplicações, bancos de dados e sistemas web.',
-    destino: '#curso/tads',
-    acao: 'Conhecer o curso',
-    tipo: 'curso',
-    identificador: 'tads',
-  },
-  {
-    titulo: 'Portal de Cursos',
-    categoria: 'Projeto integrador em destaque',
-    tituloCurto: 'Portal de Cursos',
-    seletor: 'Projeto',
-    resumo: 'Cursos, disciplinas e produções acadêmicas reunidos em um portal.',
-    destino: '#projeto/portal-cursos',
-    acao: 'Conhecer o projeto',
-    tipo: 'integrador',
-    identificador: 'portal-cursos',
-  },
-  {
-    titulo: 'Acessibilidade em aplicações web',
-    categoria: 'TCC em destaque',
-    tituloCurto: 'Acessibilidade web',
-    seletor: 'TCC',
-    resumo: 'Um estudo sobre barreiras de acessibilidade em interfaces web.',
-    destino: '#projeto/acessibilidade-web',
-    acao: 'Conhecer o TCC',
-    tipo: 'tcc',
-    identificador: 'acessibilidade-web',
-  },
-]
-
 export default function ApresentacaoInicial() {
-  const [indice, definirIndice] = useState(0)
-  const [automatico, definirAutomatico] = useState(
-    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
-  const [sobre, definirSobre] = useState(false)
-  const [visivel, definirVisivel] = useState(() => !document.hidden)
-  const [direcao, definirDirecao] = useState('avancar')
-  const gesto = useRef(null)
-  const aprovados = projetos.filter((projeto) => projeto.status === 'Aprovado')
+  const [cursos, definirCursos] = useState([])
+  const [estado, definirEstado] = useState('carregando')
 
   useEffect(() => {
-    const acompanhar = () => definirVisivel(!document.hidden)
-    const preferencia = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const reduzir = (evento) => {
-      if (evento.matches) definirAutomatico(false)
-    }
-    document.addEventListener('visibilitychange', acompanhar)
-    preferencia.addEventListener('change', reduzir)
-    return () => {
-      document.removeEventListener('visibilitychange', acompanhar)
-      preferencia.removeEventListener('change', reduzir)
-    }
+    const controller = new AbortController()
+    api.cursos
+      .listar(controller.signal)
+      .then((registros) => {
+        if (controller.signal.aborted) return
+        definirCursos(registros)
+        definirEstado('pronto')
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) definirEstado('indisponivel')
+      })
+    return () => controller.abort()
   }, [])
-
-  useEffect(() => {
-    if (!automatico || sobre || !visivel || indice === destaques.length - 1) return
-    const temporizador = window.setTimeout(() => {
-      definirDirecao('avancar')
-      definirIndice(indice + 1)
-      if (indice + 1 === destaques.length - 1) definirAutomatico(false)
-    }, 5500)
-    return () => window.clearTimeout(temporizador)
-  }, [indice, automatico, sobre, visivel])
-
-  function selecionar(proximo) {
-    definirAutomatico(false)
-    definirDirecao(proximo < indice ? 'voltar' : 'avancar')
-    definirIndice(Math.max(0, Math.min(destaques.length - 1, proximo)))
-  }
-
-  function iniciarGesto(evento) {
-    if (evento.button !== 0 || evento.target.closest('a, button')) return
-    gesto.current = { x: evento.clientX, y: evento.clientY }
-    evento.currentTarget.setPointerCapture(evento.pointerId)
-    definirAutomatico(false)
-  }
-
-  function concluirGesto(evento) {
-    if (!gesto.current) return
-    const deslocamento = evento.clientX - gesto.current.x
-    const vertical = evento.clientY - gesto.current.y
-    if (Math.abs(deslocamento) > 45 && Math.abs(deslocamento) > Math.abs(vertical))
-      selecionar(indice + (deslocamento < 0 ? 1 : -1))
-    gesto.current = null
-  }
 
   return (
     <section id="inicio" className="hero-inicial" aria-labelledby="titulo-inicial">
@@ -105,8 +29,8 @@ export default function ApresentacaoInicial() {
           <br />à criação.
         </h1>
         <p className="hero-inicial__descricao">
-          Conheça os cursos, explore as disciplinas e veja o que os estudantes criam ao longo da
-          formação.
+          Conheça as formações oferecidas, consulte as matérias e acompanhe os trabalhos acadêmicos
+          desenvolvidos pelos estudantes.
         </p>
         <div className="hero-inicial__acoes">
           <a className="botao-primario" href="#cursos">
@@ -118,79 +42,24 @@ export default function ApresentacaoInicial() {
         </div>
         <dl className="hero-inicial__numeros">
           <div>
-            <dd>{cursos.length}</dd>
-            <dt>cursos disponíveis</dt>
-          </div>
-          <div>
-            <dd>{aprovados.length}</dd>
-            <dt>projetos aprovados</dt>
+            <dd>{estado === 'pronto' ? cursos.length : '—'}</dd>
+            <dt>{estado === 'indisponivel' ? 'cursos indisponíveis agora' : 'cursos cadastrados'}</dt>
           </div>
         </dl>
       </div>
-      <div
-        className={`hero-carrossel hero-carrossel--${direcao}`}
-        role="region"
-        aria-roledescription="carrossel"
-        aria-label="Descubra o Portal de Cursos"
-        onMouseEnter={() => definirSobre(true)}
-        onMouseLeave={() => definirSobre(false)}
-        onFocusCapture={() => definirAutomatico(false)}
-      >
-        <div className="hero-carrossel__selecao" role="group" aria-label="Escolher destaque">
-          {destaques.map((destaque, posicao) => (
-            <button
-              key={destaque.tipo}
-              aria-pressed={posicao === indice}
-              onClick={() => selecionar(posicao)}
-            >
-              {destaque.seletor}
-            </button>
-          ))}
+      <aside className="hero-carrossel hero-carrossel--informativo" aria-label="Sobre o portal">
+        <div className="hero-destaque__conteudo">
+          <p className="hero-inicial__rotulo">Portal de Cursos</p>
+          <h2>Conhecimento que começa no curso e ganha forma em cada projeto.</h2>
+          <p className="hero-destaque__resumo">
+            Consulte informações acadêmicas mantidas pelos serviços do portal e encontre o caminho
+            para a sua formação.
+          </p>
+          <a className="hero-destaque__acao" href="#cursos">
+            Ver formações disponíveis <span aria-hidden="true">→</span>
+          </a>
         </div>
-        <div
-          className="hero-carrossel__janela"
-          onPointerDown={iniciarGesto}
-          onPointerUp={concluirGesto}
-          onPointerCancel={() => {
-            gesto.current = null
-          }}
-          onKeyDown={(evento) => {
-            if (evento.key === 'ArrowRight') {
-              evento.preventDefault()
-              selecionar(indice + 1)
-            }
-            if (evento.key === 'ArrowLeft') {
-              evento.preventDefault()
-              selecionar(indice - 1)
-            }
-          }}
-          tabIndex={0}
-          aria-label="Destaques. Use as setas do teclado ou arraste para navegar."
-        >
-          {destaques.map((destaque, posicao) => (
-            <article
-              className={`hero-carrossel__slide ${posicao === indice ? 'hero-carrossel__slide--ativo' : ''}`}
-              key={destaque.tipo}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${posicao + 1} de ${destaques.length}: ${destaque.titulo}`}
-              aria-hidden={posicao !== indice}
-              inert={posicao !== indice}
-            >
-              <ConteudoDestaque
-                destaque={destaque}
-                curso={cursos.find((curso) => curso.identificador === destaque.identificador)}
-                projeto={aprovados.find(
-                  (projeto) => projeto.identificador === destaque.identificador,
-                )}
-              />
-            </article>
-          ))}
-        </div>
-        <p className="somente-leitores" role="status" aria-live={automatico ? 'off' : 'polite'}>
-          Destaque {indice + 1} de {destaques.length}. {destaques[indice].titulo}.
-        </p>
-      </div>
+      </aside>
     </section>
   )
 }

@@ -1,22 +1,16 @@
 import { useEffect, useState } from 'react'
 import Icone from '../../shared/components/icon/Icone.jsx'
-import { projetos } from '../../data/projetos.js'
 import { consultarDetalhesCurso } from './services/consultarDetalhesCurso.js'
 import ResumoCurso from './components/course-summary/ResumoCurso.jsx'
 import AbasCurso from './components/course-tabs/AbasCurso.jsx'
 import VisaoGeral from './components/overview/VisaoGeral.jsx'
-import ProjetosCurso from './components/course-projects/ProjetosCurso.jsx'
 import CarregamentoDetalhe from './components/detail-loading/CarregamentoDetalhe.jsx'
 import InformacoesAcademicas from './components/academic-information/InformacoesAcademicas.jsx'
 import './detalhes-curso.css'
 
-const abasValidas = ['visao-geral', 'grade-curricular', 'professores', 'projetos']
+const abasValidas = ['visao-geral', 'grade-curricular']
 
-export default function PaginaDetalhesCurso({
-  identificador,
-  aba = 'visao-geral',
-  projetosPublicados = projetos,
-}) {
+export default function PaginaDetalhesCurso({ identificador, aba = 'visao-geral' }) {
   const [consulta, definirConsulta] = useState({ estado: 'carregando', curso: null, erro: null })
   const [tentativa, definirTentativa] = useState(0)
   const selecionada = abasValidas.includes(aba) ? aba : 'visao-geral'
@@ -42,9 +36,6 @@ export default function PaginaDetalhesCurso({
     definirConsulta({ estado: 'carregando', curso: null, erro: null })
     definirTentativa((valor) => valor + 1)
   }
-  const aprovados = projetosPublicados.filter(
-    (projeto) => projeto.identificadorCurso === identificador && projeto.status === 'Aprovado',
-  )
   const { curso } = consulta
 
   return (
@@ -60,17 +51,17 @@ export default function PaginaDetalhesCurso({
       {consulta.estado === 'erro' && (
         <section className="bloco-detalhe detalhe-curso__erro" role="alert">
           <h1>
-            {consulta.erro.codigo === 404
+            {consulta.erro.status === 404
               ? 'Curso não encontrado'
               : 'Não foi possível carregar o curso'}
           </h1>
           <p>
-            {consulta.erro.codigo === 404
+            {consulta.erro.status === 404
               ? 'O curso solicitado não está disponível no catálogo.'
               : 'Houve uma falha ao consultar as informações. Tente novamente.'}
           </p>
           <div>
-            {consulta.erro.codigo !== 404 && (
+            {consulta.erro.status !== 404 && (
               <button className="botao-primario" onClick={tentarNovamente}>
                 Tentar novamente
               </button>
@@ -84,11 +75,7 @@ export default function PaginaDetalhesCurso({
       {consulta.estado === 'pronto' && (
         <>
           <ResumoCurso curso={curso} />
-          <AbasCurso
-            selecionada={selecionada}
-            selecionar={selecionarAba}
-            totalProjetos={aprovados.length}
-          />
+          <AbasCurso selecionada={selecionada} selecionar={selecionarAba} />
           <div
             role="tabpanel"
             id={`painel-curso-${selecionada}`}
@@ -96,12 +83,10 @@ export default function PaginaDetalhesCurso({
             tabIndex={0}
           >
             {selecionada === 'visao-geral' && <VisaoGeral curso={curso} />}
-            {selecionada === 'projetos' && <ProjetosCurso curso={curso} projetos={aprovados} />}
-            {['grade-curricular', 'professores'].includes(selecionada) && (
-              <InformacoesAcademicas curso={curso} aba={selecionada} />
+            {selecionada === 'grade-curricular' && (
+              <InformacoesAcademicas curso={curso} />
             )}
           </div>
-          <p className="detalhe-curso__nota">Informações acadêmicas do curso.</p>
         </>
       )}
     </main>

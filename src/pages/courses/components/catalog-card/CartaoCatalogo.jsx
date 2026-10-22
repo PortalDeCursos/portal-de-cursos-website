@@ -39,9 +39,6 @@ export default function CartaoCatalogo({ curso }) {
             {curso.campus}
           </p>
         )}
-        {curso.codigoMec && (
-          <small className="cartao-catalogo__registro">e-MEC {curso.codigoMec}</small>
-        )}
       </div>
       <a
         className="cartao-catalogo__acao"

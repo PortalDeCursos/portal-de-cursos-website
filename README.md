@@ -82,20 +82,18 @@ O frontend usa navegação por hash. As rotas são acessadas depois do `#` na UR
 
 ## Configuração de dados
 
-O catálogo utiliza os arquivos locais:
-
-- `public/data/cursos.json`;
-- `public/data/detalhes-cursos.json`.
-
-Para apontar o catálogo para um serviço externo, defina `VITE_API_CURSOS` antes de iniciar
-o Vite:
+O catálogo e a grade curricular usam o microsserviço de cursos. Em desenvolvimento, o Vite
+encaminha `/api/v1/cursos` e `/api/v1/disciplinas` para `http://127.0.0.1:8081`. Ajuste
+`CURSOS_API_URL` no `.env` se o serviço estiver em outro endereço. Para implantação, configure
+`VITE_API_CURSOS` e `VITE_API_DISCIPLINAS` com os endpoints públicos correspondentes:
 
 ```bash
-VITE_API_CURSOS=https://exemplo.edu.br/api/cursos npm run dev
+VITE_API_CURSOS=https://exemplo.edu.br/api/v1/cursos \
+VITE_API_DISCIPLINAS=https://exemplo.edu.br/api/v1/disciplinas npm run dev
 ```
 
-O endpoint deve responder com uma lista de cursos no formato compatível com
-`public/data/cursos.json`. Variáveis com o prefixo `VITE_` são expostas no navegador; nunca
+Os cursos são carregados da resposta paginada da API, e as disciplinas usam o identificador do
+curso retornado pelo serviço. Variáveis com o prefixo `VITE_` são expostas no navegador; nunca
 coloque credenciais ou segredos nelas.
 
 ## Estrutura do projeto
@@ -153,15 +151,15 @@ npm run build
 A página `/login` usa o mesmo serviço de autenticação para as duas áreas: professor entra no feed `/professor/feed`, administrador entra em `/administracao/painel`. O papel é consultado nos endpoints existentes do serviço, sem seletor de papel no cliente. Para conectar a autenticação, execute o serviço de Usuários conforme
 [o contrato de integração](docs/autenticacao-professor.md). O proxy local aponta para `http://127.0.0.1:8080`; altere `USUARIOS_API_URL` se necessário. Sem serviço disponível, a interface informa a falha e não cria uma sessão demonstrativa.
 
-O frontend ainda não possui:
+O frontend possui integração de consulta e gestão de cursos e disciplinas com o serviço acadêmico de Cursos. Ainda faltam:
 
-- backend ou persistência de dados;
-- integração de publicação de cursos/projetos e autorização nos serviços acadêmicos correspondentes;
+- persistência de projetos e submissões em serviços próprios;
+- autorização por perfil nos serviços acadêmicos correspondentes;
 - upload e armazenamento de documentos;
 - envio de notificações;
 - decisão de professor persistida em serviço;
 - autorização por perfil;
-- integração institucional para cursos, estudantes e professores.
+- integração institucional para estudantes e professores.
 
 As ações de submissão e avaliação disponíveis na interface servem para demonstrar o fluxo
 e a organização da experiência. Antes de uso institucional, substitua os mocks por serviços

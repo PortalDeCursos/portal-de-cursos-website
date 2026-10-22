@@ -17,9 +17,6 @@ import PaginaAdministracao from '../pages/administracao/PaginaAdministracao.jsx'
 import PaginaCoordenacao from '../pages/coordenacao/PaginaCoordenacao.jsx'
 import PaginaCadastroAluno from '../pages/aluno/PaginaCadastroAluno.jsx'
 import PaginaPainelAluno from '../pages/aluno/PaginaPainelAluno.jsx'
-import { cursos } from '../data/cursos.js'
-import { projetos } from '../data/projetos.js'
-import { submissoes } from '../data/submissoes.js'
 import PaginaDetalhesSubmissao from '../pages/teacher/PaginaDetalhesSubmissao.jsx'
 
 function identificarPagina(rota) {
@@ -56,9 +53,9 @@ function lerTema() {
 export default function Aplicacao() {
   const [sessao, definirSessao] = useState(null)
   const [decisoes, definirDecisoes] = useState({})
-  const [listaSubmissoes, definirListaSubmissoes] = useState(submissoes)
-  const [listaProjetos, definirListaProjetos] = useState(projetos)
-  const [rascunhos, definirRascunhos] = useState({ cursos, projetos, disciplinas: [] })
+  const [listaSubmissoes, definirListaSubmissoes] = useState([])
+  const [listaProjetos, definirListaProjetos] = useState([])
+  const [rascunhos, definirRascunhos] = useState({ cursos: [], projetos: [], disciplinas: [] })
   const [sessaoExpirada, definirSessaoExpirada] = useState(false)
   const [tema, definirTema] = useState(lerTema)
   const [rota, definirRota] = useState(lerRota)
@@ -177,9 +174,9 @@ export default function Aplicacao() {
 
   function entrar(novaSessao) {
     definirDecisoes({})
-    definirListaSubmissoes(submissoes)
-    definirListaProjetos(projetos)
-    definirRascunhos({ cursos, projetos, disciplinas: [] })
+    definirListaSubmissoes([])
+    definirListaProjetos([])
+    definirRascunhos({ cursos: [], projetos: [], disciplinas: [] })
     definirSessao(novaSessao)
     definirSessaoExpirada(false)
     if (novaSessao.tipoUsuario === 'ALUNO') {
@@ -191,7 +188,7 @@ export default function Aplicacao() {
   function sair() {
     definirSessao(null)
     definirDecisoes({})
-    definirRascunhos({ cursos, projetos, disciplinas: [] })
+    definirRascunhos({ cursos: [], projetos: [], disciplinas: [] })
     definirSessaoExpirada(false)
     navegar(enderecoPrivado('login'), true)
   }
@@ -374,14 +371,10 @@ export default function Aplicacao() {
                 (item) => item.identificador === identificadorSubmissao,
               )
               if (sessao.tipoUsuario === 'COORDENADOR' && status === 'Aprovado' && submissao) {
-                const curso = cursos.find((item) =>
-                  [item.identificador, item.sigla, item.nome].includes(
-                    submissao.identificadorCurso || submissao.curso,
-                  ),
-                )
                 const projetoPublicado = {
                   identificador: submissao.identificador,
-                  identificadorCurso: submissao.identificadorCurso || curso?.identificador,
+                  cursoId: submissao.cursoId,
+                  identificadorCurso: submissao.identificadorCurso,
                   nome: submissao.titulo,
                   tipo: submissao.tipo,
                   curso: submissao.curso,
@@ -495,7 +488,6 @@ export default function Aplicacao() {
           key={identificador}
           identificador={identificador}
           aba={aba}
-          projetosPublicados={listaProjetos}
         />
       )}
       {pagina === 'submissao' && (

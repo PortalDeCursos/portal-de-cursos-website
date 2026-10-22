@@ -1,15 +1,14 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { basePortal } from '../../app/rotas.js'
 import logoPortal from '../../assets/marca/logo-portal.png'
+import { api } from '../../api/index.js'
 import '../acesso/acesso.css'
 import './cadastro-aluno.css'
 
-const cursosDisponiveis = [
-  { sigla: 'TADS', nome: 'Análise e Desenvolvimento de Sistemas' },
-  { sigla: 'Redes', nome: 'Redes de Computadores' },
-]
-
 export default function PaginaCadastroAluno() {
+  const [cursosDisponiveis, definirCursosDisponiveis] = useState([])
+  const [carregandoCursos, definirCarregandoCursos] = useState(true)
+  const [erroCursos, definirErroCursos] = useState('')
   const [form, definirForm] = useState({
     nome: '',
     email: '',
@@ -22,6 +21,20 @@ export default function PaginaCadastroAluno() {
   const [enviando, definirEnviando] = useState(false)
   const [mostrarSenha, definirMostrarSenha] = useState(false)
   const resumoErros = useRef(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    api.cursos
+      .listar(controller.signal)
+      .then(definirCursosDisponiveis)
+      .catch(() => {
+        if (!controller.signal.aborted) definirErroCursos('Não foi possível carregar os cursos agora.')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) definirCarregandoCursos(false)
+      })
+    return () => controller.abort()
+  }, [])
 
   function alterar(campo, valor) {
     definirForm((anterior) => ({ ...anterior, [campo]: valor }))
@@ -144,17 +157,18 @@ export default function PaginaCadastroAluno() {
                 value={form.curso}
                 onChange={(e) => alterar('curso', e.target.value)}
                 required
-                disabled={enviando}
+                disabled={enviando || carregandoCursos || !cursosDisponiveis.length}
                 aria-invalid={Boolean(erros.curso)}
                 aria-describedby={erros.curso ? 'erro-aluno-curso' : undefined}
               >
-                <option value="">Selecione seu curso</option>
+                <option value="">{carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}</option>
                 {cursosDisponiveis.map((c) => (
-                  <option key={c.sigla} value={c.sigla}>
-                    {c.nome}
+                  <option key={c.id} value={String(c.id)}>
+                    {c.nome}{c.sigla ? ` · ${c.sigla}` : ''}
                   </option>
                 ))}
               </select>
+              {erroCursos && <p className="acesso-erro-campo" role="status">{erroCursos}</p>}
               {erros.curso && (
                 <p className="acesso-erro-campo" id="erro-aluno-curso">
                   {erros.curso}
