@@ -1,7 +1,5 @@
-import { useRef, useState } from 'react'
-import { cursos } from '../../data/cursos.js'
-import { projetos } from '../../data/projetos.js'
-import { submissoes } from '../../data/submissoes.js'
+import { useEffect, useRef, useState } from 'react'
+import { api } from '../../api/index.js'
 import { enderecoPrivado } from '../../app/rotas.js'
 import './submissao.css'
 
@@ -70,13 +68,16 @@ const tiposProjeto = {
 }
 
 export default function PaginaSubmissao({ sessao, aoSubmeter }) {
+  const [cursos, definirCursos] = useState([])
+  const [orientadores, definirOrientadores] = useState([])
+  const [carregandoCadastros, definirCarregandoCadastros] = useState(true)
   const [formulario, definirFormulario] = useState(() => ({
     ...formularioInicial,
     nome: sessao?.usuario?.nome || '',
     email: sessao?.usuario?.email || '',
     curso:
       sessao?.tipoUsuario === 'ALUNO'
-        ? sessao?.usuario?.cursoId || sessao?.usuario?.curso || ''
+        ? sessao?.usuario?.cursoId || sessao?.usuario?.curso?.id || sessao?.usuario?.curso || ''
         : '',
   }))
   const [etapa, definirEtapa] = useState(0)
@@ -84,6 +85,25 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [erros, definirErros] = useState({})
   const [enviado, definirEnviado] = useState(false)
   const resumoErros = useRef(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    Promise.allSettled([
+      api.cursos.listar(controller.signal),
+      api.professores.listar(sessao?.token, {}, controller.signal),
+    ])
+      .then(([resultadoCursos, resultadoOrientadores]) => {
+        if (controller.signal.aborted) return
+        definirCursos(resultadoCursos.status === 'fulfilled' ? resultadoCursos.value : [])
+        definirOrientadores(
+          resultadoOrientadores.status === 'fulfilled' ? resultadoOrientadores.value : [],
+        )
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) definirCarregandoCadastros(false)
+      })
+    return () => controller.abort()
+  }, [sessao?.token])
 
   function alterar(campo, valor) {
     definirFormulario((anterior) => ({ ...anterior, [campo]: valor }))
@@ -108,15 +128,11 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     return ''
   }
 
-  function listaOrientadores(curso) {
-    const relacionados = submissoes
-      .filter((submissao) => submissao.curso === curso)
-      .map((submissao) => submissao.orientador)
-    const doCurso = cursos.find((item) => item.sigla === curso || item.nome === curso)
-    const doProjeto = projetos
-      .filter((projeto) => projeto.curso === curso || projeto.curso === doCurso?.nome)
-      .map((projeto) => projeto.orientador)
-    return [...new Set([...relacionados, ...doProjeto].filter(Boolean))]
+  function listaOrientadores(cursoId) {
+    const curso = cursos.find((item) => String(item.id) === String(cursoId))
+    return orientadores.filter(
+      (orientador) => !curso?.id || !orientador.cursoId || String(orientador.cursoId) === String(curso.id),
+    )
   }
 
   function validarEtapa() {
@@ -160,18 +176,6 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         registrarErros({}, 'Informe nome e e-mail válidos para cada integrante.')
         return false
       }
-    }
-    if (
-      etapa === 1 &&
-      projetos.some(
-        (projeto) =>
-          projeto.titulo?.trim().toLowerCase() === formulario.titulo.trim().toLowerCase(),
-      )
-    ) {
-      registrarErros({
-        titulo: 'Já existe um projeto com este título. Escolha um título diferente.',
-      })
-      return false
     }
     // TCC: valida link do Memória
     if (etapa === 3 && ehTCC) {
@@ -242,9 +246,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     if (!validarEtapa()) return
     const cursoProjeto = cursos.find(
       (item) =>
-        item.sigla === formulario.curso ||
-        item.nome === formulario.curso ||
-        String(item.identificador) === String(formulario.curso),
+        String(item.id) === String(formulario.curso) || String(item.identificador) === String(formulario.curso),
     )
     const autores = formulario.autores
       .filter((autor) => autor.nome.trim())
@@ -252,6 +254,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     const ehTCC = formulario.tipo === 'TCC'
     aoSubmeter?.({
       identificador: crypto.randomUUID(),
+      cursoId: cursoProjeto?.id,
       identificadorCurso: cursoProjeto?.identificador,
       titulo: formulario.titulo.trim(),
       tipo: formulario.tipo,
@@ -325,13 +328,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           <span className="submissao-confirmacao__selo" aria-hidden="true">
             ✓
           </span>
-          <p className="pagina-submissao__rotulo">Submissão concluída</p>
-          <h1 id="titulo-confirmacao">Submissão pronta para avaliação.</h1>
-          <p>
-            {sessao?.tipoUsuario === 'PROFESSOR' || sessao?.tipoUsuario === 'COORDENADOR'
-              ? 'A submissão foi encaminhada para avaliação do coordenador do curso.'
-              : 'A submissão aguarda a avaliação do professor orientador. Após o aceite, seguirá para o coordenador do curso. O aviso por e-mail depende da integração de notificações.'}
-          </p>
+          <p className="pagina-submissao__rotulo">Rascunho pronto</p>
+          <h1 id="titulo-confirmacao">Os dados foram guardados nesta sessão.</h1>
+          <p>Esta submissão ainda não foi enviada para avaliação. O serviço de submissões não está conectado.</p>
           <div className="submissao-confirmacao__resumo">
             <strong>{formulario.titulo}</strong>
             <span>
@@ -354,10 +353,10 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                   ...formularioInicial,
                   nome: sessao?.usuario?.nome || '',
                   email: sessao?.usuario?.email || '',
-                  curso:
-                    sessao?.tipoUsuario === 'ALUNO'
-                      ? sessao?.usuario?.cursoId || sessao?.usuario?.curso || ''
-                      : '',
+                    curso:
+                      sessao?.tipoUsuario === 'ALUNO'
+                        ? sessao?.usuario?.cursoId || sessao?.usuario?.curso?.id || sessao?.usuario?.curso || ''
+                        : '',
                 })
                 definirEtapa(0)
                 definirEnviado(false)
@@ -509,13 +508,18 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                     alterar('orientador', '')
                   }}
                 >
-                  <option value="">Selecione o curso</option>
+                  <option value="">{carregandoCadastros ? 'Carregando cursos…' : 'Selecione o curso'}</option>
                   {cursos.map((curso) => (
-                    <option key={curso.identificador} value={curso.sigla}>
-                      {curso.nome}
+                    <option key={curso.id} value={String(curso.id)}>
+                      {curso.nome}{curso.sigla ? ` · ${curso.sigla}` : ''}
                     </option>
                   ))}
                 </select>
+                {!carregandoCadastros && !cursos.length && (
+                  <small className="formulario-submissao__erro-campo" role="status">
+                    Os cursos não puderam ser carregados agora.
+                  </small>
+                )}
                 {erros.curso && (
                   <small id="erro-curso" className="formulario-submissao__erro-campo">
                     {erros.curso}
@@ -663,8 +667,8 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                       : 'Selecione o curso primeiro'}
                   </option>
                   {listaOrientadores(formulario.curso).map((orientador) => (
-                    <option key={orientador} value={orientador}>
-                      {orientador}
+                    <option key={orientador.id} value={orientador.nome}>
+                      {orientador.nome}
                     </option>
                   ))}
                 </select>

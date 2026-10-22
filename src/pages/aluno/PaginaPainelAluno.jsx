@@ -2,11 +2,6 @@ import { useMemo } from 'react'
 import { enderecoPrivado } from '../../app/rotas.js'
 import './painel-aluno.css'
 
-const rotuloCurso = {
-  TADS: 'Análise e Desenvolvimento de Sistemas',
-  Redes: 'Redes de Computadores',
-}
-
 const classeStatus = {
   'Em análise': 'status--em-análise',
   'Aguardando Orientador': 'status--aguardando-orientador',
@@ -152,7 +147,7 @@ export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
                         {item.orientador && ` · ${item.orientador}`}
                       </span>
                     </th>
-                    <td>{item.curso || rotuloCurso[item.curso] || item.cursoCompleto}</td>
+                    <td>{item.cursoCompleto || item.curso || '—'}</td>
                     <td>{item.enviadoEm}</td>
                     <td>
                       <span

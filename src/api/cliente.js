@@ -94,7 +94,7 @@ export async function requisitarApi(caminhoCompletoOuRelativo, opcoes = {}) {
 
   let dados = null
   const tipoConteudo = resposta.headers.get('content-type') || ''
-  if (tipoConteudo.includes('application/json')) {
+  if (tipoConteudo.includes('json')) {
     try {
       dados = await resposta.json()
     } catch (falhaJson) {
@@ -107,6 +107,12 @@ export async function requisitarApi(caminhoCompletoOuRelativo, opcoes = {}) {
 
   if (!resposta.ok) {
     let mensagem = 'Ocorreu um erro ao comunicar com a API.'
+    if (resposta.status < 500) {
+      mensagem =
+        (typeof dados?.detail === 'string' && dados.detail) ||
+        (typeof dados?.title === 'string' && dados.title) ||
+        mensagem
+    }
     if (resposta.status === 401) {
       mensagem = 'Sua autenticação não foi aceita. Verifique seus dados ou faça login novamente.'
     } else if (resposta.status === 403) {

@@ -3,10 +3,10 @@ import './resumo-curso.css'
 
 export default function ResumoCurso({ curso }) {
   const indicadores = [
-    ['Grau', curso.grau, 'Ensino superior', 'grau-detalhe'],
+    ['Grau', curso.grau, null, 'grau-detalhe'],
     ['Duração', curso.duracao, curso.anos, 'duracao-detalhe'],
     ['Modalidade', curso.modalidade, curso.campus, 'modalidade-detalhe'],
-    ['Turno', curso.turno, curso.horario, 'turno-detalhe'],
+    ['Turno', curso.turno, null, 'turno-detalhe'],
     ['Carga horária', curso.cargaHoraria || 'A informar', 'Total integrado', 'carga-detalhe'],
     [
       'Matriz',
@@ -22,7 +22,7 @@ export default function ResumoCurso({ curso }) {
     <section className="resumo-curso" aria-labelledby="titulo-curso">
       <div className="resumo-curso__identidade">
         <div>
-          <span className="etiqueta">Graduação tecnológica</span>
+          <span className="etiqueta">{curso.grau}</span>
           <h1 id="titulo-curso">
             {curso.nome} ({curso.sigla})
           </h1>

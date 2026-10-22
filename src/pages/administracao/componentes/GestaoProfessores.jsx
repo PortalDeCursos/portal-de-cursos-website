@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   cadastrarProfessor,
   excluirProfessor,
@@ -95,9 +95,11 @@ export default function GestaoProfessores({ token, cursoId }) {
             definirErro('')
             definirExclusao(null)
           }}
-          disabled={criando || ocupado || consulta.estado !== 'pronto'}
+          disabled={ocupado || consulta.estado !== 'pronto'}
+          aria-expanded={criando}
+          aria-controls="cadastro-professor"
         >
-          Novo professor
+          {criando ? 'Fechar cadastro' : 'Novo professor'}
         </button>
       </header>
       {mensagem && (
@@ -106,6 +108,7 @@ export default function GestaoProfessores({ token, cursoId }) {
         </p>
       )}
       {criando && (
+        <div className="gestao-expansao gestao-expansao--novo" id="cadastro-professor">
         <FormularioProfessor
           aoSalvar={salvar}
           aoCancelar={() => {
@@ -117,31 +120,7 @@ export default function GestaoProfessores({ token, cursoId }) {
           cursoIdInicial={cursoId || ''}
           cursosVinculados={cursosVinculados}
         />
-      )}
-      {exclusao && (
-        <ConfirmacaoGestao rotulo="titulo-excluir-professor">
-          <h2 id="titulo-excluir-professor">Excluir {exclusao.nome}?</h2>
-          <p>
-            O cadastro será removido do serviço de professores. Esta ação não pode ser desfeita
-            aqui.
-          </p>
-          {erro && <p role="alert">{erro}</p>}
-          <div className="gestao-acoes">
-            <button
-              className="botao-secundario"
-              onClick={() => {
-                definirExclusao(null)
-                definirErro('')
-              }}
-              disabled={ocupado}
-            >
-              Manter professor
-            </button>
-            <button className="gestao-excluir" onClick={remover} disabled={ocupado}>
-              {ocupado ? 'Excluindo…' : 'Confirmar exclusão'}
-            </button>
-          </div>
-        </ConfirmacaoGestao>
+        </div>
       )}
       {consulta.estado === 'carregando' && <p role="status">Carregando professores…</p>}
       {consulta.estado === 'erro' && (
@@ -186,7 +165,8 @@ export default function GestaoProfessores({ token, cursoId }) {
               </thead>
               <tbody>
                 {itens.map((item) => (
-                  <tr key={item.id}>
+                  <Fragment key={item.id}>
+                  <tr>
                     <th scope="row">
                       {item.nome}
                       <span>{item.email}</span>
@@ -196,8 +176,10 @@ export default function GestaoProfessores({ token, cursoId }) {
                     <td>
                       <button
                         className="gestao-excluir"
+                        aria-expanded={exclusao?.id === item.id}
+                        aria-controls={`excluir-professor-${item.id}`}
                         onClick={() => {
-                          definirExclusao(item)
+                          definirExclusao(exclusao?.id === item.id ? null : item)
                           definirCriando(false)
                           definirErro('')
                         }}
@@ -207,6 +189,22 @@ export default function GestaoProfessores({ token, cursoId }) {
                       </button>
                     </td>
                   </tr>
+                  {exclusao?.id === item.id && (
+                    <tr className="gestao-linha-expandida">
+                      <td colSpan={4} id={`excluir-professor-${item.id}`}>
+                        <ConfirmacaoGestao rotulo={`titulo-excluir-professor-${item.id}`}>
+                          <h2 id={`titulo-excluir-professor-${item.id}`}>Excluir {item.nome}?</h2>
+                          <p>O cadastro será removido. Esta ação não pode ser desfeita.</p>
+                          {erro && <p role="alert">{erro}</p>}
+                          <div className="gestao-acoes">
+                            <button className="botao-secundario" onClick={() => { definirExclusao(null); definirErro('') }} disabled={ocupado}>Manter professor</button>
+                            <button className="gestao-excluir" onClick={remover} disabled={ocupado}>{ocupado ? 'Excluindo…' : 'Confirmar exclusão'}</button>
+                          </div>
+                        </ConfirmacaoGestao>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

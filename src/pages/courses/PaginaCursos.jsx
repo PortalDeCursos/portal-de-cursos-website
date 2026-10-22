@@ -237,24 +237,6 @@ export default function PaginaCursos() {
             ))}
         </div>
       </div>
-      {consulta.estado === 'pronto' && resultados.length > 0 && (
-        <section className="apoio-catalogo">
-          <span className="apoio-catalogo__icone">
-            <Icone nome="formacao-cursos" />
-          </span>
-          <div>
-            <h2>Não encontrou a formação que procurava?</h2>
-            <p>
-              Conheça os projetos acadêmicos e descubra o que os estudantes desenvolvem ao longo da
-              formação.
-            </p>
-          </div>
-          <a className="botao-secundario" href="#biblioteca">
-            <Icone nome="projetos-cursos" />
-            Ver projetos
-          </a>
-        </section>
-      )}
     </main>
   )
 }

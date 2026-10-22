@@ -11,42 +11,44 @@ export async function consultarUsuarios(token, sinal) {
   })
 }
 
+export async function buscarUsuarios(token, filtros = {}, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  const parametros = new URLSearchParams()
+  if (filtros.nome?.trim()) parametros.set('nome', filtros.nome.trim())
+  const query = parametros.size ? `?${parametros}` : ''
+  return requisitarApi(`${base}/usuarios/buscar${query}`, { metodo: 'GET', token, sinal })
+}
+
+export async function obterUsuarioPorId(token, id, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, { metodo: 'GET', token, sinal })
+}
+
+export async function cadastrarUsuario(dados, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  return requisitarApi(`${base}/usuarios`, { metodo: 'POST', corpo: dados, sinal })
+}
+
+export async function atualizarUsuario(token, id, dados, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, {
+    metodo: 'PUT', corpo: dados, token, sinal,
+  })
+}
+
+export async function excluirUsuario(token, id, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, {
+    metodo: 'DELETE', token, sinal,
+  })
+}
+
 export async function identificarConta(token, email, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
   const corresponde = (conta) =>
     typeof conta?.email === 'string' && conta.email.toLowerCase() === email.toLowerCase()
 
-  let listaUsuarios = null
-  try {
-    listaUsuarios = await requisitarApi(`${base}/usuarios`, {
-      metodo: 'GET',
-      token,
-      sinal,
-    })
-  } catch (falha) {
-    if (falha.status !== 403) {
-      throw new ErroApi('Não foi possível confirmar as permissões da conta. Tente novamente.', {
-        status: falha.status,
-        causa: falha,
-      })
-    }
-  }
-
-  if (Array.isArray(listaUsuarios)) {
-    const admin = listaUsuarios.find(corresponde)
-    if (admin?.tipoUsuario === 'ADMIN') {
-      return {
-        tipoUsuario: 'ADMIN',
-        usuario: {
-          id: admin.id,
-          nome: admin.nome || email,
-          email: admin.email,
-        },
-      }
-    }
-  }
-
-  // Se não foi identificado como ADMIN ou tomou 403, consulta o endpoint de professores
+  // Este endpoint aceita contas autenticadas; /usuarios exige papel ADMIN.
   let listaProfessores
   try {
     listaProfessores = await requisitarApi(`${base}/professores/buscar`, {
@@ -95,6 +97,34 @@ export async function identificarConta(token, email, sinal) {
     }
   }
 
+  let listaUsuarios
+  try {
+    listaUsuarios = await requisitarApi(`${base}/usuarios`, {
+      metodo: 'GET',
+      token,
+      sinal,
+    })
+  } catch (falha) {
+    throw new ErroApi('Não foi possível confirmar as permissões da conta. Tente novamente.', {
+      status: falha.status,
+      causa: falha,
+    })
+  }
+
+  if (Array.isArray(listaUsuarios)) {
+    const admin = listaUsuarios.find(corresponde)
+    if (admin?.tipoUsuario === 'ADMIN') {
+      return {
+        tipoUsuario: 'ADMIN',
+        usuario: {
+          id: admin.id,
+          nome: admin.nome || email,
+          email: admin.email,
+        },
+      }
+    }
+  }
+
   throw new ErroApi('Esta conta não possui acesso à área de professor ou de administração.', {
     status: 403,
   })
@@ -103,6 +133,11 @@ export async function identificarConta(token, email, sinal) {
 export const moduloUsuarios = {
   versao: VERSAO,
   consultarUsuarios,
+  buscar: buscarUsuarios,
+  obterPorId: obterUsuarioPorId,
+  cadastrar: cadastrarUsuario,
+  atualizar: atualizarUsuario,
+  excluir: excluirUsuario,
   identificarConta,
 }
 
