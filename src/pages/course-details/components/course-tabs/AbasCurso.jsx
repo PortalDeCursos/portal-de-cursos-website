@@ -4,11 +4,9 @@ import './abas-curso.css'
 const abas = [
   ['visao-geral', 'Visão geral', 'visao-detalhe'],
   ['grade-curricular', 'Grade curricular', 'grade-detalhe'],
-  ['professores', 'Professores', 'docentes-detalhe'],
-  ['projetos', 'Projetos aprovados', 'projetos-detalhe'],
 ]
 
-export default function AbasCurso({ selecionada, selecionar, totalProjetos }) {
+export default function AbasCurso({ selecionada, selecionar }) {
   function navegarTeclado(evento, indice) {
     let proximo
     if (evento.key === 'ArrowRight') proximo = (indice + 1) % abas.length
@@ -38,14 +36,9 @@ export default function AbasCurso({ selecionada, selecionar, totalProjetos }) {
           >
             <Icone nome={icone} />
             {titulo}
-            {identificador === 'projetos' && <span>{totalProjetos}</span>}
           </button>
         ))}
       </div>
-      <a href="#submeter" className="abas-curso__enviar">
-        <Icone nome="enviar-detalhe" />
-        Enviar trabalho
-      </a>
     </div>
   )
 }

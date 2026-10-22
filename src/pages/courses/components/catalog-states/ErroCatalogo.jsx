@@ -7,8 +7,8 @@ export default function ErroCatalogo({ erro, tentarNovamente, ultimaTentativa })
       <span className="estado-catalogo__icone">
         <Icone nome="erro-cursos" />
       </span>
-      {erro.codigo && (
-        <small className="erro-catalogo__codigo">Código de resposta: HTTP {erro.codigo}</small>
+      {erro.status > 0 && (
+        <small className="erro-catalogo__codigo">Código de resposta: HTTP {erro.status}</small>
       )}
       <h2 id="titulo-erro">Não foi possível carregar os cursos</h2>
       <p>

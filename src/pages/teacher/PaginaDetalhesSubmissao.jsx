@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import './professor.css'
 import { enderecoPrivado, navegar } from '../../app/rotas.js'
-import { cursos } from '../../data/cursos.js'
 import ConfirmacaoGestao from '../administracao/componentes/ConfirmacaoGestao.jsx'
 
 function submissaoDoCurso(item, cursoId) {
   if (!item || !cursoId) return false
-  if (String(item.identificadorCurso ?? item.cursoId ?? '') === String(cursoId)) return true
-  const curso = cursos.find((registro) => String(registro.identificador) === String(cursoId))
-  return Boolean(curso && [curso.sigla, curso.nome].includes(item.curso))
+  return [item.cursoId, item.identificadorCurso]
+    .filter((referencia) => referencia !== undefined && referencia !== null)
+    .some((referencia) => String(referencia) === String(cursoId))
 }
 
 function submetidaAoOrientador(item, usuario) {

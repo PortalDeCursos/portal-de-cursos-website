@@ -1,29 +1,21 @@
 import Icone from '../../../../shared/components/icon/Icone.jsx'
 import './filtros-cursos.css'
 
-const campos = [
-  ['grau', 'Tipo de grau', ['Tecnologia', 'Bacharelado', 'Licenciatura']],
-  ['modalidade', 'Modalidade', ['Presencial', 'A distância', 'Híbrida']],
-  ['campus', 'Campus / polo', ['Campus Central', 'Campus Tecnológico', 'Campus Norte']],
-]
-const grupos = [
-  [
-    'areas',
-    'Área de conhecimento',
-    [
-      'Exatas e Tecnologia',
-      'Ciências da Saúde',
-      'Ciências Humanas e Sociais',
-      'Gestão e Negócios',
-      'Engenharias e Produção',
-    ],
-    'area',
-  ],
-  ['turnos', 'Turno de oferta', ['Matutino', 'Noturno', 'Integral'], 'turno'],
-  ['duracoes', 'Duração prevista', ['Até 2 anos', '3 a 4 anos', '4 a 5 anos'], 'duracao'],
-]
-
 export default function FiltrosCursos({ filtros, alterar, limpar, bloqueado, cursos }) {
+  const opcoesUnicas = (campo) =>
+    [...new Set(cursos.map((curso) => curso[campo]).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'pt-BR'),
+    )
+  const campos = [
+    ['grau', 'Tipo de grau', opcoesUnicas('grau')],
+    ['modalidade', 'Modalidade', opcoesUnicas('modalidade')],
+    ['campus', 'Campus', opcoesUnicas('campus')],
+  ]
+  const grupos = [
+    ['areas', 'Área de conhecimento', opcoesUnicas('area'), 'area'],
+    ['turnos', 'Turno de oferta', opcoesUnicas('turno'), 'turno'],
+    ['duracoes', 'Duração prevista', ['Até 2 anos', '3 a 4 anos', '4 a 5 anos'], 'duracao'],
+  ].filter(([, , opcoes]) => opcoes.length)
   const quantidade = Object.values(filtros).reduce(
     (total, valor) => total + (Array.isArray(valor) ? valor.length : Number(Boolean(valor))),
     0,
@@ -93,7 +85,7 @@ export default function FiltrosCursos({ filtros, alterar, limpar, bloqueado, cur
         <Icone nome="informacao-cursos" />
         {bloqueado
           ? 'Seus filtros foram preservados e serão reativados quando o catálogo estiver disponível.'
-          : 'Explore a formação e conheça o que os estudantes desenvolvem em cada curso.'}
+          : 'Refine a busca usando os dados cadastrados na API de cursos.'}
       </p>
     </aside>
   )
