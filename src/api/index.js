@@ -10,9 +10,12 @@ import {
   apiV1,
   moduloAutenticacao,
   moduloCursos,
+  moduloDisciplinas,
   moduloProfessores,
   moduloSubmissoes,
   moduloUsuarios,
+  moduloAlunos,
+  moduloCoordenadores,
 } from './v1/index.js'
 
 /**
@@ -61,7 +64,10 @@ export const api = {
   usuarios: moduloUsuarios,
   professores: moduloProfessores,
   cursos: moduloCursos,
+  disciplinas: moduloDisciplinas,
   submissoes: moduloSubmissoes,
+  alunos: moduloAlunos,
+  coordenadores: moduloCoordenadores,
 }
 
 export {
@@ -74,8 +80,11 @@ export {
   apiV1,
   moduloAutenticacao,
   moduloUsuarios,
+  moduloAlunos,
+  moduloCoordenadores,
   moduloProfessores,
   moduloCursos,
+  moduloDisciplinas,
   moduloSubmissoes,
 }
 

@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
+import { api } from '../../api/index.js'
 import { basePortal, enderecoPrivado } from '../../app/rotas.js'
-import { cursos } from '../../data/cursos.js'
 import TabelaSubmissoes from '../painel/componentes/TabelaSubmissoes.jsx'
 import GestaoConteudos from '../administracao/componentes/GestaoConteudos.jsx'
 import GestaoProfessores from '../administracao/componentes/GestaoProfessores.jsx'
@@ -12,6 +13,19 @@ function pertenceAoCurso(item, cursoId, curso) {
 }
 
 export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar, submissoes }) {
+  const [cursos, definirCursos] = useState([])
+  useEffect(() => {
+    const controller = new AbortController()
+    api.cursos
+      .listar(controller.signal)
+      .then((registros) => {
+        if (!controller.signal.aborted) definirCursos(registros)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) definirCursos([])
+      })
+    return () => controller.abort()
+  }, [])
   const cursoId = sessao.usuario.cursoId
   const referenciaCurso = sessao.usuario.curso
   const curso = cursos.find((item) =>
@@ -34,8 +48,8 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
     curso?.id,
     curso?.identificador,
   ].filter((id) => id !== undefined && id !== null)
-  const cursosDaCoordenacao = rascunhos.cursos.filter((item) =>
-    idsDoCurso.some((id) => String(item.id ?? item.identificador) === String(id)),
+  const cursosDaCoordenacao = cursos.filter((item) =>
+    idsDoCurso.some((id) => [item.id, item.identificador].some((valor) => String(valor) === String(id))),
   )
   const projetosDoCurso = rascunhos.projetos.filter((item) =>
     idsDoCurso.some((id) => pertenceAoCurso(item, id, curso)),
@@ -50,9 +64,9 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
         {cursosDaCoordenacao.length ? (
           <GestaoConteudos
             dominio="cursos"
-            itens={rascunhos.cursos}
+            itens={cursos}
             aoAlterar={(itens) => aoAlterar('cursos', itens)}
-            cursoId={curso?.identificador || cursoId}
+            cursoId={curso?.id || cursoId}
             token={sessao.token}
             somenteEdicao
           />

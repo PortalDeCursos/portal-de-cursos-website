@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { projetos } from '../../data/projetos.js'
 import ItemProjeto from '../../shared/components/project-item/ItemProjeto.jsx'
 import FiltrosProjetos from './components/FiltrosProjetos.jsx'
 import './projetos.css'
 
-export default function PaginaProjetos({ itens = projetos }) {
+export default function PaginaProjetos({ itens = [] }) {
   const [filtrosAbertos, definirFiltrosAbertos] = useState(false)
   const [ordem, definirOrdem] = useState('nome')
   const [busca, definirBusca] = useState('')
@@ -102,8 +101,12 @@ export default function PaginaProjetos({ itens = projetos }) {
             </div>
           ) : (
             <div className="pagina-projetos__vazio">
-              <h2>Nenhum projeto encontrado</h2>
-              <p>Tente outra palavra-chave ou remova os filtros para ampliar a busca.</p>
+              <h2>{publicados.length ? 'Nenhum projeto encontrado' : 'Ainda não há projetos publicados'}</h2>
+              <p>
+                {publicados.length
+                  ? 'Tente outra palavra-chave ou remova os filtros para ampliar a busca.'
+                  : 'Os trabalhos publicados aparecerão aqui quando forem cadastrados.'}
+              </p>
               <button className="botao-secundario" onClick={limpar}>
                 Ver todos os projetos
               </button>

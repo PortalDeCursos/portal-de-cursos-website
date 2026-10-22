@@ -13,9 +13,17 @@ export function formatarPerfilProfessor(item) {
   }
 }
 
-export async function listarProfessores(token, sinal) {
+export async function listarProfessores(token, filtros = {}, sinal) {
+  if (typeof filtros?.addEventListener === 'function' && sinal === undefined) {
+    sinal = filtros
+    filtros = {}
+  }
   const base = obterBaseApi('usuarios', VERSAO)
-  const dados = await requisitarApi(`${base}/professores/buscar`, {
+  const parametros = new URLSearchParams()
+  if (filtros.nome?.trim()) parametros.set('nome', filtros.nome.trim())
+  if (filtros.titulacao) parametros.set('titulacao', filtros.titulacao)
+  const query = parametros.size ? `?${parametros}` : ''
+  const dados = await requisitarApi(`${base}/professores/buscar${query}`, {
     metodo: 'GET',
     token,
     sinal,
@@ -28,29 +36,48 @@ export async function listarProfessores(token, sinal) {
   return dados.map(formatarPerfilProfessor)
 }
 
-export async function cadastrarProfessor(token, dados) {
+export async function obterProfessorPorId(token, id, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  return requisitarApi(`${base}/professores/${encodeURIComponent(id)}`, {
+    metodo: 'GET', token, sinal,
+  })
+}
+
+export async function cadastrarProfessor(token, dados, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
   const resposta = await requisitarApi(`${base}/professores`, {
     metodo: 'POST',
     corpo: dados,
     token,
+    sinal,
   })
 
   return formatarPerfilProfessor(resposta)
 }
 
-export async function excluirProfessor(token, id) {
+export async function excluirProfessor(token, id, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
   return requisitarApi(`${base}/professores/${encodeURIComponent(id)}`, {
     metodo: 'DELETE',
     token,
+    sinal,
   })
+}
+
+export async function atualizarProfessor(token, id, dados, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  const resposta = await requisitarApi(`${base}/professores/${encodeURIComponent(id)}`, {
+    metodo: 'PUT', corpo: dados, token, sinal,
+  })
+  return formatarPerfilProfessor(resposta)
 }
 
 export const moduloProfessores = {
   versao: VERSAO,
   listar: listarProfessores,
+  obterPorId: obterProfessorPorId,
   cadastrar: cadastrarProfessor,
+  atualizar: atualizarProfessor,
   excluir: excluirProfessor,
   formatarPerfil: formatarPerfilProfessor,
 }

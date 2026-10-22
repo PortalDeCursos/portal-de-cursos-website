@@ -133,6 +133,17 @@
   min-width: 0;
   padding: var(--hero-espaco-grupo) var(--hero-recuo) var(--hero-espaco-amplo);
 }
+.hero-inicial__rotulo {
+  margin: 0 0 12px;
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero-carrossel--informativo {
+  justify-content: center;
+}
 .hero-destaque__conteudo h2 {
   margin: 0;
   max-width: 19ch;
