@@ -1,0 +1,40 @@
+.painel-informativo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--suave) 78%, var(--superficie));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--borda) 68%, transparent);
+  color: var(--texto);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.painel-informativo::before {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--azul);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--azul) 12%, transparent);
+  content: '';
+}
+
+.painel-informativo strong {
+  color: var(--titulo);
+  font-size: 13px;
+}
+
+.painel-informativo--observacao::before {
+  background: var(--verde);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--verde) 12%, transparent);
+}
+
+@media (max-width: 600px) {
+  .painel-informativo {
+    padding: 15px 16px;
+  }
+}

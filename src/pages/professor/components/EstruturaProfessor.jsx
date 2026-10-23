@@ -88,7 +88,7 @@ export default function EstruturaProfessor({
       {usuario && (administrador || coordenador) ? (
         <div className="painel-estrutura">
           {administrador ? (
-            <NavegacaoAdministracao rota={rota} />
+            <NavegacaoAdministracao rota={rota} usuario={usuario} />
           ) : (
             <NavegacaoCoordenacao rota={rota} />
           )}

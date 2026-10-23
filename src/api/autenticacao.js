@@ -43,6 +43,7 @@ export async function autenticar(email, senha, sinal) {
 
   return {
     token: resposta.token,
+    tipoUsuario: resposta.tipoUsuario || resposta.role,
     expiraEm: Date.now() + resposta.expiracao,
     expiracao: resposta.expiracao,
   }

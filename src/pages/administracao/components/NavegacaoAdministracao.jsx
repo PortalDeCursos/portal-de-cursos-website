@@ -35,6 +35,11 @@ const desenhos = {
       <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 6h8M8 9h7" />
     </>
   ),
+  campus: (
+    <>
+      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M10 21v-4h4v4" />
+    </>
+  ),
   projetos: (
     <>
       <path d="M4 4h16v16H4z" />
@@ -89,6 +94,7 @@ const grupos = [
     itens: [
       ['cursos', 'Cursos', 'cursos', 'Cursos do portal'],
       ['disciplinas', 'Disciplinas', 'disciplinas', 'Matrizes curriculares'],
+      ['campus', 'Campus', 'campus', 'Unidades acadêmicas'],
       ['projetos', 'Projetos', 'projetos', 'Acervo acadêmico'],
     ],
   },
@@ -102,10 +108,20 @@ const grupos = [
   },
 ]
 
-export default function NavegacaoAdministracao({ rota }) {
+function iniciais(nome = '') {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((parte) => parte[0])
+    .join('')
+    .toLocaleUpperCase('pt-BR')
+}
+
+export default function NavegacaoAdministracao({ rota, usuario }) {
+  const papel = usuario?.tipoUsuario === 'ADMIN' ? 'Administrador' : 'Coordenação'
   return (
     <aside className="painel-navegacao">
-      <span className="painel-navegacao__titulo">Administração</span>
       <nav aria-label="Navegação administrativa">
         {grupos.map((grupo) => (
           <section className="painel-navegacao__grupo" key={grupo.titulo}>
@@ -116,6 +132,7 @@ export default function NavegacaoAdministracao({ rota }) {
                 href={enderecoPrivado(`administracao/${destino}`)}
                 aria-current={
                   rota === `administracao/${destino}` ||
+                  (destino === 'campus' && rota.startsWith('administracao/campus/')) ||
                   (destino === 'painel' && rota === 'administracao')
                     ? 'page'
                     : undefined
@@ -131,7 +148,17 @@ export default function NavegacaoAdministracao({ rota }) {
           </section>
         ))}
       </nav>
-      <p className="painel-navegacao__nota">Gestão geral do Portal de Cursos</p>
+      {usuario && (
+        <div className="painel-navegacao__conta">
+          <span className="painel-navegacao__avatar" aria-hidden="true">
+            {iniciais(usuario.nome)}
+          </span>
+          <span>
+            <strong>{usuario.nome}</strong>
+            <small>{papel}</small>
+          </span>
+        </div>
+      )}
     </aside>
   )
 }

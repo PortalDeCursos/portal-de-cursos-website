@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import '@/shared/styles/painel-informativo.css'
 import './professor.css'
 import { enderecoPrivado, navegar } from '../../app/rotas.js'
 import ConfirmacaoGestao from '@/pages/administracao/components/ConfirmacaoGestao.jsx'
@@ -352,7 +353,7 @@ export default function PaginaDetalhesSubmissao({
               </div>
             </div>
           ) : (
-            <p className="detalhe-submissao__aviso pagina-detalhes-submissao__decisao">
+            <p className="detalhe-submissao__aviso painel-informativo pagina-detalhes-submissao__decisao">
               {status === 'Aprovado'
                 ? 'Esta submissão foi aprovada e está disponível no portal.'
                 : status === 'Recusado'
