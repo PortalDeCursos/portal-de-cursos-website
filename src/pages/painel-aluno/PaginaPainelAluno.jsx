@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { enderecoPrivado } from '../../app/rotas.js'
+import '@/shared/styles/painel-informativo.css'
+import { basePortal } from '../../app/rotas.js'
 import './painel-aluno.css'
 
 const classeStatus = {
@@ -61,7 +62,7 @@ export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
             cada um.
           </p>
         </div>
-        <a id="btn-submeter-projeto" className="botao-primario" href={enderecoPrivado('submeter')}>
+        <a id="btn-submeter-projeto" className="botao-primario" href={`${basePortal}#submeter`}>
           + Submeter projeto
         </a>
       </header>
@@ -113,7 +114,7 @@ export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
             <a
               id="btn-submeter-primeiro"
               className="botao-primario"
-              href={enderecoPrivado('submeter')}
+              href={`${basePortal}#submeter`}
             >
               Submeter meu primeiro projeto
             </a>
@@ -165,11 +166,13 @@ export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
       </section>
 
       {/* Aviso somente-leitura */}
-      <aside className="painel-aluno-aviso" aria-label="Informação sobre permissões">
-        <strong>Somente visualização</strong>
+      <aside
+        className="painel-aluno-aviso painel-informativo painel-informativo--observacao"
+        aria-label="Informação sobre permissões"
+      >
         <span>
-          Projetos submetidos não podem ser editados ou avaliados pelo aluno. Para correções, entre
-          em contato com o professor orientador.
+          <strong>Somente visualização.</strong> Projetos submetidos não podem ser editados ou
+          avaliados pelo aluno. Para correções, entre em contato com o professor orientador.
         </span>
       </aside>
     </main>

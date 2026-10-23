@@ -10,7 +10,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 20px;
+}
+.painel-titulo__acoes {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 .pagina-painel h1 {
   margin: 0;
@@ -275,6 +282,11 @@
     align-items: start;
     flex-direction: column;
     gap: 16px;
+  }
+  .painel-titulo__acoes {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
   .painel-indicadores {
     gap: 12px;

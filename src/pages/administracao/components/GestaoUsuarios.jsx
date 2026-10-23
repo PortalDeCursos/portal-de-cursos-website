@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { consultarUsuarios } from '@/api/usuarios.js'
+import { listarCursos } from '@/api/cursos.js'
 import { listarProfessores } from '../services/gerenciarProfessores.js'
 
 export default function GestaoUsuarios({ token }) {
@@ -8,6 +9,15 @@ export default function GestaoUsuarios({ token }) {
   const [papel, definirPapel] = useState('todos')
   const [curso, definirCurso] = useState('todos')
   const [tentativa, definirTentativa] = useState(0)
+  const [cursosDados, definirCursosDados] = useState([])
+
+  useEffect(() => {
+    const controle = new AbortController()
+    listarCursos(controle.signal)
+      .then(definirCursosDados)
+      .catch(() => definirCursosDados([]))
+    return () => controle.abort()
+  }, [])
 
   useEffect(() => {
     const controle = new AbortController()
@@ -53,13 +63,26 @@ export default function GestaoUsuarios({ token }) {
     [busca, consulta.itens, papel, curso],
   )
   const cursos = [...new Set(consulta.itens.map((item) => item.cursoId).filter(Boolean))]
+  const tiposUsuario = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO']
+  const acessoDisponivel = consulta.itens.some(
+    (item) => item.status !== undefined || item.ativo !== undefined || item.bloqueado !== undefined,
+  )
+  const rotuloTipo = (tipo) =>
+    ({
+      ADMIN: 'Administrador',
+      COORDENADOR: 'Coordenador',
+      PROFESSOR: 'Professor',
+      ALUNO: 'Aluno',
+    })[tipo] ||
+    tipo ||
+    'Não informado'
 
   return (
     <>
       <header className="painel-titulo">
         <div>
-          <h1>Usuários</h1>
-          <p>Encontre contas por nome, papel ou curso.</p>
+          <h1>Todos os usuários</h1>
+          <p>Administradores, coordenadores, professores e alunos.</p>
         </div>
       </header>
       {consulta.estado === 'carregando' && <p role="status">Carregando contas…</p>}
@@ -90,24 +113,35 @@ export default function GestaoUsuarios({ token }) {
                 placeholder="Nome ou e-mail"
               />
             </label>
-            <label className="gestao-busca">
-              Papel
-              <select value={papel} onChange={(evento) => definirPapel(evento.target.value)}>
-                <option value="todos">Todos os papéis</option>
-                {['ALUNO', 'PROFESSOR', 'COORDENADOR', 'ADMIN'].map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo === 'ADMIN' ? 'Administrador' : tipo[0] + tipo.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="gestao-papeis" role="group" aria-label="Filtrar por papel">
+              <button
+                type="button"
+                aria-pressed={papel === 'todos'}
+                onClick={() => definirPapel('todos')}
+              >
+                Todos <span>{consulta.itens.length}</span>
+              </button>
+              {tiposUsuario.map((tipo) => (
+                <button
+                  type="button"
+                  key={tipo}
+                  aria-pressed={papel === tipo}
+                  onClick={() => definirPapel(tipo)}
+                >
+                  {rotuloTipo(tipo)}{' '}
+                  <span>{consulta.itens.filter((item) => item.tipoUsuario === tipo).length}</span>
+                </button>
+              ))}
+            </div>
             <label className="gestao-busca">
               Curso
               <select value={curso} onChange={(evento) => definirCurso(evento.target.value)}>
                 <option value="todos">Todos os cursos</option>
                 {cursos.map((cursoId) => (
                   <option key={cursoId} value={String(cursoId)}>
-                    Curso {cursoId}
+                    {cursosDados.find((item) => String(item.id) === String(cursoId))?.sigla ||
+                      cursosDados.find((item) => String(item.id) === String(cursoId))?.nome ||
+                      String(cursoId)}
                   </option>
                 ))}
               </select>
@@ -125,6 +159,7 @@ export default function GestaoUsuarios({ token }) {
                   <th scope="col">Pessoa</th>
                   <th scope="col">Papel</th>
                   <th scope="col">Curso</th>
+                  {acessoDisponivel && <th scope="col">Acesso</th>}
                 </tr>
               </thead>
               <tbody>
@@ -134,8 +169,48 @@ export default function GestaoUsuarios({ token }) {
                       {item.nome || 'Sem nome'}
                       <span>{item.email}</span>
                     </th>
-                    <td>{item.tipoUsuario || 'Não informado'}</td>
-                    <td>{item.cursoId || '—'}</td>
+                    <td>
+                      <span
+                        className={`usuario-papel usuario-papel--${String(item.tipoUsuario || '').toLowerCase()}`}
+                      >
+                        {rotuloTipo(item.tipoUsuario)}
+                      </span>
+                    </td>
+                    <td>
+                      {cursosDados.find(
+                        (cursoItem) => String(cursoItem.id) === String(item.cursoId),
+                      )?.sigla ||
+                        item.cursoId ||
+                        '—'}
+                    </td>
+                    {acessoDisponivel &&
+                      (() => {
+                        const acesso =
+                          item.status ??
+                          (item.bloqueado === true
+                            ? 'Bloqueado'
+                            : item.ativo === true
+                              ? 'Ativo'
+                              : item.ativo === false
+                                ? 'Inativo'
+                                : '—')
+                        const normalizado = String(acesso).toLocaleLowerCase('pt-BR')
+                        const classe = normalizado.includes('bloque')
+                          ? 'bloqueado'
+                          : normalizado.includes('inativ')
+                            ? 'inativo'
+                            : normalizado.includes('ativ')
+                              ? 'ativo'
+                              : 'indefinido'
+                        return (
+                          <td>
+                            <span className={`usuario-acesso usuario-acesso--${classe}`}>
+                              <span aria-hidden="true" />
+                              {String(acesso)}
+                            </span>
+                          </td>
+                        )
+                      })()}
                   </tr>
                 ))}
               </tbody>
