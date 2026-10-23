@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react'
 import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } from './rotas.js'
-import EstruturaProfessor from '../pages/teacher/componentes/EstruturaProfessor.jsx'
-import Cabecalho from '../shared/components/header/Cabecalho.jsx'
-import Rodape from '../shared/components/footer/Rodape.jsx'
-import JanelaContexto from '../shared/components/context-dialog/JanelaContexto.jsx'
-import PaginaInicial from '../pages/home/PaginaInicial.jsx'
-import PaginaCursos from '../pages/courses/PaginaCursos.jsx'
-import RodapeCatalogo from '../pages/courses/components/catalog-footer/RodapeCatalogo.jsx'
-import PaginaDetalhesCurso from '../pages/course-details/PaginaDetalhesCurso.jsx'
-import PaginaProjetos from '../pages/projects/PaginaProjetos.jsx'
-import PaginaSubmissao from '../pages/submission/PaginaSubmissao.jsx'
+import EstruturaProfessor from '@/pages/professor/components/EstruturaProfessor.jsx'
+import Cabecalho from '@/shared/components/Cabecalho.jsx'
+import Rodape from '@/shared/components/Rodape.jsx'
+import JanelaContexto from '@/shared/components/JanelaContexto.jsx'
+import PaginaInicial from '@/pages/inicio/PaginaInicial.jsx'
+import PaginaCursos from '@/pages/cursos/PaginaCursos.jsx'
+import RodapeCatalogo from '@/pages/cursos/components/RodapeCatalogo.jsx'
+import PaginaDetalhesCurso from '@/pages/detalhes-curso/PaginaDetalhesCurso.jsx'
+import PaginaProjetos from '@/pages/projetos/PaginaProjetos.jsx'
+import PaginaSubmissao from '@/pages/submissao/PaginaSubmissao.jsx'
 import PaginaAcesso from '../pages/acesso/PaginaAcesso.jsx'
 import PaginaPerfil from '../pages/perfil/PaginaPerfil.jsx'
-import PaginaProfessor from '../pages/teacher/PaginaProfessor.jsx'
+import PaginaProfessor from '@/pages/professor/PaginaProfessor.jsx'
 import PaginaAdministracao from '../pages/administracao/PaginaAdministracao.jsx'
 import PaginaCoordenacao from '../pages/coordenacao/PaginaCoordenacao.jsx'
-import PaginaCadastroAluno from '../pages/aluno/PaginaCadastroAluno.jsx'
-import PaginaPainelAluno from '../pages/aluno/PaginaPainelAluno.jsx'
-import PaginaDetalhesSubmissao from '../pages/teacher/PaginaDetalhesSubmissao.jsx'
+import PaginaCadastroAluno from '@/pages/cadastro-aluno/PaginaCadastroAluno.jsx'
+import PaginaPainelAluno from '@/pages/painel-aluno/PaginaPainelAluno.jsx'
+import PaginaDetalhesSubmissao from '@/pages/professor/PaginaDetalhesSubmissao.jsx'
 
 function identificarPagina(rota) {
   if (['projetos', 'biblioteca'].includes(rota)) return 'projetos'
@@ -484,11 +484,7 @@ export default function Aplicacao() {
       {pagina === 'cursos' && <PaginaCursos />}
       {pagina === 'projetos' && <PaginaProjetos itens={listaProjetos} />}
       {pagina === 'detalhes-curso' && (
-        <PaginaDetalhesCurso
-          key={identificador}
-          identificador={identificador}
-          aba={aba}
-        />
+        <PaginaDetalhesCurso key={identificador} identificador={identificador} aba={aba} />
       )}
       {pagina === 'submissao' && (
         <PaginaSubmissao

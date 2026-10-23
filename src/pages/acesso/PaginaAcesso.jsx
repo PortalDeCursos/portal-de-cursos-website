@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { autenticarConta } from './servicos/autenticarConta.js'
+import { autenticarConta } from './services/autenticarConta.js'
 import { basePortal, enderecoPrivado } from '../../app/rotas.js'
 import './acesso.css'
 import logoPortal from '../../assets/marca/logo-portal.png'

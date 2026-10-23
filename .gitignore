@@ -8,10 +8,12 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+coverage/
 _backup/
 dist
 dist-ssr
 *.local
+estrutura.txt
 .env
 .env.*
 !.env.example
@@ -21,6 +23,8 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
+desktop.ini
 *.suo
 *.ntvs*
 *.njsproj
@@ -30,7 +34,6 @@ dist-ssr
 # Documentação e verificações locais
 /verificacoes/
 /DESIGN-E-REGRAS.md
-/CONTRIBUTING.md
 /PENDENCIAS-MINIMUNDO.md
 /VINCULO-JIRA.md
 
