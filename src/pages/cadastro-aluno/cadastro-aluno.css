@@ -1,0 +1,40 @@
+/* Variante de cor para a área do aluno */
+.acesso-painel--aluno {
+  --acesso-azul: linear-gradient(155deg, #0f6e5c 0%, #084d40 100%);
+  --acesso-sobre-azul: #fff;
+}
+
+/* Distintivo verde para tela de confirmação */
+.acesso-distintivo--verde {
+  color: #17633d;
+  background: #dff3e7;
+}
+
+/* Estilos do select dentro do acesso-campo */
+.acesso-campo select {
+  width: 100%;
+  min-width: 0;
+  height: 56px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--titulo);
+  background: var(--superficie);
+  font-size: 16px;
+  transition: border-color 160ms ease;
+  appearance: auto;
+}
+
+.acesso-campo select:hover {
+  border-color: var(--texto);
+}
+
+.acesso-campo select:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.acesso-campo select[aria-invalid='true'] {
+  border-color: var(--azul);
+}

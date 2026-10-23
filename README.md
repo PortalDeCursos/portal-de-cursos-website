@@ -1,30 +1,12 @@
 # Portal de Cursos
 
 Portal acadêmico para descoberta de cursos, consulta de informações curriculares e
-acompanhamento de produções desenvolvidas por estudantes. Este repositório contém o
-frontend do sistema, desenvolvido em React JSX e Vite, com arquivos CSS separados.
-O backend existe em repositórios próprios e é organizado em microsserviços.
+acompanhamento de produções desenvolvidas por estudantes. A interface foi construída como
+um protótipo navegável em React e Vite, com conteúdo local e foco em uma experiência clara
+para estudantes, professores e visitantes.
 
-## Arquitetura e repositórios
-
-| Componente                            | Responsabilidade                                                                   | Repositório                                                                              |
-| ------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Frontend                              | Interface web do portal                                                            | [portal-de-cursos-website](https://github.com/PortalDeCursos/portal-de-cursos-website)   |
-| Microsserviço de Cursos               | Gerenciamento de cursos e disciplinas                                              | [portal-de-cursos-mscursos](https://github.com/PortalDeCursos/portal-de-cursos-mscursos) |
-| Microsserviço de Usuários             | Gerenciamento de usuários e autenticação                                           | [usuarioService](https://github.com/PortalDeCursos/usuarioService)                       |
-| Microsserviço de Produções Acadêmicas | Gerenciamento e consulta de Projetos Integradores, de Extensão, de Pesquisa e TCCs | [portal-de-cursos-projects](https://github.com/PortalDeCursos/portal-de-cursos-projects) |
-
-A existência dos microsserviços é independente do estágio de integração de cada tela.
-O frontend ainda utiliza dados locais e ações locais em alguns fluxos; isso não significa
-que o sistema seja apenas um protótipo ou que não possua backend. A configuração e a
-execução de cada serviço devem seguir os arquivos e as orientações do respectivo repositório.
-
-## Perfis e acesso
-
-- Visitantes consultam as informações públicas e os projetos aprovados.
-- Alunos submetem produções acadêmicas sem exigência de conta ou login, conforme os requisitos.
-- Professores e administradores são os perfis com autenticação prevista no sistema.
-- Permissões e publicação de projetos aprovados devem ser garantidas pelas APIs.
+> O projeto contém dados acadêmicos e documentos de exemplo. Autenticação, persistência,
+> envio de arquivos e integrações com serviços externos ainda não fazem parte do frontend.
 
 ## Visão geral
 
@@ -93,32 +75,49 @@ O frontend usa navegação por hash. As rotas são acessadas depois do `#` na UR
 | `#curso/redes`             | Detalhes do curso de Redes               |
 | `#projetos`                | Biblioteca de projetos                   |
 | `#submeter`                | Fluxo de submissão de produção acadêmica |
-| `#professor`               | Feed de avaliações do professor          |
-| `#professor/submissao/:id` | Detalhes de uma submissão                |
-| `#acesso`                  | Informações de acesso à área restrita    |
+| `/professor/feed`          | Feed de avaliações do professor          |
+| `/professor/submissao/:id` | Detalhes de uma submissão                |
+| `/professor/login`         | Login da área do professor (`/login`)    |
+| `/administracao/login`     | Login da equipe de administração         |
 
 ## Configuração de dados
 
-O catálogo utiliza os arquivos locais:
+O catálogo e a grade curricular usam o microsserviço de cursos. O frontend mantém `/api/v1` no
+contrato de requisições; a pasta removida na refatoração era apenas uma organização local de
+arquivos.
 
-- `public/data/cursos.json`;
-- `public/data/detalhes-cursos.json`.
+### Desenvolvimento com proxy Vite
 
-Para integrar o catálogo ao microsserviço de Cursos, defina `VITE_API_CURSOS` antes de iniciar
-o Vite:
+O proxy do Vite recebe `/api/v1/cursos`, `/api/v1/disciplinas`, `/api/v1/campus` e
+`/api/v1/areas-conhecimento`. Ele remove o prefixo `/api/v1` antes de encaminhar a requisição.
+Defina os alvos do proxy somente no ambiente Node:
 
 ```bash
-# .env.local — substitua pelos endereços reais dos serviços
-VITE_API_CURSOS=https://exemplo.edu.br/api/cursos
-VITE_API_DETALHES_CURSO=https://exemplo.edu.br/api/cursos
+CURSOS_API_URL=http://127.0.0.1:8081
+USUARIOS_API_URL=http://127.0.0.1:8080
 ```
 
-Reinicie o Vite após alterar as variáveis. O endereço de detalhes recebe o identificador
-do curso ao final do caminho. Os endereços acima são exemplos, não endpoints confirmados.
+Confirme com a equipe de backend se o serviço expõe `/cursos` ou `/api/v1/cursos` antes de
+alterar o `rewrite` do proxy.
 
-O endpoint do catálogo deve responder com uma lista de cursos no formato compatível com
-`public/data/cursos.json`. Variáveis com o prefixo `VITE_` são expostas no navegador; nunca
-coloque credenciais ou segredos nelas.
+### Produção sem proxy
+
+Em um deploy estático, como GitHub Pages, o proxy não existe. Configure URLs públicas absolutas
+para o bundle chamar os serviços diretamente:
+
+```bash
+VITE_API_CURSOS_URL=https://exemplo.edu.br/api/v1/cursos \
+VITE_API_DISCIPLINAS_URL=https://exemplo.edu.br/api/v1/disciplinas npm run build
+```
+
+No GitHub Pages, cadastre `VITE_API_CURSOS_URL`, `VITE_API_DISCIPLINAS_URL` e, quando houver
+autenticação remota, `VITE_API_AUTENTICACAO` como variáveis do repositório. O workflow de Pages
+as injeta somente durante o build; elas devem conter URLs públicas e nunca segredos.
+
+Os cursos são carregados da resposta paginada da API, e as disciplinas usam o identificador do
+curso retornado pelo serviço. Variáveis com o prefixo `VITE_` são expostas no navegador; nunca
+coloque credenciais ou segredos nelas. Os nomes antigos `VITE_API_CURSOS` e
+`VITE_API_DISCIPLINAS` continuam aceitos durante a transição.
 
 ## Estrutura do projeto
 
@@ -126,22 +125,22 @@ As pastas técnicas usam nomes em inglês. Componentes, textos e identificadores
 domínio permanecem em português do Brasil, sem acentos em nomes de arquivos ou símbolos.
 
 ```text
-public/
-  data/                  # Mocks consumidos pela aplicação
 src/
+  api/                   # Recursos HTTP por domínio
   app/                   # Roteamento e composição global
   assets/                # Fontes e recursos locais
-  data/                  # Dados usados por telas demonstrativas
   pages/                 # Páginas agrupadas por domínio
-    course-details/      # Detalhes de cursos
-    courses/             # Catálogo de cursos
-    home/                # Página inicial
-    projects/            # Biblioteca de projetos
-    submission/          # Fluxo de submissão
-    teacher/             # Feed e detalhes de avaliações
-  shared/                # Componentes compartilhados
+    inicio/              # Página inicial
+    cursos/              # Catálogo de cursos
+    detalhes-curso/      # Informações de uma formação
+    projetos/            # Biblioteca de projetos
+    submissao/           # Fluxo de submissão
+    professor/           # Feed e detalhes de avaliações
+  shared/                # Componentes e estilos compartilhados
   styles/                # Tokens e estilos globais
 ```
+
+Consulte [a estrutura detalhada](./docs/ESTRUTURA.md) para as responsabilidades de cada pasta.
 
 ## Desenvolvimento
 
@@ -156,7 +155,8 @@ O fluxo recomendado é:
 6. Executar `npm run check` e `npm run format:check`.
 7. Abrir o pull request para `develop`, descrevendo comportamento, validação e limitações.
 
-As decisões de implementação devem respeitar os contratos dos microsserviços e os requisitos do projeto.
+Consulte [as regras de interface](./docs/regras-interface.md) e
+[o fluxo de autenticação](./docs/autenticacao-professor.md) antes de alterar telas compartilhadas.
 
 ## CI
 
@@ -166,26 +166,28 @@ essas branches. Ele utiliza Node.js 24 e executa:
 ```bash
 npm ci
 npm run lint
+npm run format:check
 npm run build
 ```
 
-## Estado das integrações do frontend
+## Limitações atuais
 
-O backend está distribuído nos microsserviços listados acima. Nesta versão do frontend,
-os seguintes pontos ainda precisam ser integrados ou validados de ponta a ponta:
+A página `/login` usa o mesmo serviço de autenticação para as duas áreas: professor entra no feed `/professor/feed`, administrador entra em `/administracao/painel`. O papel é consultado nos endpoints existentes do serviço, sem seletor de papel no cliente. Para conectar a autenticação, execute o serviço de Usuários conforme
+[o contrato de integração](docs/autenticacao-professor.md). O proxy local aponta para `http://127.0.0.1:8080`; altere `USUARIOS_API_URL` se necessário. Sem serviço disponível, a interface informa a falha e não cria uma sessão demonstrativa.
 
-- autenticação e autorização por perfil com o serviço de Usuários;
-- consulta dos dados reais de cursos e disciplinas, com adaptação aos contratos das APIs;
-- envio e persistência de submissões e documentos no serviço de Produções Acadêmicas;
-- consulta e persistência das decisões do professor;
-- consulta pública de projetos aprovados a partir da API;
-- acompanhamento do resultado de operações e notificações.
+O frontend possui integração de consulta e gestão de cursos e disciplinas com o serviço acadêmico de Cursos. Ainda faltam:
 
-Sem configuração de API, o catálogo consulta os JSONs locais. As ações locais de submissão
-e avaliação ainda não comprovam gravação ou processamento no backend. Antes de considerar
-um fluxo integrado, conferir o contrato do serviço e validar o percurso completo na interface.
-Esta lista descreve o estado do frontend e não afirma ausência dessas funcionalidades nos
-microsserviços.
+- persistência de projetos e submissões em serviços próprios;
+- autorização por perfil nos serviços acadêmicos correspondentes;
+- upload e armazenamento de documentos;
+- envio de notificações;
+- decisão de professor persistida em serviço;
+- autorização por perfil;
+- integração institucional para estudantes e professores.
+
+As ações de submissão e avaliação disponíveis na interface servem para demonstrar o fluxo
+e a organização da experiência. Antes de uso institucional, substitua os mocks por serviços
+autorizados e revise o conteúdo acadêmico.
 
 ## Referência visual
 
