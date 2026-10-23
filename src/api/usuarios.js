@@ -78,6 +78,21 @@ export async function identificarConta(token, email, sinal) {
         corresponde(item.usuario) &&
         ['PROFESSOR', 'COORDENADOR'].includes(item.usuario.tipoUsuario),
     )
+    const aluno = listaProfessores.find(
+      (item) => corresponde(item.usuario) && item.usuario.tipoUsuario === 'ALUNO',
+    )
+    if (aluno) {
+      return {
+        tipoUsuario: 'ALUNO',
+        usuario: {
+          id: aluno.usuario.id,
+          alunoId: aluno.id,
+          cursoId: aluno.cursoId ?? aluno.curso?.id,
+          nome: aluno.usuario.nome || email,
+          email: aluno.usuario.email,
+        },
+      }
+    }
     if (professor) {
       const cursoId = professor.cursoId ?? professor.curso?.id ?? professor.curso?.identificador
       if (professor.usuario.tipoUsuario === 'COORDENADOR' && !cursoId) {
@@ -137,6 +152,35 @@ export async function identificarConta(token, email, sinal) {
   throw new ErroApi('Esta conta não possui acesso à área de professor ou de administração.', {
     status: 403,
   })
+}
+
+export async function identificarAluno(token, email, sinal) {
+  const base = obterBaseApi('usuarios', VERSAO)
+  const alunos = await requisitarApi(`${base}/alunos/buscar`, {
+    metodo: 'GET',
+    token,
+    sinal,
+  })
+  const aluno = Array.isArray(alunos)
+    ? alunos.find(
+        (item) =>
+          typeof item.usuario?.email === 'string' &&
+          item.usuario.email.toLowerCase() === email.toLowerCase(),
+      )
+    : null
+  if (!aluno) {
+    throw new ErroApi('Não foi possível localizar o perfil de aluno desta conta.', { status: 404 })
+  }
+  return {
+    tipoUsuario: 'ALUNO',
+    usuario: {
+      id: aluno.usuario.id,
+      alunoId: aluno.id,
+      cursoId: aluno.cursoId,
+      nome: aluno.usuario.nome || email,
+      email: aluno.usuario.email,
+    },
+  }
 }
 
 export const moduloUsuarios = {

@@ -532,6 +532,194 @@
   gap: 12px;
 }
 
+.submissao-acesso {
+  position: relative;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+  align-items: stretch;
+  max-width: 900px;
+  padding: 7px;
+  gap: 7px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 25px;
+  outline: 1px solid color-mix(in srgb, var(--borda) 82%, transparent);
+  outline-offset: -1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--etiqueta) 44%, var(--fundo)),
+    var(--fundo) 48%,
+    color-mix(in srgb, var(--suave) 72%, var(--fundo))
+  );
+}
+
+.submissao-acesso__conteudo {
+  padding: clamp(28px, 5vw, 56px);
+  border: 1px solid color-mix(in srgb, var(--borda) 50%, transparent);
+  border-radius: 19px;
+  background: var(--superficie);
+}
+
+.submissao-acesso h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(36px, 4.5vw, 58px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.submissao-acesso__descricao {
+  max-width: 48ch;
+  margin: 22px 0 0;
+  color: var(--texto);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.submissao-acesso__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin-top: 30px;
+}
+
+.submissao-acesso__acoes .botao-primario {
+  gap: 12px;
+  border-radius: 999px;
+  padding: 8px 9px 8px 20px;
+}
+
+.submissao-acesso__acoes .botao-primario span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 16%);
+  transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.submissao-acesso__acoes .botao-primario:hover span {
+  transform: translate(2px, -1px) scale(1.06);
+}
+
+.submissao-acesso__acoes .botao-secundario {
+  border-radius: 999px;
+  background: transparent;
+}
+
+.submissao-acesso__guia {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  padding: clamp(27px, 4vw, 42px);
+  border: 1px solid color-mix(in srgb, var(--borda) 50%, transparent);
+  border-radius: 19px;
+  background: var(--suave);
+}
+
+.submissao-acesso__guia-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.submissao-acesso__guia-cabecalho > strong {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--titulo);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.submissao-acesso__guia-etiqueta {
+  color: var(--azul);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.submissao-acesso__guia-introducao h2 {
+  max-width: 9ch;
+  margin: 0;
+  color: var(--titulo);
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.submissao-acesso__guia-introducao p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.submissao-acesso__guia ol {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.submissao-acesso__guia ol::before {
+  position: absolute;
+  top: 28px;
+  bottom: 28px;
+  left: 13px;
+  width: 1px;
+  background: color-mix(in srgb, var(--azul) 25%, transparent);
+  content: '';
+}
+
+.submissao-acesso__guia li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.submissao-acesso__guia li > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--superficie);
+  color: var(--azul);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.submissao-acesso__guia li p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+}
+
+.submissao-acesso__guia strong {
+  color: var(--titulo);
+  font-size: 13px;
+}
+
+.submissao-acesso__guia small,
+.submissao-acesso__perfis {
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.submissao-acesso__perfis {
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--borda);
+}
+
 @media (max-width: 760px) {
   .pagina-submissao {
     padding-top: 40px;
@@ -545,6 +733,16 @@
 
   .submissao-aviso {
     max-width: none;
+  }
+
+  .submissao-acesso {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .submissao-acesso__conteudo,
+  .submissao-acesso__guia {
+    padding: 28px;
   }
 
   .formulario-submissao__secao {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { listarCursos } from '@/api/cursos.js'
 import { listarProfessores } from '@/api/professores.js'
 import { enderecoPrivado } from '../../app/rotas.js'
+import '@/shared/styles/painel-informativo.css'
 import './submissao.css'
 
 const formularioInicial = {
@@ -397,19 +398,70 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   if (!sessao || !['ALUNO', 'PROFESSOR', 'COORDENADOR'].includes(sessao.tipoUsuario)) {
     return (
       <main className="limite pagina-submissao" id="conteudo">
-        <section className="submissao-confirmacao" aria-labelledby="titulo-acesso-submissao">
-          <p className="pagina-submissao__rotulo">Acesso necessário</p>
-          <h1 id="titulo-acesso-submissao">Entre para submeter um projeto.</h1>
-          <p>
-            O envio de projetos está disponível para alunos, professores e coordenadores
-            autenticados.
-          </p>
-          <a className="botao-primario" href={enderecoPrivado('aluno/cadastro')}>
-            Criar conta de aluno
-          </a>
-          <a className="botao-secundario" href={enderecoPrivado('login')}>
-            Entrar no portal
-          </a>
+        <section
+          className="submissao-confirmacao submissao-acesso"
+          aria-labelledby="titulo-acesso-submissao"
+        >
+          <div className="submissao-acesso__conteudo">
+            <p className="pagina-submissao__rotulo">Área autenticada</p>
+            <h1 id="titulo-acesso-submissao">Seu projeto merece um lugar para avançar.</h1>
+            <p className="submissao-acesso__descricao">
+              Entre no Portal de Cursos para preparar a submissão, vincular o orientador e
+              acompanhar cada etapa da avaliação.
+            </p>
+
+            <div className="submissao-acesso__acoes">
+              <a
+                className="botao-primario"
+                href={`${enderecoPrivado('login')}?retorno=${encodeURIComponent('submeter')}`}
+              >
+                Entrar no portal <span aria-hidden="true">→</span>
+              </a>
+              <a
+                className="botao-secundario"
+                href={`${enderecoPrivado('aluno/cadastro')}?retorno=${encodeURIComponent('submeter')}`}
+              >
+                Criar conta de aluno
+              </a>
+            </div>
+          </div>
+
+          <aside className="submissao-acesso__guia" aria-label="Como funciona a submissão">
+            <header className="submissao-acesso__guia-cabecalho">
+              <span className="submissao-acesso__guia-etiqueta">Roteiro de submissão</span>
+              <strong>03 etapas</strong>
+            </header>
+            <div className="submissao-acesso__guia-introducao">
+              <h2>Do rascunho à avaliação.</h2>
+              <p>Você mantém clareza sobre o que precisa preparar em cada momento.</p>
+            </div>
+            <ol>
+              <li>
+                <span>01</span>
+                <p>
+                  <strong>Identifique o projeto</strong>
+                  <small>Informe curso, autores e orientador.</small>
+                </p>
+              </li>
+              <li>
+                <span>02</span>
+                <p>
+                  <strong>Envie a documentação</strong>
+                  <small>Adicione descrição e arquivos necessários.</small>
+                </p>
+              </li>
+              <li>
+                <span>03</span>
+                <p>
+                  <strong>Acompanhe a avaliação</strong>
+                  <small>Receba as decisões no painel da sua conta.</small>
+                </p>
+              </li>
+            </ol>
+            <p className="submissao-acesso__perfis">
+              Acesso para alunos, professores e coordenação.
+            </p>
+          </aside>
         </section>
       </main>
     )

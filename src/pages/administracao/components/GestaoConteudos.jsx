@@ -43,8 +43,8 @@ const configuracoes = {
   },
   disciplinas: {
     singular: 'matéria',
-    titulo: 'Matérias',
-    descricao: 'Organize as disciplinas e a matriz do curso.',
+    titulo: 'Disciplinas',
+    descricao: 'Banco unificado de disciplinas de todos os cursos.',
     campos: [
       ['nome', 'Nome da matéria'],
       ['codigo', 'Código da matéria'],
@@ -611,6 +611,7 @@ export default function GestaoConteudos({
 }) {
   const configuracao = configuracoes[dominio]
   const [busca, definirBusca] = useState('')
+  const [cursoFiltro, definirCursoFiltro] = useState('todos')
   const [editor, definirEditor] = useState(null)
   const [exclusao, definirExclusao] = useState(null)
   const [mensagem, definirMensagem] = useState('')
@@ -736,10 +737,14 @@ export default function GestaoConteudos({
     return Boolean(curso && [curso.sigla, curso.nome].includes(item.curso))
   }
   const itensPermitidos = itensAtuais.filter(doCurso)
-  const resultados = itensPermitidos.filter((item) =>
-    `${item.nome} ${item.sigla || item.curso || ''}`
-      .toLocaleLowerCase('pt-BR')
-      .includes(busca.trim().toLocaleLowerCase('pt-BR')),
+  const resultados = itensPermitidos.filter(
+    (item) =>
+      `${item.nome} ${item.codigo || ''} ${item.sigla || item.curso || ''}`
+        .toLocaleLowerCase('pt-BR')
+        .includes(busca.trim().toLocaleLowerCase('pt-BR')) &&
+      (dominio !== 'disciplinas' ||
+        cursoFiltro === 'todos' ||
+        String(item.cursoId ?? '') === cursoFiltro),
   )
   async function salvar(dados) {
     if (persistido) {
@@ -948,7 +953,7 @@ export default function GestaoConteudos({
           <p>{configuracao.descricao}</p>
         </div>
         {!somenteEdicao && (
-          <>
+          <div className="painel-titulo__acoes">
             {persistido && (
               <button
                 className="botao-secundario"
@@ -974,7 +979,7 @@ export default function GestaoConteudos({
                   ? 'Nova matéria'
                   : `Novo ${configuracao.singular}`}
             </button>
-          </>
+          </div>
         )}
       </header>
       {dominio === 'projetos' && (
@@ -993,16 +998,96 @@ export default function GestaoConteudos({
           {renderizarEditor(editor)}
         </div>
       )}
+      {dominio === 'cursos' && resultados.length > 0 && (
+        <section className="gestao-cursos-resumo" aria-label="Resumo dos cursos">
+          {resultados.slice(0, 4).map((curso) => {
+            const totalMaterias = Number(
+              curso.componentes ??
+                Number(curso.disciplinasObrigatorias || curso.qtdDisciplinasObrigatorias || 0) +
+                  Number(curso.disciplinasOptativas || curso.qtdDisciplinasOptativas || 0),
+            )
+
+            return (
+              <article className="gestao-curso-cartao" key={curso.identificador || curso.id}>
+                <header>
+                  <span>{curso.sigla || curso.acronimo || 'CURSO'}</span>
+                  {curso.grau && <small>{curso.grau}</small>}
+                </header>
+                <h2>{curso.nome}</h2>
+                {(curso.grau || curso.turno || curso.modalidade || curso.campus) && (
+                  <p>
+                    {[curso.grau, curso.turno, curso.modalidade, curso.campus]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                )}
+                <dl>
+                  {curso.cargaHoraria && (
+                    <div>
+                      <dt>Carga horária</dt>
+                      <dd>{curso.cargaHoraria}</dd>
+                    </div>
+                  )}
+                  {curso.semestres > 0 && (
+                    <div>
+                      <dt>Duração</dt>
+                      <dd>{curso.semestres} semestres</dd>
+                    </div>
+                  )}
+                  {Number.isFinite(totalMaterias) && totalMaterias > 0 && (
+                    <div>
+                      <dt>Matérias no curso</dt>
+                      <dd>{totalMaterias}</dd>
+                    </div>
+                  )}
+                </dl>
+              </article>
+            )
+          })}
+        </section>
+      )}
       <section className="painel-secao">
-        <label className="gestao-busca">
-          Buscar {configuracao.singular}
-          <input
-            type="search"
-            placeholder="Nome ou curso"
-            value={busca}
-            onChange={(e) => definirBusca(e.target.value)}
-          />
-        </label>
+        <div className="gestao-lista-filtros">
+          <label className="gestao-busca">
+            Buscar {configuracao.singular}
+            <input
+              type="search"
+              placeholder={dominio === 'disciplinas' ? 'Nome ou código' : 'Nome ou curso'}
+              value={busca}
+              onChange={(e) => definirBusca(e.target.value)}
+            />
+          </label>
+          {dominio === 'disciplinas' && (
+            <div
+              className="gestao-filtro-cursos"
+              role="group"
+              aria-label="Filtrar disciplinas por curso"
+            >
+              <button
+                type="button"
+                aria-pressed={cursoFiltro === 'todos'}
+                onClick={() => definirCursoFiltro('todos')}
+              >
+                Todas <span>{itensPermitidos.length}</span>
+              </button>
+              {cursosDisponiveis.map((cursoItem) => {
+                const total = itensPermitidos.filter(
+                  (item) => String(item.cursoId ?? '') === String(cursoItem.id),
+                ).length
+                return (
+                  <button
+                    type="button"
+                    key={cursoItem.id}
+                    aria-pressed={cursoFiltro === String(cursoItem.id)}
+                    onClick={() => definirCursoFiltro(String(cursoItem.id))}
+                  >
+                    {cursoItem.sigla || cursoItem.acronimo || cursoItem.nome} <span>{total}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
         <div
           className="tabela-submissoes"
           role="region"
@@ -1012,27 +1097,30 @@ export default function GestaoConteudos({
           <table>
             <thead>
               <tr>
-                <th scope="col">
-                  {dominio === 'cursos'
-                    ? 'Curso'
-                    : dominio === 'disciplinas'
-                      ? 'Matéria'
-                      : 'Projeto'}
-                </th>
-                <th scope="col">
-                  {dominio === 'cursos'
-                    ? 'Modalidade'
-                    : dominio === 'disciplinas'
-                      ? 'Código'
-                      : 'Tipo'}
-                </th>
-                <th scope="col">
-                  {dominio === 'cursos'
-                    ? 'Turno'
-                    : dominio === 'disciplinas'
-                      ? 'Semestre'
-                      : 'Status'}
-                </th>
+                {dominio === 'cursos' ? (
+                  <>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Grau</th>
+                    <th scope="col">Turno</th>
+                    <th scope="col">Modalidade</th>
+                    <th scope="col">Carga horária</th>
+                    <th scope="col">Disciplinas</th>
+                  </>
+                ) : dominio === 'disciplinas' ? (
+                  <>
+                    <th scope="col">Disciplina</th>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Semestre</th>
+                    <th scope="col">Carga horária</th>
+                    <th scope="col">Tipo</th>
+                  </>
+                ) : (
+                  <>
+                    <th scope="col">{dominio === 'disciplinas' ? 'Matéria' : 'Projeto'}</th>
+                    <th scope="col">{dominio === 'disciplinas' ? 'Código' : 'Tipo'}</th>
+                    <th scope="col">{dominio === 'disciplinas' ? 'Semestre' : 'Status'}</th>
+                  </>
+                )}
                 <th scope="col">Ações</th>
               </tr>
             </thead>
@@ -1045,18 +1133,62 @@ export default function GestaoConteudos({
                 const confirmando =
                   exclusao && String(exclusao.identificador || exclusao.id) === chaveItem
                 const tituloExclusao = `titulo-excluir-${dominio}-${chaveItem.replace(/[^a-z0-9_-]/gi, '-')}`
+                const colunasTabela = dominio === 'cursos' ? 7 : dominio === 'disciplinas' ? 6 : 4
                 return (
                   <Fragment key={chaveItem}>
                     <tr>
                       <th scope="row">
-                        {item.nome}
-                        <span>{item.sigla || item.curso}</span>
+                        {dominio === 'disciplinas' ? (
+                          <>
+                            <span className="gestao-codigo">{item.codigo || '—'}</span>
+                            <span>{item.nome}</span>
+                          </>
+                        ) : (
+                          <>
+                            {item.nome}
+                            <span>
+                              {dominio === 'cursos'
+                                ? [item.sigla || item.acronimo, item.campus]
+                                    .filter(Boolean)
+                                    .join(' · ')
+                                : item.sigla || item.curso}
+                            </span>
+                          </>
+                        )}
                       </th>
-                      <td>{item.modalidade || item.codigo || item.tipo}</td>
-                      <td>
-                        {item.turno ||
-                          (item.semestreNumero ? `${item.semestreNumero}º semestre` : item.status)}
-                      </td>
+                      {dominio === 'cursos' ? (
+                        <>
+                          <td>{item.grau || '—'}</td>
+                          <td>{item.turno || '—'}</td>
+                          <td>{item.modalidade || '—'}</td>
+                          <td>{item.cargaHoraria || '—'}</td>
+                          <td>{item.componentes ?? '—'}</td>
+                        </>
+                      ) : dominio === 'disciplinas' ? (
+                        <>
+                          <td>{item.curso || item.cursoNome || '—'}</td>
+                          <td>
+                            {item.semestreNumero ? `${item.semestreNumero}º` : item.semestre || '—'}
+                          </td>
+                          <td>{item.cargaHoraria ? `${item.cargaHoraria} h` : '—'}</td>
+                          <td>
+                            <span
+                              className={`gestao-tipo-disciplina ${item.obrigatoria ? 'gestao-tipo-disciplina--obrigatoria' : ''}`}
+                            >
+                              {item.obrigatoria ? 'Obrigatória' : 'Optativa'}
+                            </span>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{item.codigo || item.tipo || '—'}</td>
+                          <td>
+                            {item.semestreNumero
+                              ? `${item.semestreNumero}º semestre`
+                              : item.status || '—'}
+                          </td>
+                        </>
+                      )}
                       <td>
                         <div className="gestao-acoes">
                           <button
@@ -1088,14 +1220,14 @@ export default function GestaoConteudos({
                     </tr>
                     {editando && (
                       <tr className="gestao-linha-expandida">
-                        <td colSpan={4} id={expandidoId}>
+                        <td colSpan={colunasTabela} id={expandidoId}>
                           {renderizarEditor(editor)}
                         </td>
                       </tr>
                     )}
                     {confirmando && (
                       <tr className="gestao-linha-expandida">
-                        <td colSpan={4} id={expandidoId}>
+                        <td colSpan={colunasTabela} id={expandidoId}>
                           <ConfirmacaoGestao rotulo={tituloExclusao}>
                             <h2 id={tituloExclusao}>
                               {persistido ? 'Excluir' : 'Remover'} {exclusao.nome}?
