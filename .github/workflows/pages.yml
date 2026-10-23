@@ -34,7 +34,7 @@ jobs:
           cp dist/index.html dist/professor/feed/index.html
           cp dist/index.html dist/professor/perfil/index.html
           cp dist/index.html dist/404.html
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
   deploy:
