@@ -37,11 +37,11 @@ export function retornoAutenticado(tipoUsuario) {
   const retorno = new URLSearchParams(window.location.search).get('retorno')
   const permitido =
     tipoUsuario === 'ADMIN'
-      ? /^administracao\/(painel|usuarios|professores|cursos|disciplinas|projetos|submissoes|perfil)$/
+      ? /^administracao\/(painel|usuarios|professores|cursos|disciplinas|projetos|submissoes|perfil|campus(?:\/[a-zA-Z0-9_-]+)?)$/
       : tipoUsuario === 'COORDENADOR'
         ? /^coordenacao\/(painel|curso|disciplinas|professores|projetos|submissoes|perfil|submissao\/[a-zA-Z0-9_-]+)$/
         : tipoUsuario === 'ALUNO'
-          ? /^aluno\/painel$/
+          ? /^(aluno\/painel|submeter)$/
           : /^professor\/(feed|perfil|submissao\/[a-zA-Z0-9_-]+)$/
   return retorno && permitido.test(retorno)
     ? retorno

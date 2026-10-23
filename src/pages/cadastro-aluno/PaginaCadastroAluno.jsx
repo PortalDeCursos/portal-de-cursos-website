@@ -1,258 +1,474 @@
 import { useEffect, useRef, useState } from 'react'
-import { basePortal } from '../../app/rotas.js'
-import logoPortal from '../../assets/marca/logo-portal.png'
+import { basePortal } from '@/app/rotas.js'
+import logoPortal from '@/assets/marca/logo-portal.png'
 import { listarCursos } from '@/api/cursos.js'
-import '../acesso/acesso.css'
+import { cadastrarAluno } from '@/api/alunos.js'
+import { ErroApi } from '@/api/cliente.js'
+import Icone from '@/shared/components/Icone.jsx'
+import '@/pages/acesso/acesso.css'
 import './cadastro-aluno.css'
 
-export default function PaginaCadastroAluno() {
-  const [cursosDisponiveis, definirCursosDisponiveis] = useState([])
-  const [carregandoCursos, definirCarregandoCursos] = useState(true)
-  const [erroCursos, definirErroCursos] = useState('')
-  const [form, definirForm] = useState({
-    nome: '',
-    email: '',
-    curso: '',
-    senha: '',
-    confirmarSenha: '',
-  })
-  const [erros, definirErros] = useState({})
-  const [erro, definirErro] = useState('')
-  const [enviando, definirEnviando] = useState(false)
-  const [mostrarSenha, definirMostrarSenha] = useState(false)
-  const resumoErros = useRef(null)
+const CAMPOS = ['nome', 'email', 'curso', 'senha', 'confirmarSenha']
+const IDS_CAMPOS = {
+  nome: 'aluno-nome',
+  email: 'aluno-email',
+  curso: 'aluno-curso',
+  senha: 'aluno-senha',
+  confirmarSenha: 'aluno-confirmar-senha',
+}
+const VALORES_INICIAIS = { nome: '', email: '', curso: '', senha: '', confirmarSenha: '' }
+const TAMANHO_MINIMO_SENHA = 8
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  useEffect(() => {
-    const controller = new AbortController()
-    listarCursos(controller.signal)
-      .then(definirCursosDisponiveis)
-      .catch(() => {
-        if (!controller.signal.aborted)
-          definirErroCursos('Não foi possível carregar os cursos agora.')
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) definirCarregandoCursos(false)
-      })
-    return () => controller.abort()
-  }, [])
+/* Retorna a mensagem de erro de um campo, ou '' se o campo estiver válido. */
+function mensagemDoCampo(campo, valores) {
+  switch (campo) {
+    case 'nome':
+      return valores.nome.trim() ? '' : 'Informe seu nome completo.'
 
-  function alterar(campo, valor) {
-    definirForm((anterior) => ({ ...anterior, [campo]: valor }))
-    definirErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
-    definirErro('')
+    case 'email':
+      if (!valores.email.trim()) return 'Informe seu e-mail.'
+      return REGEX_EMAIL.test(valores.email.trim())
+        ? ''
+        : 'Informe um e-mail válido, como nome@instituicao.edu.br.'
+
+    case 'curso':
+      return valores.curso ? '' : 'Selecione seu curso.'
+
+    case 'senha':
+      if (!valores.senha) return 'Defina uma senha.'
+      return valores.senha.length >= TAMANHO_MINIMO_SENHA
+        ? ''
+        : `A senha deve ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`
+
+    case 'confirmarSenha':
+      if (!valores.confirmarSenha) return 'Confirme sua senha.'
+      return valores.confirmarSenha === valores.senha ? '' : 'As senhas não coincidem.'
+
+    default:
+      return ''
+  }
+}
+
+/* Só mostra erro em campos que o usuário já tocou. */
+function calcularErros(valores, tocados) {
+  return CAMPOS.reduce((acumulado, campo) => {
+    const mensagem = tocados[campo] ? mensagemDoCampo(campo, valores) : ''
+    return mensagem ? { ...acumulado, [campo]: mensagem } : acumulado
+  }, {})
+}
+
+function calcularTodosErros(valores) {
+  const todosTocados = Object.fromEntries(CAMPOS.map((campo) => [campo, true]))
+  return calcularErros(valores, todosTocados)
+}
+
+/* Junta os ids de descrição que existem, para aria-describedby. */
+function descrever(...ids) {
+  const existentes = ids.filter(Boolean)
+  return existentes.length ? existentes.join(' ') : undefined
+}
+
+function MensagemErro({ id, texto }) {
+  if (!texto) return null
+  return (
+    <p className="acesso-erro-campo" id={id}>
+      {texto}
+    </p>
+  )
+}
+
+function IconeCampo({ tipo }) {
+  const desenhos = {
+    usuario: (
+      <>
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
+      </>
+    ),
+    email: (
+      <>
+        <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+        <path d="m4.5 7 7.5 6 7.5-6" />
+      </>
+    ),
+    curso: (
+      <>
+        <path d="m3 9 9-5 9 5-9 5-9-5Z" />
+        <path d="M7 11.5v4c2.8 2.3 7.2 2.3 10 0v-4M21 9v6" />
+      </>
+    ),
+    senha: (
+      <>
+        <rect x="5" y="10" width="14" height="10" rx="2" />
+        <path d="M8 10V7a4 4 0 1 1 8 0v3" />
+      </>
+    ),
   }
 
-  function validar() {
-    const novosErros = {}
-    if (!form.nome.trim()) novosErros.nome = 'Informe seu nome completo.'
-    if (!form.email.trim()) novosErros.email = 'Informe seu e-mail.'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      novosErros.email = 'Informe um e-mail válido.'
-    if (!form.curso) novosErros.curso = 'Selecione o seu curso.'
-    if (!form.senha) novosErros.senha = 'Defina uma senha.'
-    else if (form.senha.length < 6) novosErros.senha = 'A senha deve ter pelo menos 6 caracteres.'
-    if (!form.confirmarSenha) novosErros.confirmarSenha = 'Confirme sua senha.'
-    else if (form.senha !== form.confirmarSenha)
-      novosErros.confirmarSenha = 'As senhas não coincidem.'
-    return novosErros
+  return (
+    <svg className="cadastro-aluno__icone-campo" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <g stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        {desenhos[tipo]}
+      </g>
+    </svg>
+  )
+}
+
+export default function PaginaCadastroAluno() {
+  const [cursos, definirCursos] = useState([])
+  const [carregandoCursos, definirCarregandoCursos] = useState(true)
+  const [erroCursos, definirErroCursos] = useState('')
+  const [tentativaCursos, definirTentativaCursos] = useState(0)
+  const [valores, definirValores] = useState(VALORES_INICIAIS)
+  const [tocados, definirTocados] = useState({})
+  const [erros, definirErros] = useState({})
+  const [mostrarSenha, definirMostrarSenha] = useState(false)
+  const [enviando, definirEnviando] = useState(false)
+  const [erroGeral, definirErroGeral] = useState('')
+  const resumoErro = useRef(null)
+
+  useEffect(() => {
+    const controle = new AbortController()
+
+    listarCursos(controle.signal)
+      .then((lista) => {
+        if (!controle.signal.aborted) definirCursos(lista)
+      })
+      .catch(() => {
+        if (!controle.signal.aborted) {
+          definirErroCursos('Não foi possível carregar os cursos agora.')
+        }
+      })
+      .finally(() => {
+        if (!controle.signal.aborted) definirCarregandoCursos(false)
+      })
+
+    return () => controle.abort()
+  }, [tentativaCursos])
+
+  function tentarNovamenteCursos() {
+    definirErroCursos('')
+    definirCarregandoCursos(true)
+    definirTentativaCursos((numero) => numero + 1)
+  }
+
+  function alterar(campo, valor) {
+    const proximos = { ...valores, [campo]: valor }
+    definirValores(proximos)
+    definirErroGeral('')
+    definirErros(calcularErros(proximos, tocados))
+  }
+
+  function sairDoCampo(campo) {
+    const marcados = { ...tocados, [campo]: true }
+    definirTocados(marcados)
+    definirErros(calcularErros(valores, marcados))
   }
 
   async function cadastrar(evento) {
     evento.preventDefault()
-    const novosErros = validar()
-    if (Object.keys(novosErros).length) {
-      definirErros(novosErros)
-      definirErro('Revise os campos destacados para continuar.')
-      window.requestAnimationFrame(() => resumoErros.current?.focus())
+
+    const novosErros = calcularTodosErros(valores)
+    definirTocados(Object.fromEntries(CAMPOS.map((campo) => [campo, true])))
+    definirErros(novosErros)
+
+    const primeiroInvalido = CAMPOS.find((campo) => novosErros[campo])
+    if (primeiroInvalido) {
+      definirErroGeral('Revise os campos destacados para continuar.')
+      window.requestAnimationFrame(() =>
+        document.getElementById(IDS_CAMPOS[primeiroInvalido])?.focus(),
+      )
       return
     }
+
+    definirErroGeral('')
     definirEnviando(true)
-    definirErro(
-      'O cadastro de alunos ainda não está conectado ao serviço de contas. Seus dados não foram enviados nem uma conta foi criada.',
-    )
-    definirEnviando(false)
-    window.requestAnimationFrame(() => resumoErros.current?.focus())
+
+    try {
+      await cadastrarAluno({
+        cursoId: Number(valores.curso),
+        usuario: {
+          nome: valores.nome.trim(),
+          email: valores.email.trim(),
+          senha: valores.senha,
+        },
+      })
+      window.location.assign(`${basePortal}login?cadastro=sucesso`)
+    } catch (falha) {
+      definirErroGeral(
+        falha instanceof ErroApi
+          ? falha.message
+          : 'Não foi possível criar sua conta agora. Tente novamente.',
+      )
+      definirEnviando(false)
+      window.requestAnimationFrame(() => resumoErro.current?.focus())
+    }
   }
 
+  const tipoSenha = mostrarSenha ? 'text' : 'password'
+
   return (
-    <main id="conteudo" className="limite pagina-acesso">
-      <div className="acesso-painel acesso-painel--unificado">
-        <aside className="acesso-identidade" aria-label="Portal de Cursos">
-          <div className="acesso-marca">
-            <span className="acesso-marca__simbolo">
-              <img src={logoPortal} alt="" width="48" height="48" />
+    <main id="conteudo" className="limite pagina-acesso cadastro-aluno">
+      <div className="cadastro-aluno__cartao">
+        <section className="cadastro-aluno__conteudo" aria-labelledby="titulo-cadastro">
+          <div className="cadastro-aluno__marca">
+            <span className="cadastro-aluno__logo">
+              <img src={logoPortal} alt="" width="30" height="30" />
             </span>
             <span>Portal de Cursos</span>
           </div>
-          <div className="acesso-identidade__mensagem">
-            <p>
-              Sua jornada. <br />
-              Seus projetos.
-            </p>
-            <span>Registre sua produção acadêmica e acompanhe cada etapa da avaliação.</span>
-          </div>
-          <span className="acesso-identidade__assinatura">
-            Produção · Conhecimento · Publicação
-          </span>
-        </aside>
-        <section className="acesso-formulario" aria-labelledby="titulo-cadastro">
-          <div className="acesso-cabecalho-form">
-            <span className="acesso-distintivo">Cadastro de aluno</span>
+          <div className="cadastro-aluno__cabecalho">
             <h1 id="titulo-cadastro">Crie sua conta</h1>
-            <p>Informe seus dados para acompanhar e enviar projetos pelo portal.</p>
+            <p>Cadastre-se para submeter seus projetos acadêmicos.</p>
           </div>
-          {erro && (
-            <p ref={resumoErros} className="acesso-aviso" role="alert" tabIndex={-1}>
-              {erro}
+
+          {erroGeral && (
+            <p
+              ref={resumoErro}
+              className="acesso-aviso acesso-aviso--erro"
+              role="alert"
+              tabIndex={-1}
+            >
+              {erroGeral}
             </p>
           )}
+
           <form onSubmit={cadastrar} noValidate aria-busy={enviando}>
-            <div className="acesso-campo">
-              <label htmlFor="aluno-nome">Nome completo</label>
+            <div className="acesso-campo cadastro-aluno__campo">
+              <label className="somente-leitores" htmlFor="aluno-nome">
+                Nome completo
+              </label>
+              <IconeCampo tipo="usuario" />
               <input
                 id="aluno-nome"
                 type="text"
                 autoComplete="name"
-                value={form.nome}
-                onChange={(e) => alterar('nome', e.target.value)}
-                required
+                autoCapitalize="words"
                 maxLength={120}
+                placeholder="Nome completo"
+                value={valores.nome}
+                onChange={(evento) => alterar('nome', evento.target.value)}
+                onBlur={() => sairDoCampo('nome')}
                 readOnly={enviando}
-                aria-invalid={Boolean(erros.nome)}
-                aria-describedby={erros.nome ? 'erro-aluno-nome' : undefined}
-                placeholder="Seu nome completo"
+                aria-invalid={erros.nome ? true : undefined}
+                aria-describedby={descrever(erros.nome && 'erro-nome')}
               />
-              {erros.nome && (
-                <p className="acesso-erro-campo" id="erro-aluno-nome">
-                  {erros.nome}
-                </p>
-              )}
+              <MensagemErro id="erro-nome" texto={erros.nome} />
             </div>
-            <div className="acesso-campo">
-              <label htmlFor="aluno-email">E-mail</label>
+
+            <div className="acesso-campo cadastro-aluno__campo">
+              <label className="somente-leitores" htmlFor="aluno-email">
+                E-mail institucional
+              </label>
+              <IconeCampo tipo="email" />
               <input
                 id="aluno-email"
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                value={form.email}
-                onChange={(e) => alterar('email', e.target.value)}
-                required
+                autoCapitalize="none"
+                spellCheck={false}
                 maxLength={254}
+                placeholder="E-mail institucional"
+                value={valores.email}
+                onChange={(evento) => alterar('email', evento.target.value)}
+                onBlur={() => sairDoCampo('email')}
                 readOnly={enviando}
-                aria-invalid={Boolean(erros.email)}
-                aria-describedby={erros.email ? 'erro-aluno-email' : undefined}
-                placeholder="voce@email.com"
+                aria-invalid={erros.email ? true : undefined}
+                aria-describedby={descrever(erros.email && 'erro-email')}
               />
-              {erros.email && (
-                <p className="acesso-erro-campo" id="erro-aluno-email">
-                  {erros.email}
-                </p>
-              )}
+              <MensagemErro id="erro-email" texto={erros.email} />
             </div>
-            <div className="acesso-campo">
-              <label htmlFor="aluno-curso">Curso</label>
-              <select
-                id="aluno-curso"
-                value={form.curso}
-                onChange={(e) => alterar('curso', e.target.value)}
-                required
-                disabled={enviando || carregandoCursos || !cursosDisponiveis.length}
-                aria-invalid={Boolean(erros.curso)}
-                aria-describedby={erros.curso ? 'erro-aluno-curso' : undefined}
-              >
-                <option value="">
-                  {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
-                </option>
-                {cursosDisponiveis.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.nome}
-                    {c.sigla ? ` · ${c.sigla}` : ''}
+
+            <div className="acesso-campo cadastro-aluno__campo">
+              <label className="somente-leitores" htmlFor="aluno-curso">
+                Curso
+              </label>
+              <IconeCampo tipo="curso" />
+              <div className="acesso-select">
+                <select
+                  id="aluno-curso"
+                  value={valores.curso}
+                  onChange={(evento) => alterar('curso', evento.target.value)}
+                  onBlur={() => sairDoCampo('curso')}
+                  disabled={
+                    enviando || carregandoCursos || Boolean(erroCursos) || cursos.length === 0
+                  }
+                  aria-invalid={erros.curso ? true : undefined}
+                  aria-describedby={descrever(
+                    erros.curso && 'erro-curso',
+                    erroCursos && 'erro-cursos',
+                  )}
+                >
+                  <option value="">
+                    {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
                   </option>
-                ))}
-              </select>
+                  {cursos.map((curso) => (
+                    <option key={curso.id} value={String(curso.id)}>
+                      {curso.nome}
+                      {curso.sigla ? ` · ${curso.sigla}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {erroCursos && (
-                <p className="acesso-erro-campo" role="status">
-                  {erroCursos}
-                </p>
+                <div id="erro-cursos" className="acesso-erro-carregamento" role="status">
+                  <span>{erroCursos}</span>
+                  <button
+                    type="button"
+                    className="acesso-link-acao"
+                    onClick={tentarNovamenteCursos}
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
               )}
-              {erros.curso && (
-                <p className="acesso-erro-campo" id="erro-aluno-curso">
-                  {erros.curso}
-                </p>
+
+              {!carregandoCursos && !erroCursos && cursos.length === 0 && (
+                <p className="acesso-ajuda-campo">Nenhum curso disponível no momento.</p>
               )}
+
+              <MensagemErro id="erro-curso" texto={erros.curso} />
             </div>
-            <div className="acesso-campo">
-              <label htmlFor="aluno-senha">Senha</label>
+
+            <div className="acesso-campo cadastro-aluno__campo">
+              <label className="somente-leitores" htmlFor="aluno-senha">
+                Senha
+              </label>
+              <IconeCampo tipo="senha" />
               <div className="acesso-senha">
                 <input
                   id="aluno-senha"
                   name="password"
-                  type={mostrarSenha ? 'text' : 'password'}
+                  type={tipoSenha}
                   autoComplete="new-password"
-                  value={form.senha}
-                  onChange={(e) => alterar('senha', e.target.value)}
-                  required
+                  placeholder="Crie uma senha"
+                  value={valores.senha}
+                  onChange={(evento) => alterar('senha', evento.target.value)}
+                  onBlur={() => sairDoCampo('senha')}
                   readOnly={enviando}
-                  aria-invalid={Boolean(erros.senha)}
-                  aria-describedby={erros.senha ? 'erro-aluno-senha' : undefined}
+                  aria-invalid={erros.senha ? true : undefined}
+                  aria-describedby={descrever('ajuda-senha', erros.senha && 'erro-senha')}
                 />
                 <button
                   type="button"
                   onClick={() => definirMostrarSenha(!mostrarSenha)}
-                  aria-controls="aluno-senha"
+                  aria-controls="aluno-senha aluno-confirmar-senha"
                   aria-pressed={mostrarSenha}
-                  aria-label="Mostrar senha"
+                  aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 >
-                  {mostrarSenha ? 'Ocultar' : 'Mostrar'}
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                    {mostrarSenha && <path d="m4 4 16 16" />}
+                  </svg>
                 </button>
               </div>
-              {erros.senha && (
-                <p className="acesso-erro-campo" id="erro-aluno-senha">
-                  {erros.senha}
-                </p>
-              )}
+              <p id="ajuda-senha" className="acesso-ajuda-campo cadastro-aluno__dica">
+                Use pelo menos {TAMANHO_MINIMO_SENHA} caracteres.
+              </p>
+              <MensagemErro id="erro-senha" texto={erros.senha} />
             </div>
-            <div className="acesso-campo">
-              <label htmlFor="aluno-confirmar-senha">Confirmar senha</label>
+
+            <div className="acesso-campo cadastro-aluno__campo">
+              <label className="somente-leitores" htmlFor="aluno-confirmar-senha">
+                Confirmar senha
+              </label>
+              <IconeCampo tipo="senha" />
               <input
                 id="aluno-confirmar-senha"
-                type={mostrarSenha ? 'text' : 'password'}
+                type={tipoSenha}
                 autoComplete="new-password"
-                value={form.confirmarSenha}
-                onChange={(e) => alterar('confirmarSenha', e.target.value)}
-                required
+                placeholder="Confirmar senha"
+                value={valores.confirmarSenha}
+                onChange={(evento) => alterar('confirmarSenha', evento.target.value)}
+                onBlur={() => sairDoCampo('confirmarSenha')}
                 readOnly={enviando}
-                aria-invalid={Boolean(erros.confirmarSenha)}
-                aria-describedby={erros.confirmarSenha ? 'erro-aluno-confirmar-senha' : undefined}
+                aria-invalid={erros.confirmarSenha ? true : undefined}
+                aria-describedby={descrever(erros.confirmarSenha && 'erro-confirmarSenha')}
               />
-              {erros.confirmarSenha && (
-                <p className="acesso-erro-campo" id="erro-aluno-confirmar-senha">
-                  {erros.confirmarSenha}
-                </p>
-              )}
+              <MensagemErro id="erro-confirmarSenha" texto={erros.confirmarSenha} />
             </div>
+
             <button
-              id="btn-cadastrar-aluno"
-              className="botao-primario acesso-entrar"
+              className="botao-primario acesso-entrar cadastro-aluno__enviar"
               type="submit"
               disabled={enviando}
             >
               {enviando ? 'Criando conta…' : 'Criar conta'}
+              <Icone nome="seta" classe="cadastro-aluno__seta" />
             </button>
+
             <span className="somente-leitores" role="status">
               {enviando ? 'Criando sua conta, aguarde.' : ''}
             </span>
           </form>
-          <div className="acesso-voltar-portal">
-            <a href={`${basePortal}#inicio`} className="acesso-voltar-link">
-              ← Voltar ao Portal de Cursos
-            </a>
-          </div>
-          <p className="acesso-ajuda">
-            Já possui uma conta? <a href={`${basePortal}login`}>Acesse o portal</a>.
+
+          <p className="cadastro-aluno__links">
+            Já tem uma conta? <a href={`${basePortal}login`}>Entrar</a>
+            <span>
+              Só quer conhecer os cursos?{' '}
+              <a href={`${basePortal}#cursos`}>Explorar como visitante</a>
+            </span>
           </p>
         </section>
+        <aside className="cadastro-aluno__vitrine" aria-label="Conheça os projetos acadêmicos">
+          <article className="cadastro-aluno__projetos">
+            <header>
+              <div>
+                <strong>Tipos de projeto</strong>
+                <span>Publicados após aprovação do orientador</span>
+              </div>
+              <b>4 tipos</b>
+            </header>
+            <div className="cadastro-aluno__projeto">
+              <span className="cadastro-aluno__projeto-icone cadastro-aluno__projeto-icone--tcc">
+                ⌂
+              </span>
+              <div>
+                <strong>TCC</strong>
+                <small>Trabalho de conclusão de curso</small>
+              </div>
+            </div>
+            <div className="cadastro-aluno__projeto">
+              <span className="cadastro-aluno__projeto-icone cadastro-aluno__projeto-icone--integrador">
+                ⌘
+              </span>
+              <div>
+                <strong>Projeto Integrador</strong>
+                <small>Une conteúdos de várias disciplinas</small>
+              </div>
+            </div>
+            <div className="cadastro-aluno__projeto">
+              <span className="cadastro-aluno__projeto-icone cadastro-aluno__projeto-icone--pesquisa">
+                ⌕
+              </span>
+              <div>
+                <strong>Projeto de Pesquisa</strong>
+                <small>Investigação científica orientada</small>
+              </div>
+            </div>
+            <div className="cadastro-aluno__projeto">
+              <span className="cadastro-aluno__projeto-icone cadastro-aluno__projeto-icone--extensao">
+                ♧
+              </span>
+              <div>
+                <strong>Projeto de Extensão</strong>
+                <small>Ações junto à comunidade</small>
+              </div>
+            </div>
+          </article>
+          <div className="cadastro-aluno__mensagem">
+            <h2>Crie sua conta e publique seus projetos.</h2>
+            <p>
+              Envie seu TCC, Projeto Integrador, de Pesquisa ou de Extensão para avaliação do
+              orientador.
+            </p>
+          </div>
+        </aside>
       </div>
     </main>
   )

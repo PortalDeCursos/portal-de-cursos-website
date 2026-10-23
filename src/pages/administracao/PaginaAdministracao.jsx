@@ -3,11 +3,45 @@ import { listarAreasConhecimento, listarCampus, listarCursos } from '@/api/curso
 import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { enderecoPrivado } from '../../app/rotas.js'
 import GestaoConteudos from './components/GestaoConteudos.jsx'
+import GestaoCampus from './components/GestaoCampus.jsx'
 import GestaoProfessores from './components/GestaoProfessores.jsx'
 import GestaoUsuarios from './components/GestaoUsuarios.jsx'
 import TabelaSubmissoes from './components/TabelaSubmissoes.jsx'
 import '@/shared/styles/painel.css'
 import './administracao.css'
+
+function IconeIndicador({ tipo }) {
+  const desenho = {
+    cursos: <path d="m3 9 9-5 9 5-9 5-9-5Zm4 2.2v4.5c3.2 2.5 6.8 2.5 10 0v-4.5M21 9v6" />,
+    disciplinas: (
+      <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v18H7.5A2.5 2.5 0 0 0 5 22V4.5Zm0 13A2.5 2.5 0 0 1 7.5 15H20M9 6h7M9 9h6" />
+    ),
+    campus: <path d="M4 21V5l8-3 8 3v16M2 21h20M8 8h1m6 0h1m-8 4h1m6 0h1m-7 9v-4h4v4" />,
+    areas: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+      </>
+    ),
+  }[tipo]
+  return (
+    <span
+      className={`administracao-indicador__icone administracao-indicador__icone--${tipo}`}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {desenho}
+      </svg>
+    </span>
+  )
+}
 
 function PainelAdministracao({ token }) {
   const [resumo, definirResumo] = useState(null)
@@ -51,14 +85,24 @@ function PainelAdministracao({ token }) {
 
   return (
     <>
-      <header className="painel-titulo">
+      <header className="painel-titulo administracao-boas-vindas">
         <div>
-          <h1>Painel inicial</h1>
-          <p>Acompanhe as formações e matérias cadastradas e acesse as tarefas mais comuns.</p>
+          <span className="administracao-boas-vindas__rotulo">Visão acadêmica</span>
+          <h1>Gestão do portal</h1>
+          <p>
+            {resumo
+              ? `${resumo.cursos.length} cursos e ${resumo.disciplinas.length} disciplinas cadastrados.`
+              : 'Acompanhe a estrutura acadêmica cadastrada no portal.'}
+          </p>
         </div>
-        <button className="botao-secundario" onClick={() => carregar()} disabled={carregando}>
-          {carregando ? 'Atualizando…' : 'Atualizar informações'}
-        </button>
+        <div className="administracao-boas-vindas__acoes">
+          <a className="botao-secundario" href={enderecoPrivado('administracao/cursos')}>
+            Ver cursos <span aria-hidden="true">↗</span>
+          </a>
+          <button className="botao-primario" onClick={() => carregar()} disabled={carregando}>
+            {carregando ? 'Atualizando…' : 'Atualizar dados'}
+          </button>
+        </div>
       </header>
       {erro && (
         <div className="gestao-aviso" role="alert">
@@ -79,16 +123,40 @@ function PainelAdministracao({ token }) {
         <>
           <section className="administracao-indicadores" aria-label="Resumo da instituição">
             {[
-              ['Formações', resumo.cursos.length, 'administracao/cursos'],
-              ['Matérias', resumo.disciplinas.length, 'administracao/disciplinas'],
-              ['Unidades', resumo.campus.length, 'administracao/cursos'],
-              ['Áreas de estudo', resumo.areas.length, 'administracao/cursos'],
-            ].map(([rotulo, total, destino]) => (
-              <a className="administracao-indicador" href={enderecoPrivado(destino)} key={rotulo}>
-                <span>{rotulo}</span>
-                <strong>{total}</strong>
-              </a>
-            ))}
+              ['Cursos', resumo.cursos.length, 'cursos', 'administracao/cursos'],
+              [
+                'Disciplinas',
+                resumo.disciplinas.length,
+                'disciplinas',
+                'administracao/disciplinas',
+              ],
+              ['Campus', resumo.campus.length, 'campus', 'administracao/campus'],
+              ['Áreas de conhecimento', resumo.areas.length, 'areas', null],
+            ].map(([rotulo, total, tipo, destino]) => {
+              const conteudo = (
+                <>
+                  <IconeIndicador tipo={tipo} />
+                  <span className="administracao-indicador__texto">
+                    <span>{rotulo}</span>
+                    <strong>{total}</strong>
+                  </span>
+                  {destino && (
+                    <span className="administracao-indicador__seta" aria-hidden="true">
+                      →
+                    </span>
+                  )}
+                </>
+              )
+              return destino ? (
+                <a className="administracao-indicador" href={enderecoPrivado(destino)} key={rotulo}>
+                  {conteudo}
+                </a>
+              ) : (
+                <div className="administracao-indicador" key={rotulo}>
+                  {conteudo}
+                </div>
+              )
+            })}
           </section>
           <section
             className="painel-secao administracao-registros"
@@ -96,11 +164,11 @@ function PainelAdministracao({ token }) {
           >
             <header>
               <div>
-                <h2 id="cursos-recentes">Formações cadastradas</h2>
-                <p>Consulte as formações já disponíveis no portal.</p>
+                <h2 id="cursos-recentes">Cursos cadastrados</h2>
+                <p>Dados acadêmicos disponíveis no portal.</p>
               </div>
               <a href={enderecoPrivado('administracao/cursos')}>
-                Ver e organizar formações <span aria-hidden="true">→</span>
+                Ver todos os cursos <span aria-hidden="true">→</span>
               </a>
             </header>
             {resumo.cursos.length ? (
@@ -111,13 +179,14 @@ function PainelAdministracao({ token }) {
                 tabIndex={0}
               >
                 <table>
-                  <caption className="somente-leitores">Formações disponíveis no portal</caption>
+                  <caption className="somente-leitores">Cursos disponíveis no portal</caption>
                   <thead>
                     <tr>
-                      <th scope="col">Formação</th>
-                      <th scope="col">Tipo</th>
-                      <th scope="col">Formato das aulas</th>
-                      <th scope="col">Período</th>
+                      <th scope="col">Curso</th>
+                      <th scope="col">Grau</th>
+                      <th scope="col">Turno</th>
+                      <th scope="col">Modalidade</th>
+                      <th scope="col">Carga horária</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -125,11 +194,12 @@ function PainelAdministracao({ token }) {
                       <tr key={curso.id}>
                         <th scope="row">
                           {curso.nome}
-                          <span>{curso.sigla}</span>
+                          <span>{curso.sigla || curso.acronimo}</span>
                         </th>
                         <td>{curso.grau}</td>
-                        <td>{curso.modalidade}</td>
-                        <td>{curso.turno}</td>
+                        <td>{curso.turno || '—'}</td>
+                        <td>{curso.modalidade || '—'}</td>
+                        <td>{curso.cargaHoraria || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -201,22 +271,38 @@ function PainelAdministracao({ token }) {
   )
 }
 
-export default function PaginaAdministracao({ secao, sessao, rascunhos, aoAlterar, submissoes }) {
+export default function PaginaAdministracao({
+  secao,
+  identificador,
+  sessao,
+  rascunhos,
+  aoAlterar,
+  submissoes,
+}) {
+  if (secao === 'campus')
+    return (
+      <main id="conteudo" className="pagina-painel pagina-painel--administracao">
+        <GestaoCampus identificador={identificador} />
+      </main>
+    )
   if (secao === 'usuarios')
     return (
-      <main id="conteudo" className="pagina-painel">
+      <main id="conteudo" className="pagina-painel pagina-painel--administracao">
         <GestaoUsuarios token={sessao.token} />
       </main>
     )
   if (secao === 'professores')
     return (
-      <main id="conteudo" className="pagina-painel">
+      <main id="conteudo" className="pagina-painel pagina-painel--administracao">
         <GestaoProfessores token={sessao.token} />
       </main>
     )
   if (['cursos', 'disciplinas', 'projetos'].includes(secao))
     return (
-      <main id="conteudo" className="pagina-painel">
+      <main
+        id="conteudo"
+        className={`pagina-painel pagina-painel--administracao pagina-painel--${secao}`}
+      >
         <GestaoConteudos
           key={secao}
           dominio={secao}
@@ -230,7 +316,7 @@ export default function PaginaAdministracao({ secao, sessao, rascunhos, aoAltera
     )
   if (secao === 'submissoes')
     return (
-      <main id="conteudo" className="pagina-painel">
+      <main id="conteudo" className="pagina-painel pagina-painel--administracao">
         <header className="painel-titulo">
           <div>
             <h1>Submissões do portal</h1>
@@ -247,7 +333,7 @@ export default function PaginaAdministracao({ secao, sessao, rascunhos, aoAltera
       </main>
     )
   return (
-    <main id="conteudo" className="pagina-painel">
+    <main id="conteudo" className="pagina-painel pagina-painel--administracao">
       <PainelAdministracao token={sessao.token} />
     </main>
   )

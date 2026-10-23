@@ -1,40 +1,715 @@
-/* Variante de cor para a área do aluno */
-.acesso-painel--aluno {
-  --acesso-azul: linear-gradient(155deg, #0f6e5c 0%, #084d40 100%);
-  --acesso-sobre-azul: #fff;
+/* ==========================================================================
+   Cadastro de aluno
+   Herda o layout de acesso.css e define só o que é específico desta tela.
+   Tokens usados: --acesso-fundo-aluno, --superficie, --suave, --borda,
+   --borda-campo, --titulo, --texto, --texto-secundario, --texto-mutado,
+   --erro, --erro-suave, --foco, --azul.
+   ========================================================================== */
+
+/* Painel de identidade do aluno: cor vem do token, não de valor fixo */
+.acesso-painel--aluno .acesso-identidade {
+  background: var(--acesso-fundo-aluno);
 }
 
-/* Distintivo verde para tela de confirmação */
-.acesso-distintivo--verde {
-  color: #17633d;
-  background: #dff3e7;
+/* ---------- Select com a mesma aparência dos campos de texto ---------- */
+
+.acesso-select {
+  position: relative;
 }
 
-/* Estilos do select dentro do acesso-campo */
-.acesso-campo select {
+.acesso-select select {
   width: 100%;
   min-width: 0;
   height: 56px;
-  border: 1px solid var(--borda);
+  padding: 14px 44px 14px 16px;
+  border: 1px solid var(--borda-campo);
   border-radius: 12px;
-  padding: 14px 16px;
-  color: var(--titulo);
   background: var(--superficie);
+  color: var(--titulo);
+  font: inherit;
   font-size: 16px;
+  appearance: none;
+  cursor: pointer;
   transition: border-color 160ms ease;
-  appearance: auto;
 }
 
-.acesso-campo select:hover {
-  border-color: var(--texto);
+/* Chevron desenhado com bordas, na cor do texto secundário */
+.acesso-select::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--texto-secundario);
+  border-bottom: 2px solid var(--texto-secundario);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
 }
 
-.acesso-campo select:focus-visible {
-  outline: 2px solid var(--azul);
+.acesso-select select:hover:not(:disabled) {
+  border-color: var(--texto-secundario);
+}
+
+.acesso-select select:focus-visible {
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
   border-color: transparent;
 }
 
-.acesso-campo select[aria-invalid='true'] {
-  border-color: var(--azul);
+.acesso-select select[aria-invalid='true'] {
+  border-color: var(--erro);
+}
+
+.acesso-select select:disabled {
+  background: var(--suave);
+  color: var(--texto-secundario);
+  cursor: not-allowed;
+}
+
+/* O chevron acompanha o estado desabilitado */
+.acesso-select:has(select:disabled)::after {
+  border-color: var(--texto-mutado);
+}
+
+/* ---------- Textos de apoio ---------- */
+
+.acesso-ajuda-campo {
+  margin: 0;
+  color: var(--texto-mutado);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Erro de carregamento dos cursos, com nova tentativa ---------- */
+
+.acesso-erro-carregamento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--erro-suave);
+  color: var(--titulo);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.acesso-link-acao {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--azul);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.acesso-link-acao:hover {
+  background: var(--suave);
+}
+
+.acesso-link-acao:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+/* ---------- Movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .acesso-select select,
+  .acesso-link-acao {
+    transition: none;
+  }
+}
+
+.cadastro-aluno {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100dvh - 56px);
+  padding: 48px 24px;
+  background:
+    radial-gradient(520px 420px at 8% 0%, rgb(188 208 255 / 42%), transparent 72%),
+    radial-gradient(420px 360px at 92% 100%, rgb(214 226 255 / 60%), transparent 72%), #f4f7fc;
+}
+
+.cadastro-aluno__cartao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: min(100%, 1080px);
+  min-height: 714px;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid #dfe5ef;
+  border-radius: 36px;
+  background: #fff;
+  box-shadow: 0 40px 80px -30px rgb(11 31 54 / 25%);
+}
+
+.cadastro-aluno__conteudo {
+  align-self: center;
+  width: 100%;
+  max-width: 492px;
+  margin-inline: auto;
+  padding: 30px clamp(24px, 4vw, 56px);
+  color: #0b1f36;
+}
+
+.cadastro-aluno__marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: #0b1f36;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.cadastro-aluno__logo {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid #dfe5ef;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cadastro-aluno__logo img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.cadastro-aluno__cabecalho {
+  margin-bottom: 20px;
+}
+
+.cadastro-aluno__cabecalho h1 {
+  margin: 0;
+  color: #0b1f36;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+.cadastro-aluno__cabecalho p {
+  max-width: 380px;
+  margin: 8px 0 0;
+  color: #3a4556;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.cadastro-aluno__conteudo form {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.cadastro-aluno__campo {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cadastro-aluno__icone-campo {
+  position: absolute;
+  z-index: 1;
+  top: 19px;
+  left: 16px;
+  width: 20px;
+  height: 20px;
+  color: #65748b;
+  pointer-events: none;
+}
+
+.cadastro-aluno__campo input,
+.cadastro-aluno__campo .acesso-senha input,
+.cadastro-aluno__campo .acesso-select select {
+  width: 100%;
+  height: 48px;
+  min-width: 0;
+  padding: 0 16px 0 48px;
+  border: 1px solid #dfe5ef;
+  border-radius: 15px;
+  background: #fff;
+  color: #0b1f36;
+  font: inherit;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.cadastro-aluno__campo input::placeholder,
+.cadastro-aluno__campo select:invalid {
+  color: #5f6b7d;
+  opacity: 1;
+}
+
+.cadastro-aluno__campo input:focus-visible,
+.cadastro-aluno__campo select:focus-visible {
+  outline: 3px solid rgb(21 89 255 / 18%);
+  border-color: #1559ff;
+}
+
+.cadastro-aluno__campo .acesso-senha {
+  min-width: 0;
+}
+
+.cadastro-aluno__campo .acesso-senha input {
+  padding-right: 62px;
+}
+
+.cadastro-aluno__campo .acesso-senha button {
+  top: 4px;
+  right: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #5f6b7d;
+  font-size: 12px;
+}
+
+.cadastro-aluno__campo .acesso-senha button:hover {
+  background: #f1f4fa;
+}
+
+.cadastro-aluno__campo .acesso-select::after {
+  right: 17px;
+  width: 7px;
+  height: 7px;
+}
+
+.cadastro-aluno__dica {
+  padding-left: 2px;
+  color: #5f6b7d;
+  font-size: 11px;
+}
+
+.cadastro-aluno__enviar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 13px;
+  background: #1559ff;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 10px 24px -8px rgb(21 89 255 / 55%);
+}
+
+.cadastro-aluno__enviar:hover:not(:disabled) {
+  background: #0e4ee8;
+}
+
+.cadastro-aluno__seta {
+  width: 11px;
+  height: 11px;
+  filter: brightness(0) invert(1);
+}
+
+.cadastro-aluno__links {
+  margin: 12px 0 0;
+  color: #3a4556;
+  font-size: 12px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.cadastro-aluno__links a {
+  color: #1559ff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cadastro-aluno__links a:hover {
+  text-decoration: underline;
+}
+
+.cadastro-aluno__links span {
+  display: block;
+}
+
+.cadastro-aluno__vitrine {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 690px;
+  padding: 52px 36px 36px;
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(ellipse at 100% 0%, #1a4fd6 0%, #1540ab 18%, transparent 48%),
+    radial-gradient(ellipse at 50% 50%, rgb(255 255 255 / 8%), transparent 54%),
+    linear-gradient(145deg, #0b1f36, #0b1f36 66%, #0b1f36);
+  color: #fff;
+}
+
+.cadastro-aluno__projetos {
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  width: min(100%, 360px);
+  margin: 0 auto;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 30px 30px rgb(0 0 0 / 35%);
+}
+
+.cadastro-aluno__projetos > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px 8px;
+}
+
+.cadastro-aluno__projetos > header div,
+.cadastro-aluno__projeto > div {
+  display: grid;
+  gap: 4px;
+}
+
+.cadastro-aluno__projetos > header strong,
+.cadastro-aluno__projeto strong {
+  color: #0b1f36;
+  font-size: 12px;
+}
+
+.cadastro-aluno__projetos > header span,
+.cadastro-aluno__projeto small {
+  color: #5b677a;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.cadastro-aluno__projetos > header b {
+  color: #0f8a44;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cadastro-aluno__projeto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #f6f8fc;
+}
+
+.cadastro-aluno__projeto-icone {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.cadastro-aluno__projeto-icone--tcc {
+  background: #e3ebff;
+  color: #1559ff;
+}
+.cadastro-aluno__projeto-icone--integrador {
+  background: #eee6ff;
+  color: #6a3fc4;
+}
+.cadastro-aluno__projeto-icone--pesquisa {
+  background: #fff1d6;
+  color: #a8510b;
+}
+.cadastro-aluno__projeto-icone--extensao {
+  background: #dcf5e6;
+  color: #087944;
+}
+
+.cadastro-aluno__mensagem {
+  max-width: 384px;
+  margin-inline: auto;
+}
+
+.cadastro-aluno__mensagem h2 {
+  max-width: 324px;
+  margin: 0;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.cadastro-aluno__mensagem p {
+  margin: 12px 0 0;
+  color: #e3ebf7;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+@media (max-width: 820px) {
+  .cadastro-aluno {
+    align-items: start;
+    padding: 24px 14px;
+  }
+
+  .cadastro-aluno__cartao {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 540px;
+    min-height: 0;
+  }
+
+  .cadastro-aluno__conteudo {
+    padding: 26px clamp(12px, 5vw, 36px);
+  }
+
+  .cadastro-aluno__vitrine {
+    min-height: 540px;
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 440px) {
+  .cadastro-aluno__cartao {
+    padding: 8px;
+    border-radius: 26px;
+  }
+
+  .cadastro-aluno__conteudo {
+    padding: 22px 10px;
+  }
+
+  .cadastro-aluno__vitrine {
+    min-height: 500px;
+    padding-inline: 14px;
+  }
+}
+
+:root[data-tema='escuro'] .cadastro-aluno {
+  background:
+    radial-gradient(520px 420px at 8% 0%, rgb(21 64 171 / 20%), transparent 72%),
+    radial-gradient(420px 360px at 92% 100%, rgb(21 64 171 / 16%), transparent 72%), #000;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__cartao {
+  border-color: #24262b;
+  background: #0a0a0b;
+  box-shadow:
+    0 0 0 1px #24262b,
+    0 30px 60px -20px rgb(0 0 0 / 80%);
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__conteudo,
+:root[data-tema='escuro'] .cadastro-aluno__marca,
+:root[data-tema='escuro'] .cadastro-aluno__cabecalho h1 {
+  color: #fff;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__logo {
+  border-color: #292929;
+  background: #141518;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__cabecalho p,
+:root[data-tema='escuro'] .cadastro-aluno__links {
+  color: #b0b6c1;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__icone-campo {
+  color: #9aa3b0;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo input,
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-senha input,
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-select select {
+  border-color: #292929;
+  background: #141518;
+  color: #fff;
+  color-scheme: dark;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo input::placeholder,
+:root[data-tema='escuro'] .cadastro-aluno__campo select:invalid,
+:root[data-tema='escuro'] .cadastro-aluno__dica {
+  color: #9aa3b0;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-senha button {
+  color: #b0b6c1;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-senha button:hover {
+  background: #24262b;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__links a {
+  color: #8eafff;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projetos {
+  border: 1px solid #24262b;
+  background: #0a0a0b;
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / 80%);
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projetos > header strong,
+:root[data-tema='escuro'] .cadastro-aluno__projeto strong {
+  color: #fff;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projetos > header span,
+:root[data-tema='escuro'] .cadastro-aluno__projeto small {
+  color: #9aa3b0;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projeto {
+  background: #141518;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projeto-icone--tcc {
+  background: #13204a;
+  color: #7da5ff;
+}
+:root[data-tema='escuro'] .cadastro-aluno__projeto-icone--integrador {
+  background: #22173f;
+  color: #bb9aff;
+}
+:root[data-tema='escuro'] .cadastro-aluno__projeto-icone--pesquisa {
+  background: #2e2108;
+  color: #ffc14d;
+}
+:root[data-tema='escuro'] .cadastro-aluno__projeto-icone--extensao {
+  background: #0b2a18;
+  color: #47d18c;
+}
+
+.cadastro-aluno {
+  background: #f4f7fc;
+}
+
+.cadastro-aluno__cartao {
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgb(11 31 54 / 10%);
+}
+
+.cadastro-aluno__vitrine {
+  border-radius: 18px;
+  background: #123d8a;
+}
+
+.cadastro-aluno__projetos {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgb(4 17 48 / 12%);
+}
+
+.cadastro-aluno__projeto {
+  border: 1px solid #e8edf5;
+}
+
+.cadastro-aluno__campo .acesso-senha {
+  position: relative;
+}
+
+.cadastro-aluno__campo .acesso-senha input {
+  padding-right: 96px;
+}
+
+.cadastro-aluno__campo .acesso-senha button {
+  top: 50%;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 9px;
+  transform: translateY(-50%);
+  border: 1px solid #dfe5ef;
+  border-radius: 9px;
+  background: #f4f7fc;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cadastro-aluno__campo .acesso-senha button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cadastro-aluno__campo .acesso-senha button:hover {
+  border-color: #b8c7e2;
+  background: #eaf0fb;
+}
+
+.cadastro-aluno__campo .acesso-senha button:focus-visible {
+  outline: 3px solid rgb(21 89 255 / 22%);
+  outline-offset: 2px;
+}
+
+.cadastro-aluno__enviar {
+  box-shadow: none;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno {
+  background: #000;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__cartao {
+  box-shadow: 0 12px 32px rgb(0 0 0 / 32%);
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__vitrine {
+  background: #0b1f36;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projetos {
+  box-shadow: 0 12px 28px rgb(0 0 0 / 28%);
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__projeto {
+  border-color: #24262b;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-senha button {
+  border-color: #363a43;
+  background: #202329;
+  color: #dbe3f1;
+}
+
+:root[data-tema='escuro'] .cadastro-aluno__campo .acesso-senha button:hover {
+  border-color: #56647a;
+  background: #292e37;
 }

@@ -323,3 +323,27 @@ a:hover {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+/* Estilo Flat / Minimalista - Sem Glassmorphism */
+.botao-primario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--azul);
+  color: #fff;
+  border: 2px solid var(--azul);
+  border-radius: 4px; /* Linhas mais retas e estruturadas */
+  padding: 12px 24px;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+/* Feedback visual direto pela inversão de cores, sem elevação */
+.botao-primario:hover {
+  background: transparent;
+  color: var(--azul);
+}

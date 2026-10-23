@@ -29,3 +29,14 @@
   --sombra: 0 0 0 1px var(--borda);
   color-scheme: dark;
 }
+:root {
+  --erro: #b42318;
+  --erro-suave: #fef3f2;
+  --sucesso: #067647;
+  --foco: var(--azul);
+}
+
+:root[data-tema='escuro'] {
+  --erro: #f97066;
+  --erro-suave: rgb(249 112 102 / 12%);
+}

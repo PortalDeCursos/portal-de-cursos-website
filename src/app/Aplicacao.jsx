@@ -3,7 +3,6 @@ import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } fro
 import EstruturaProfessor from '@/pages/professor/components/EstruturaProfessor.jsx'
 import Cabecalho from '@/shared/components/Cabecalho.jsx'
 import Rodape from '@/shared/components/Rodape.jsx'
-import JanelaContexto from '@/shared/components/JanelaContexto.jsx'
 import PaginaInicial from '@/pages/inicio/PaginaInicial.jsx'
 import PaginaCursos from '@/pages/cursos/PaginaCursos.jsx'
 import RodapeCatalogo from '@/pages/cursos/components/RodapeCatalogo.jsx'
@@ -11,6 +10,9 @@ import PaginaDetalhesCurso from '@/pages/detalhes-curso/PaginaDetalhesCurso.jsx'
 import PaginaProjetos from '@/pages/projetos/PaginaProjetos.jsx'
 import PaginaSubmissao from '@/pages/submissao/PaginaSubmissao.jsx'
 import PaginaAcesso from '../pages/acesso/PaginaAcesso.jsx'
+import PaginaLoginAluno from '@/pages/acesso/PaginaLoginAluno.jsx'
+import PaginaLoginProfessor from '@/pages/acesso/PaginaLoginProfessor.jsx'
+import PaginaLoginAdministracao from '@/pages/acesso/PaginaLoginAdministracao.jsx'
 import PaginaPerfil from '../pages/perfil/PaginaPerfil.jsx'
 import PaginaProfessor from '@/pages/professor/PaginaProfessor.jsx'
 import PaginaAdministracao from '../pages/administracao/PaginaAdministracao.jsx'
@@ -51,7 +53,14 @@ function lerTema() {
 }
 
 export default function Aplicacao() {
-  const [sessao, definirSessao] = useState(null)
+  const [sessao, definirSessao] = useState(() => {
+    try {
+      const salva = JSON.parse(sessionStorage.getItem('portal-cursos-sessao') || 'null')
+      return salva && Date.now() < salva.expiraEm ? salva : null
+    } catch {
+      return null
+    }
+  })
   const [decisoes, definirDecisoes] = useState({})
   const [listaSubmissoes, definirListaSubmissoes] = useState([])
   const [listaProjetos, definirListaProjetos] = useState([])
@@ -63,6 +72,14 @@ export default function Aplicacao() {
   const [rotaCurso, definirRotaCurso] = useState(() =>
     window.location.hash.startsWith('#curso/') ? window.location.hash.slice(1) : '',
   )
+  useEffect(() => {
+    try {
+      if (sessao) sessionStorage.setItem('portal-cursos-sessao', JSON.stringify(sessao))
+      else sessionStorage.removeItem('portal-cursos-sessao')
+    } catch {
+      /* A sessão permanece disponível em memória quando o armazenamento está bloqueado. */
+    }
+  }, [sessao])
   useEffect(() => {
     document.documentElement.dataset.tema = tema
     try {
@@ -222,7 +239,8 @@ export default function Aplicacao() {
       const login = 'login'
       navegar(`${enderecoPrivado(login)}?retorno=${encodeURIComponent(destino)}`, true)
     } else if (ePaginaLogin && sessao) {
-      navegar(enderecoPrivado(retornoAutenticado(sessao.tipoUsuario)), true)
+      const destino = new URLSearchParams(window.location.search).get('retorno')
+      navegar(enderecoPrivado(destino || retornoAutenticado(sessao.tipoUsuario)), true)
     } else if (
       sessao &&
       ['professor', 'administracao', 'coordenacao', 'aluno-painel'].includes(pagina) &&
@@ -266,6 +284,27 @@ export default function Aplicacao() {
             ? 'cursos'
             : pagina
   const ePaginaLogin = pagina === 'acesso'
+  const caminhoLogin = window.location.pathname.slice(basePortal.length).replace(/^\//, '')
+  const PaginaDeLogin =
+    caminhoLogin === 'aluno/login'
+      ? PaginaLoginAluno
+      : ['professor/login', 'login/professor'].includes(caminhoLogin)
+        ? PaginaLoginProfessor
+        : ['administracao/login', 'admin/login', 'login/admin'].includes(caminhoLogin)
+          ? PaginaLoginAdministracao
+          : PaginaAcesso
+  if (pagina === 'aluno-cadastro') {
+    return (
+      <>
+        <a className="pular-conteudo" href="#conteudo">
+          Pular para o conteúdo
+        </a>
+        <Cabecalho modoAcesso tema={tema} alternarTema={definirTema} pagina="acesso" />
+        <PaginaCadastroAluno />
+        <RodapeCatalogo pagina="acesso" />
+      </>
+    )
+  }
   if (
     ePaginaLogin ||
     ['professor', 'administracao', 'coordenacao', 'aluno-painel'].includes(pagina)
@@ -304,7 +343,7 @@ export default function Aplicacao() {
           Pular para o conteúdo
         </a>
         {!sessao ? (
-          <PaginaAcesso aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
+          <PaginaDeLogin aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
         ) : ['professor/perfil', 'administracao/perfil', 'coordenacao/perfil'].includes(rota) ? (
           <PaginaPerfil
             destinoVoltar={
@@ -322,6 +361,7 @@ export default function Aplicacao() {
         ) : administrador ? (
           <PaginaAdministracao
             secao={rota.split('/')[1] || 'painel'}
+            identificador={rota.split('/')[2]}
             sessao={sessao}
             rascunhos={rascunhos}
             aoAlterar={(dominio, itens) =>
@@ -497,10 +537,6 @@ export default function Aplicacao() {
       {pagina === 'aluno-cadastro' && <PaginaCadastroAluno />}
       {pagina === 'inicio' && <PaginaInicial />}
       {pagina === 'inicio' ? <Rodape /> : <RodapeCatalogo pagina={pagina} />}
-      <JanelaContexto
-        rota={rota}
-        destinoAoFechar={pagina === 'detalhes-curso' ? rotaCurso : pagina}
-      />
     </>
   )
 }
