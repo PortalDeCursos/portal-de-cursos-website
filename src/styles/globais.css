@@ -45,35 +45,6 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --fundo: #f7f8fc;
-  --superficie: #fff;
-  --suave: #e8edf8;
-  --etiqueta: #d8e2fb;
-  --titulo: #00050e;
-  --texto: #334155;
-  --azul: #003da8;
-  --verde: #18704a;
-  --borda: #c6cfdd;
-  --cabecalho: #fffffff2;
-  --brilho: #c7d7ff;
-  --sombra: 0 1px 2px #0000000d;
-  color-scheme: light;
-}
-
-:root[data-tema='escuro'] {
-  --fundo: #000000;
-  --superficie: #0c0c0c;
-  --suave: #141414;
-  --etiqueta: #182238;
-  --titulo: #f5f5f5;
-  --texto: #bfbfbf;
-  --azul: #8fb1ff;
-  --verde: #7ed9aa;
-  --borda: #292929;
-  --cabecalho: #000000;
-  --brilho: transparent;
-  --sombra: 0 0 0 1px var(--borda);
-  color-scheme: dark;
 }
 
 * {
