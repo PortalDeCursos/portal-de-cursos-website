@@ -26,7 +26,7 @@ A sessão fica apenas em memória. Recarregar exige login; logout e expiração 
 
 ## Execução
 
-O proxy Vite encaminha /api/usuarios para http://127.0.0.1:8080, removendo o prefixo. Assim, a consulta do frontend /api/usuarios/usuarios corresponde ao GET /usuarios do backend. USUARIOS_API_URL permite alterar o destino em desenvolvimento. VITE_API_AUTENTICACAO permite usar a URL HTTPS completa de /auth/login; as consultas de identidade usam a mesma base do serviço, que precisa permitir CORS.
+O proxy Vite encaminha /api/v1/usuarios para http://127.0.0.1:8080, removendo o prefixo. Assim, a consulta do frontend /api/v1/usuarios/usuarios corresponde ao GET /usuarios do backend. USUARIOS_API_URL permite alterar o destino em desenvolvimento. VITE_API_AUTENTICACAO permite usar a URL HTTPS completa de /auth/login; as consultas de identidade usam a mesma base do serviço, que precisa permitir CORS.
 
 O proxy não funciona no GitHub Pages: produção precisa de serviço HTTPS com CORS ou hospedagem com reverse proxy. Credenciais inválidas podem chegar como 500 no tratamento atual do backend; o frontend informa a falha sem exibir detalhes internos.
 

@@ -82,19 +82,42 @@ O frontend usa navegação por hash. As rotas são acessadas depois do `#` na UR
 
 ## Configuração de dados
 
-O catálogo e a grade curricular usam o microsserviço de cursos. Em desenvolvimento, o Vite
-encaminha `/api/v1/cursos` e `/api/v1/disciplinas` para `http://127.0.0.1:8081`. Ajuste
-`CURSOS_API_URL` no `.env` se o serviço estiver em outro endereço. Para implantação, configure
-`VITE_API_CURSOS` e `VITE_API_DISCIPLINAS` com os endpoints públicos correspondentes:
+O catálogo e a grade curricular usam o microsserviço de cursos. O frontend mantém `/api/v1` no
+contrato de requisições; a pasta removida na refatoração era apenas uma organização local de
+arquivos.
+
+### Desenvolvimento com proxy Vite
+
+O proxy do Vite recebe `/api/v1/cursos`, `/api/v1/disciplinas`, `/api/v1/campus` e
+`/api/v1/areas-conhecimento`. Ele remove o prefixo `/api/v1` antes de encaminhar a requisição.
+Defina os alvos do proxy somente no ambiente Node:
 
 ```bash
-VITE_API_CURSOS=https://exemplo.edu.br/api/v1/cursos \
-VITE_API_DISCIPLINAS=https://exemplo.edu.br/api/v1/disciplinas npm run dev
+CURSOS_API_URL=http://127.0.0.1:8081
+USUARIOS_API_URL=http://127.0.0.1:8080
 ```
+
+Confirme com a equipe de backend se o serviço expõe `/cursos` ou `/api/v1/cursos` antes de
+alterar o `rewrite` do proxy.
+
+### Produção sem proxy
+
+Em um deploy estático, como GitHub Pages, o proxy não existe. Configure URLs públicas absolutas
+para o bundle chamar os serviços diretamente:
+
+```bash
+VITE_API_CURSOS_URL=https://exemplo.edu.br/api/v1/cursos \
+VITE_API_DISCIPLINAS_URL=https://exemplo.edu.br/api/v1/disciplinas npm run build
+```
+
+No GitHub Pages, cadastre `VITE_API_CURSOS_URL`, `VITE_API_DISCIPLINAS_URL` e, quando houver
+autenticação remota, `VITE_API_AUTENTICACAO` como variáveis do repositório. O workflow de Pages
+as injeta somente durante o build; elas devem conter URLs públicas e nunca segredos.
 
 Os cursos são carregados da resposta paginada da API, e as disciplinas usam o identificador do
 curso retornado pelo serviço. Variáveis com o prefixo `VITE_` são expostas no navegador; nunca
-coloque credenciais ou segredos nelas.
+coloque credenciais ou segredos nelas. Os nomes antigos `VITE_API_CURSOS` e
+`VITE_API_DISCIPLINAS` continuam aceitos durante a transição.
 
 ## Estrutura do projeto
 
@@ -102,21 +125,22 @@ As pastas técnicas usam nomes em inglês. Componentes, textos e identificadores
 domínio permanecem em português do Brasil, sem acentos em nomes de arquivos ou símbolos.
 
 ```text
-public/
-  data/                  # Dados locais consumidos pela aplicação
 src/
+  api/                   # Recursos HTTP por domínio
   app/                   # Roteamento e composição global
   assets/                # Fontes e recursos locais
-  data/                  # Dados usados por telas demonstrativas
   pages/                 # Páginas agrupadas por domínio
-    courses/             # Catálogo e detalhes de cursos
-    home/                # Página inicial
-    projects/            # Biblioteca de projetos
-    submission/          # Fluxo de submissão
-    teacher/             # Feed e detalhes de avaliações
-  shared/                # Componentes compartilhados
+    inicio/              # Página inicial
+    cursos/              # Catálogo de cursos
+    detalhes-curso/      # Informações de uma formação
+    projetos/            # Biblioteca de projetos
+    submissao/           # Fluxo de submissão
+    professor/           # Feed e detalhes de avaliações
+  shared/                # Componentes e estilos compartilhados
   styles/                # Tokens e estilos globais
 ```
+
+Consulte [a estrutura detalhada](./docs/ESTRUTURA.md) para as responsabilidades de cada pasta.
 
 ## Desenvolvimento
 

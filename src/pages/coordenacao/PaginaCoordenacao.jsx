@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { api } from '../../api/index.js'
+import { listarCursos } from '@/api/cursos.js'
 import { basePortal, enderecoPrivado } from '../../app/rotas.js'
-import TabelaSubmissoes from '../painel/componentes/TabelaSubmissoes.jsx'
-import GestaoConteudos from '../administracao/componentes/GestaoConteudos.jsx'
-import GestaoProfessores from '../administracao/componentes/GestaoProfessores.jsx'
-import '../painel/painel.css'
+import TabelaSubmissoes from '@/pages/administracao/components/TabelaSubmissoes.jsx'
+import GestaoConteudos from '@/pages/administracao/components/GestaoConteudos.jsx'
+import GestaoProfessores from '@/pages/administracao/components/GestaoProfessores.jsx'
+import '@/shared/styles/painel.css'
 import '../administracao/administracao.css'
 
 function pertenceAoCurso(item, cursoId, curso) {
@@ -16,8 +16,7 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
   const [cursos, definirCursos] = useState([])
   useEffect(() => {
     const controller = new AbortController()
-    api.cursos
-      .listar(controller.signal)
+    listarCursos(controller.signal)
       .then((registros) => {
         if (!controller.signal.aborted) definirCursos(registros)
       })
@@ -49,7 +48,9 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
     curso?.identificador,
   ].filter((id) => id !== undefined && id !== null)
   const cursosDaCoordenacao = cursos.filter((item) =>
-    idsDoCurso.some((id) => [item.id, item.identificador].some((valor) => String(valor) === String(id))),
+    idsDoCurso.some((id) =>
+      [item.id, item.identificador].some((valor) => String(valor) === String(id)),
+    ),
   )
   const projetosDoCurso = rascunhos.projetos.filter((item) =>
     idsDoCurso.some((id) => pertenceAoCurso(item, id, curso)),
