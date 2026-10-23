@@ -1,0 +1,369 @@
+.area-professor.area-professor--entrada {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  background: var(--fundo);
+}
+.area-professor--entrada .barra-professor {
+  justify-content: flex-end;
+  background: transparent;
+  padding-block: 12px;
+}
+.area-professor--entrada .barra-professor__acoes a,
+.area-professor--entrada .barra-professor__acoes button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--texto);
+}
+.area-professor--entrada .barra-professor__acoes a:hover,
+.area-professor--entrada .barra-professor__acoes button:hover {
+  background: var(--suave);
+  color: var(--azul);
+}
+.area-professor--entrada .barra-professor__marca {
+  display: none;
+}
+.area-professor--entrada .barra-professor__acoes {
+  width: auto;
+  display: flex;
+}
+.area-professor.area-professor--entrada .pagina-acesso {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 24px;
+  max-width: none;
+}
+.acesso-painel {
+  --acesso-azul: #003da8;
+  --acesso-sobre-azul: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  width: 100%;
+  max-width: 960px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--superficie);
+}
+.acesso-painel--admin {
+  --acesso-azul: linear-gradient(165deg, #0d357a 0%, #071c42 100%);
+}
+.acesso-painel--professor {
+  --acesso-azul: #003da8;
+}
+.acesso-painel--unificado {
+  max-width: 1060px;
+}
+.acesso-painel--cadastro .acesso-formulario {
+  padding-block: 40px;
+}
+.acesso-painel--unificado .acesso-identidade {
+  background:
+    radial-gradient(ellipse at 18% 86%, rgb(0 215 191 / 24%), transparent 43%),
+    linear-gradient(155deg, #123f7a 0%, #071d42 100%);
+}
+.acesso-aluno-alternativa {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px;
+  color: var(--texto-secundario);
+  font-size: 14px;
+}
+.acesso-aluno-alternativa a {
+  color: var(--azul);
+  font-weight: 650;
+}
+.acesso-aluno-alternativa a:hover {
+  text-decoration: underline;
+}
+:root[data-tema='escuro'] .acesso-painel {
+  border: 1px solid var(--borda);
+}
+.acesso-identidade {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 48px 40px;
+  color: var(--acesso-sobre-azul);
+  background: var(--acesso-azul);
+}
+.acesso-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  font-size: 17px;
+  font-weight: 600;
+}
+.acesso-marca__simbolo {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  background: var(--acesso-sobre-azul);
+  border-radius: 12px;
+}
+.acesso-marca img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.acesso-identidade__mensagem > p {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 3.2vw, 42px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+.acesso-identidade__mensagem > span {
+  display: block;
+  max-width: 28ch;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.acesso-identidade__assinatura {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.acesso-formulario {
+  width: 100%;
+  min-width: 0;
+  padding: 56px clamp(24px, 4vw, 56px);
+  align-self: center;
+}
+.acesso-cabecalho-form {
+  margin-bottom: 28px;
+}
+.acesso-distintivo {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--suave);
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+.acesso-formulario h1 {
+  margin: 0;
+  color: var(--titulo);
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+.acesso-cabecalho-form p,
+.acesso-formulario > p {
+  margin: 10px 0 0;
+  color: var(--texto);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.acesso-formulario form {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  margin-inline: auto;
+}
+.acesso-campo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.acesso-campo label {
+  color: var(--titulo);
+  font-size: 15px;
+  font-weight: 600;
+}
+.acesso-campo input {
+  width: 100%;
+  min-width: 0;
+  height: 56px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--titulo);
+  background: var(--superficie);
+  font-size: 16px;
+  transition: border-color 160ms ease;
+}
+.acesso-campo input:hover {
+  border-color: var(--texto);
+}
+.acesso-campo input:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+.acesso-campo input[aria-invalid='true'] {
+  border-color: var(--azul);
+}
+.acesso-senha {
+  position: relative;
+}
+.acesso-senha input {
+  padding-right: 92px;
+}
+.acesso-senha button {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  min-width: 76px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--azul);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.acesso-senha button:hover {
+  background: var(--suave);
+}
+.acesso-erro-campo {
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+.acesso-formulario .acesso-aviso {
+  padding: 16px;
+  margin: 0;
+  border-radius: 12px;
+  background: var(--suave);
+  color: var(--titulo);
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: left;
+}
+.acesso-formulario > .acesso-aviso {
+  margin-bottom: 24px;
+}
+.acesso-formulario .acesso-entrar {
+  width: 100%;
+  justify-content: center;
+  font-size: 16px;
+  border-radius: 12px;
+  min-height: 54px;
+  margin-top: 4px;
+}
+.acesso-entrar:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.acesso-voltar-portal {
+  margin-top: 20px;
+  text-align: center;
+}
+.acesso-voltar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 160ms ease;
+}
+.acesso-voltar-link:hover {
+  color: var(--azul);
+  background: var(--suave);
+}
+.acesso-alternar p {
+  margin: 0;
+  color: var(--texto);
+  line-height: 1.5;
+}
+.acesso-alternar a {
+  color: var(--azul);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  margin-left: 4px;
+}
+.acesso-alternar a:hover {
+  text-decoration: underline;
+}
+.acesso-formulario .acesso-ajuda {
+  font-size: 13px;
+  margin: 20px 0 0;
+  line-height: 1.6;
+  text-wrap: balance;
+  color: var(--texto-mutado, #6b7280);
+}
+.acesso-formulario .acesso-ajuda a {
+  color: var(--azul);
+  font-weight: 650;
+  text-decoration: none;
+}
+.acesso-formulario .acesso-ajuda a:hover {
+  text-decoration: underline;
+}
+.area-professor--entrada .acesso-rodape {
+  padding: 20px 24px;
+  font-size: 13px;
+  color: var(--texto);
+}
+@media (max-width: 760px) {
+  .area-professor.area-professor--entrada .pagina-acesso {
+    padding: 16px;
+  }
+  .area-professor--entrada .barra-professor {
+    padding: 8px 16px;
+  }
+  .acesso-painel {
+    max-width: 520px;
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 20px;
+  }
+  .acesso-identidade {
+    padding: 24px;
+    gap: 24px;
+  }
+  .acesso-marca__simbolo {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+  .acesso-marca img {
+    width: 36px;
+    height: 36px;
+  }
+  .acesso-identidade__mensagem > p {
+    font-size: 30px;
+    margin-bottom: 12px;
+  }
+  .acesso-identidade__mensagem > p br {
+    display: none;
+  }
+  .acesso-identidade__mensagem > span {
+    max-width: none;
+    font-size: 15px;
+  }
+  .acesso-identidade__assinatura {
+    display: none;
+  }
+  .acesso-formulario {
+    padding: 32px 24px;
+  }
+  .acesso-formulario > p {
+    margin-bottom: 28px;
+  }
+  .area-professor--entrada .acesso-rodape {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acesso-campo input {
+    transition: none;
+  }
+}

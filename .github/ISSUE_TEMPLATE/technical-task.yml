@@ -1,0 +1,20 @@
+name: Tarefa técnica
+description: Registrar manutenção, infraestrutura ou dívida técnica
+title: '[tarefa] '
+labels:
+  - 'tipo:tarefa'
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que precisa ser feito e por quê?
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      description: Liste como a conclusão será verificada.
+    validations:
+      required: true

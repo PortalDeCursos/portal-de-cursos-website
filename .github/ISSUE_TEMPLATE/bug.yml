@@ -1,0 +1,25 @@
+name: Bug
+description: Relatar um comportamento incorreto
+title: '[bug] '
+labels:
+  - 'tipo:bug'
+body:
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Descreva onde o problema acontece e qual era o comportamento esperado.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Como reproduzir
+      description: Informe os passos, a rota e o ambiente.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Inclua mensagens de erro, capturas ou logs sem dados sensíveis.
