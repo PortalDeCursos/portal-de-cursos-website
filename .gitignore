@@ -31,20 +31,17 @@ desktop.ini
 *.sln
 *.sw?
 
-# Documentação e verificações locais
+# Documentação, scripts e arquivos auxiliares
+/docs/
+/scripts/
+CHANGELOG.md
+CONTRIBUTING.md
+.husky/
+commitlint.config.*
+.prettierrc*
 /verificacoes/
 /DESIGN-E-REGRAS.md
 /PENDENCIAS-MINIMUNDO.md
 /VINCULO-JIRA.md
 
-# Habilidades, agentes e configurações locais de IA
-.agents/
-.aider-desk/
-.codex/
-.claude/
-.github/agents/
-.github/skills/
-.github/hooks/
-skills-lock.json
-.taste-skill/
-AGENTS.md
+

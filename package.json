@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "check": "npm run lint && npm run build",
-    "check:structure": "node scripts/check-structure.mjs",
     "dev": "vite",
     "build": "vite build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "prepare": "husky"
+    "preview": "vite preview"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 100
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -28,9 +32,6 @@
     "eslint-plugin-react-refresh": "^0.5.6",
     "globals": "^17.12.0",
     "prettier": "^3.9.10",
-    "vite": "^8.3.0",
-    "@commitlint/cli": "^20.1.0",
-    "@commitlint/config-conventional": "^20.0.0",
-    "husky": "^9.1.7"
+    "vite": "^8.3.0"
   }
 }
