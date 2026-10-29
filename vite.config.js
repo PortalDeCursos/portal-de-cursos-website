@@ -35,6 +35,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (caminho) => caminho.replace(/^\/api\/v1/, ''),
         },
+        '/api/v1/projetos': {
+          target:
+            process.env.PROJECTS_API_URL || ambiente.PROJECTS_API_URL || 'http://127.0.0.1:8082',
+          changeOrigin: true,
+          rewrite: (caminho) => caminho.replace(/^\/api\/v1/, ''),
+        },
         '/api/v1/usuarios': {
           target:
             process.env.USUARIOS_API_URL || ambiente.USUARIOS_API_URL || 'http://127.0.0.1:8080',
