@@ -41,3 +41,8 @@ commitlint.config.*
 /VINCULO-JIRA.md
 
 
+.prettierrc
+.prettierignore
+eslint.config.js
+.eslintrc*
+.vscode/

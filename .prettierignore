@@ -1,9 +1,0 @@
-node_modules
-_backup
-.taste-skill
-dist
-.git
-.github/skills/impeccable/scripts
-.agents
-src/assets/**/*.ttf
-src/assets/**/*.png
