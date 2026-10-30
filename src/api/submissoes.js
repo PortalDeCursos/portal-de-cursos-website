@@ -1,15 +1,23 @@
 import { ErroApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 
-export async function listarSubmissoes(sinal) {
-  const endpoint = import.meta.env.VITE_API_SUBMISSOES
-  if (!endpoint) {
-    return []
+function obterUrlBaseProjetos() {
+  const custom = import.meta.env.VITE_API_PROJETOS_URL
+  if (custom) {
+    return custom.replace(/\/$/, '')
   }
+  const basePortal = import.meta.env.BASE_URL || '/'
+  const baseLimpa = basePortal.endsWith('/') ? basePortal : `${basePortal}/`
+  const segmentoVersao = VERSAO ? `${VERSAO}/` : ''
+  return `${window.location.origin}${baseLimpa}api/${segmentoVersao}projetos`
+}
 
+export async function listarSubmissoes(token = null, sinal = null) {
+  const endpoint = obterUrlBaseProjetos()
   const dados = await requisitarApi(endpoint, {
     metodo: 'GET',
+    token,
     sinal,
   })
 
@@ -22,14 +30,11 @@ export async function listarSubmissoes(sinal) {
   return dados
 }
 
-export async function obterSubmissaoPorId(id, sinal) {
-  const endpoint = import.meta.env.VITE_API_SUBMISSOES
-  if (!endpoint) {
-    throw new ErroApi('O serviço de submissões ainda não está conectado.', { status: 503 })
-  }
-
-  return requisitarApi(`${endpoint.replace(/\/$/, '')}/${encodeURIComponent(id)}`, {
+export async function obterSubmissaoPorId(id, token = null, sinal = null) {
+  const endpoint = obterUrlBaseProjetos()
+  return requisitarApi(`${endpoint}/${encodeURIComponent(id)}`, {
     metodo: 'GET',
+    token,
     sinal,
   })
 }

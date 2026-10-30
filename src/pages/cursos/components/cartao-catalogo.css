@@ -6,7 +6,7 @@
   border: 1px solid var(--borda);
   border-radius: 14px;
   background: var(--superficie);
-  box-shadow: 0 2px 8px #00000003;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--preto) 1%, transparent);
   transition:
     border-color 180ms ease-out,
     box-shadow 180ms ease-out,

@@ -20,6 +20,9 @@ import PaginaCoordenacao from '../pages/coordenacao/PaginaCoordenacao.jsx'
 import PaginaCadastroAluno from '@/pages/cadastro-aluno/PaginaCadastroAluno.jsx'
 import PaginaPainelAluno from '@/pages/painel-aluno/PaginaPainelAluno.jsx'
 import PaginaDetalhesSubmissao from '@/pages/professor/PaginaDetalhesSubmissao.jsx'
+import { listarCursos } from '@/api/cursos.js'
+import { atualizarStatusProjeto } from '@/api/projetos.js'
+import { listarSubmissoes } from '@/api/submissoes.js'
 
 function identificarPagina(rota) {
   if (['projetos', 'biblioteca'].includes(rota)) return 'projetos'
@@ -61,8 +64,22 @@ export default function Aplicacao() {
       return null
     }
   })
-  const [decisoes, definirDecisoes] = useState({})
-  const [listaSubmissoes, definirListaSubmissoes] = useState([])
+  const [decisoes, definirDecisoes] = useState(() => {
+    try {
+      const salvas = localStorage.getItem('portal-cursos-decisoes')
+      return salvas ? JSON.parse(salvas) : {}
+    } catch {
+      return {}
+    }
+  })
+  const [listaSubmissoes, definirListaSubmissoes] = useState(() => {
+    try {
+      const salvas = localStorage.getItem('portal-cursos-submissoes')
+      return salvas ? JSON.parse(salvas) : []
+    } catch {
+      return []
+    }
+  })
   const [listaProjetos, definirListaProjetos] = useState([])
   const [rascunhos, definirRascunhos] = useState({ cursos: [], projetos: [], disciplinas: [] })
   const [sessaoExpirada, definirSessaoExpirada] = useState(false)
@@ -72,6 +89,20 @@ export default function Aplicacao() {
   const [rotaCurso, definirRotaCurso] = useState(() =>
     window.location.hash.startsWith('#curso/') ? window.location.hash.slice(1) : '',
   )
+  useEffect(() => {
+    try {
+      localStorage.setItem('portal-cursos-submissoes', JSON.stringify(listaSubmissoes))
+    } catch {
+      /* Ignora falha de armazenamento local */
+    }
+  }, [listaSubmissoes])
+  useEffect(() => {
+    try {
+      localStorage.setItem('portal-cursos-decisoes', JSON.stringify(decisoes))
+    } catch {
+      /* Ignora falha de armazenamento local */
+    }
+  }, [decisoes])
   useEffect(() => {
     try {
       if (sessao) sessionStorage.setItem('portal-cursos-sessao', JSON.stringify(sessao))
@@ -189,11 +220,99 @@ export default function Aplicacao() {
     }
   }, [sessao])
 
+  useEffect(() => {
+    if (!sessao?.token) return
+    const controller = new AbortController()
+
+    async function sincronizarSubmissoes() {
+      try {
+        const [dados, cursosCadastrados] = await Promise.all([
+          listarSubmissoes(sessao.token, controller.signal),
+          listarCursos(controller.signal).catch(() => []),
+        ])
+
+        if (Array.isArray(dados) && dados.length > 0) {
+          const mapaCursos = new Map(
+            (Array.isArray(cursosCadastrados) ? cursosCadastrados : []).map((c) => [
+              String(c.id),
+              c,
+            ]),
+          )
+
+          const mapeadas = dados.map((p) => {
+            const orientadorObj = p.professores?.find((prof) => prof.papel === 'ORIENTADOR')
+            const primeiroAutor =
+              Array.isArray(p.autores) && p.autores.length > 0 ? p.autores[0] : null
+            const nomeAutor =
+              primeiroAutor?.nome ||
+              (typeof primeiroAutor === 'string' ? primeiroAutor : '') ||
+              'Aluno'
+            const dataFormatada = p.dataInicio
+              ? new Date(p.dataInicio + 'T12:00:00').toLocaleDateString('pt-BR')
+              : ''
+            const infoCurso = mapaCursos.get(String(p.cursoId))
+
+            return {
+              identificador: String(p.id),
+              id: p.id,
+              cursoId: p.cursoId,
+              campusId: p.campusId,
+              curso: infoCurso?.sigla || infoCurso?.acronimo || (p.cursoId ? `Curso #${p.cursoId}` : ''),
+              cursoCompleto: infoCurso?.nome || (p.cursoId ? `Curso #${p.cursoId}` : ''),
+              titulo: p.nome,
+              tipo:
+                p.tipoProjeto === 'TCC'
+                  ? 'TCC'
+                  : p.tipoProjeto === 'PROJETO_INTEGRADOR'
+                    ? 'Projeto Integrador'
+                    : p.tipoProjeto === 'PROJETO_PESQUISA'
+                      ? 'Pesquisa'
+                      : p.tipoProjeto === 'PROJETO_EXTENSAO'
+                        ? 'Extensão'
+                        : p.tipoProjeto || '',
+              orientador: orientadorObj?.professorId
+                ? `Professor ${orientadorObj.professorId}`
+                : '',
+              orientadorId: orientadorObj?.professorId || null,
+              autor: nomeAutor,
+              autores: Array.isArray(p.autores) ? p.autores : [],
+              enviadoEm: dataFormatada,
+              dataInicio: p.dataInicio,
+              dataFim: p.dataFim,
+              documentos: Array.isArray(p.documentos) ? p.documentos : [],
+              status:
+                p.statusProjeto === 'EM_ANALISE'
+                  ? 'Aguardando Orientador'
+                  : p.statusProjeto === 'APROVADO'
+                    ? 'Em análise'
+                    : p.statusProjeto === 'ANALISE_PUBLICACAO'
+                      ? 'Em análise'
+                      : p.statusProjeto === 'PUBLICADO'
+                        ? 'Aprovado'
+                        : p.statusProjeto === 'RECUSADO'
+                          ? 'Recusado'
+                          : p.statusProjeto,
+              resumo: p.resumo,
+              objetivo: p.descricao,
+              tipoAutor: 'ALUNO',
+            }
+          })
+          definirListaSubmissoes((locais) => {
+            const idsExistentes = new Set(locais.map((l) => String(l.id || l.identificador)))
+            const novasDoBack = mapeadas.filter((m) => !idsExistentes.has(String(m.id)))
+            return [...novasDoBack, ...locais]
+          })
+        }
+      } catch {
+        /* Mantém as submissões já existentes */
+      }
+    }
+
+    sincronizarSubmissoes()
+    return () => controller.abort()
+  }, [sessao?.token])
+
   function entrar(novaSessao) {
-    definirDecisoes({})
-    definirListaSubmissoes([])
-    definirListaProjetos([])
-    definirRascunhos({ cursos: [], projetos: [], disciplinas: [] })
     definirSessao(novaSessao)
     definirSessaoExpirada(false)
     if (novaSessao.tipoUsuario === 'ALUNO') {
@@ -204,9 +323,17 @@ export default function Aplicacao() {
   }
   function sair() {
     definirSessao(null)
-    definirDecisoes({})
-    definirRascunhos({ cursos: [], projetos: [], disciplinas: [] })
     definirSessaoExpirada(false)
+    definirDecisoes({})
+    definirListaSubmissoes([])
+    definirListaProjetos([])
+    definirRascunhos({ cursos: [], projetos: [], disciplinas: [] })
+    try {
+      localStorage.removeItem('portal-cursos-submissoes')
+      localStorage.removeItem('portal-cursos-decisoes')
+    } catch {
+      /* Ignora falha ao limpar armazenamento local */
+    }
     navegar(enderecoPrivado('login'), true)
   }
   useEffect(() => {
@@ -420,17 +547,49 @@ export default function Aplicacao() {
                   curso: submissao.curso,
                   cursoCompleto: submissao.cursoCompleto,
                   descricao: submissao.objetivo || submissao.resumo,
-                  autores: submissao.autores
-                    .map((autor) => (typeof autor === 'string' ? autor : autor.nome))
-                    .join(' e '),
+                  autores: Array.isArray(submissao.autores)
+                    ? submissao.autores
+                        .map((autor) => (typeof autor === 'string' ? autor : autor.nome))
+                        .join(' e ')
+                    : submissao.autor || '',
                   orientador: submissao.orientador,
-                  status: 'Aprovado',
+                  status: 'PUBLICADO',
                 }
                 definirListaProjetos((atuais) => [
                   ...atuais.filter((item) => item.identificador !== submissao.identificador),
                   projetoPublicado,
                 ])
               }
+
+              // Sincroniza com o backend via PATCH /api/projetos/{id}/status
+              if (submissao?.id && sessao?.token) {
+                let statusBackend = null
+                if (sessao.tipoUsuario === 'PROFESSOR') {
+                  if (status === 'Em análise' || status === 'Aceito') statusBackend = 'APROVADO'
+                  else if (status === 'Recusado') statusBackend = 'RECUSADO'
+                } else if (sessao.tipoUsuario === 'COORDENADOR') {
+                  if (status === 'Aprovado') {
+                    // Transição no backend: APROVADO -> ANALISE_PUBLICACAO -> PUBLICADO
+                    atualizarStatusProjeto(submissao.id, 'ANALISE_PUBLICACAO', sessao.token)
+                      .then(() => atualizarStatusProjeto(submissao.id, 'PUBLICADO', sessao.token))
+                      .catch(() => {})
+                  } else if (status === 'Recusado') {
+                    statusBackend = 'RECUSADO'
+                  }
+                }
+                if (statusBackend) {
+                  atualizarStatusProjeto(submissao.id, statusBackend, sessao.token).catch(() => {
+                    /* fallback local se API falhar */
+                  })
+                }
+              }
+
+              definirListaSubmissoes((atuais) =>
+                atuais.map((item) =>
+                  item.identificador === identificadorSubmissao ? { ...item, status } : item,
+                ),
+              )
+
               definirDecisoes((atuais) => ({
                 ...atuais,
                 [identificadorSubmissao]: {

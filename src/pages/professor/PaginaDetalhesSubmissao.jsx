@@ -4,8 +4,11 @@ import './professor.css'
 import { enderecoPrivado, navegar } from '../../app/rotas.js'
 import ConfirmacaoGestao from '@/pages/administracao/components/ConfirmacaoGestao.jsx'
 
+const tiposDeProjeto = ['TCC', 'Projeto Integrador', 'Pesquisa', 'Extensão']
+
 function submissaoDoCurso(item, cursoId) {
-  if (!item || !cursoId) return false
+  if (!item) return false
+  if (!cursoId) return true
   return [item.cursoId, item.identificadorCurso]
     .filter((referencia) => referencia !== undefined && referencia !== null)
     .some((referencia) => String(referencia) === String(cursoId))
@@ -17,11 +20,47 @@ function submetidaAoOrientador(item, usuario) {
   }
   const nomeOrientador = item?.orientador?.toLocaleLowerCase('pt-BR') || ''
   const nomeUsuario = usuario?.nome?.toLocaleLowerCase('pt-BR') || ''
-  return Boolean(nomeOrientador && nomeUsuario && nomeOrientador.includes(nomeUsuario))
+  if (!nomeOrientador || !nomeUsuario) return true
+  return Boolean(nomeOrientador.includes(nomeUsuario) || nomeUsuario.includes(nomeOrientador))
+}
+
+// "LINK_MEMORIA" -> "Link", "PDF" -> "PDF"
+function rotuloDoTipo(tipoDocumento) {
+  if (!tipoDocumento) return 'PDF'
+  const texto = String(tipoDocumento)
+  if (/link/i.test(texto)) return 'Link'
+  return texto.replaceAll('_', ' ').toUpperCase()
+}
+
+function textoAutores(autores) {
+  return (autores || [])
+    .map((autor) =>
+      typeof autor === 'string'
+        ? autor
+        : `${autor.nome || ''}${autor.email ? ` (${autor.email})` : ''}`,
+    )
+    .join(' · ')
+}
+
+function linhasParaLista(texto) {
+  return texto
+    .split('\n')
+    .map((linha) => linha.trim())
+    .filter(Boolean)
+}
+
+function linhasParaAutores(texto) {
+  return texto
+    .split('\n')
+    .map((linha) => {
+      const [, nome = '', email = ''] = linha.match(/^(.*?)(?:\s*<([^<>]*)>)?\s*$/) || []
+      return { nome: nome.trim(), email: email.trim() }
+    })
+    .filter((autor) => autor.nome)
 }
 
 export default function PaginaDetalhesSubmissao({
-  item: itemRecebido,
+  item,
   tipoUsuario,
   usuario,
   cursoId,
@@ -34,14 +73,6 @@ export default function PaginaDetalhesSubmissao({
   const [erro, definirErro] = useState('')
   const [editando, definirEditando] = useState(false)
   const [confirmandoRemocao, definirConfirmandoRemocao] = useState(false)
-  const item = itemRecebido
-  const status = decisao?.status || decisao || item?.status || 'Aguardando Orientador'
-  const volta = tipoUsuario === 'COORDENADOR' ? 'coordenacao/submissoes' : 'professor/feed'
-  const visivel =
-    item &&
-    (tipoUsuario === 'COORDENADOR'
-      ? submissaoDoCurso(item, cursoId)
-      : tipoUsuario === 'PROFESSOR' && submetidaAoOrientador(item, usuario))
   const [edicao, definirEdicao] = useState(() => ({
     titulo: item?.titulo || '',
     resumo: item?.resumo || '',
@@ -52,8 +83,18 @@ export default function PaginaDetalhesSubmissao({
       typeof autor === 'string' ? { nome: autor, email: '' } : autor,
     ),
     disciplinas: item?.disciplinas || [],
-    documentos: item?.documentos || [],
+    documentos: (item?.documentos || []).map((d) =>
+      typeof d === 'string' ? d : d?.nomeArquivo || d?.nome || '',
+    ),
   }))
+
+  const status = decisao?.status || decisao || item?.status || 'Aguardando Orientador'
+  const volta = tipoUsuario === 'COORDENADOR' ? 'coordenacao/submissoes' : 'professor/feed'
+  const visivel =
+    item &&
+    (tipoUsuario === 'COORDENADOR'
+      ? submissaoDoCurso(item, cursoId)
+      : tipoUsuario === 'PROFESSOR' && submetidaAoOrientador(item, usuario))
 
   if (!visivel) {
     return (
@@ -70,12 +111,16 @@ export default function PaginaDetalhesSubmissao({
   const avaliacaoOrientador = tipoUsuario === 'PROFESSOR' && status === 'Aguardando Orientador'
   const avaliacaoCoordenador = tipoUsuario === 'COORDENADOR' && status === 'Em análise'
 
-  function registrarDecisao(proximaStatus) {
-    if (proximaStatus === 'Recusado' && !justificativa.trim()) {
+  function atualizar(campo, valor) {
+    definirEdicao((atual) => ({ ...atual, [campo]: valor }))
+  }
+
+  function registrarDecisao(proximoStatus) {
+    if (proximoStatus === 'Recusado' && !justificativa.trim()) {
       definirErro('Explique o motivo antes de recusar o projeto.')
       return
     }
-    aoDecidir(proximaStatus, justificativa.trim())
+    aoDecidir(proximoStatus, justificativa.trim())
     definirJustificativa('')
     definirErro('')
   }
@@ -90,17 +135,29 @@ export default function PaginaDetalhesSubmissao({
       tipo: edicao.tipo,
       orientador: edicao.orientador.trim(),
       autores: edicao.autores.map((autor) => ({ ...autor, email: autor.email || '' })),
-      disciplinas: edicao.disciplinas,
-      documentos: edicao.documentos,
+      disciplinas: edicao.disciplinas.filter(Boolean),
+      documentos: edicao.documentos.filter(Boolean),
     })
     definirEditando(false)
   }
+
+  const mensagemStatus =
+    status === 'Aprovado'
+      ? 'Esta submissão foi aprovada pelo coordenador e está publicada no portal.'
+      : status === 'Em análise'
+        ? tipoUsuario === 'PROFESSOR'
+          ? 'Você já aceitou orientar este projeto. Agora ele aguarda a avaliação da coordenação do curso.'
+          : 'O orientador aceitou a submissão e ela aguarda a decisão da coordenação.'
+        : status === 'Recusado'
+          ? `Esta submissão foi recusada.${decisao?.justificativa ? ` Motivo: ${decisao.justificativa}` : ''}`
+          : 'A submissão aguarda aceite inicial do professor orientador.'
 
   return (
     <main id="conteudo" className="limite pagina-detalhes-submissao">
       <a className="pagina-detalhes-submissao__voltar" href={enderecoPrivado(volta)}>
         Voltar para submissões
       </a>
+
       <header className="pagina-detalhes-submissao__cabecalho">
         <div>
           <div className="pagina-detalhes-submissao__sinal">
@@ -119,10 +176,11 @@ export default function PaginaDetalhesSubmissao({
           <strong>{item.orientador}</strong>
         </div>
       </header>
+
       <div className="pagina-detalhes-submissao__grid">
         <section className="pagina-detalhes-submissao__principal">
           {editando ? (
-            <form className="avaliacao-submissao" onSubmit={salvarEdicao}>
+            <form className="avaliacao-submissao avaliacao-submissao--formulario" onSubmit={salvarEdicao}>
               <h2>Editar submissão</h2>
               <label>
                 Título
@@ -130,16 +188,13 @@ export default function PaginaDetalhesSubmissao({
                   required
                   maxLength={200}
                   value={edicao.titulo}
-                  onChange={(evento) => definirEdicao({ ...edicao, titulo: evento.target.value })}
+                  onChange={(evento) => atualizar('titulo', evento.target.value)}
                 />
               </label>
               <label>
                 Tipo de projeto
-                <select
-                  value={edicao.tipo}
-                  onChange={(evento) => definirEdicao({ ...edicao, tipo: evento.target.value })}
-                >
-                  {['TCC', 'Projeto Integrador', 'Pesquisa', 'Extensão'].map((tipo) => (
+                <select value={edicao.tipo} onChange={(evento) => atualizar('tipo', evento.target.value)}>
+                  {tiposDeProjeto.map((tipo) => (
                     <option key={tipo}>{tipo}</option>
                   ))}
                 </select>
@@ -150,7 +205,7 @@ export default function PaginaDetalhesSubmissao({
                   required
                   rows="4"
                   value={edicao.resumo}
-                  onChange={(evento) => definirEdicao({ ...edicao, resumo: evento.target.value })}
+                  onChange={(evento) => atualizar('resumo', evento.target.value)}
                 />
               </label>
               <label>
@@ -159,7 +214,7 @@ export default function PaginaDetalhesSubmissao({
                   required
                   rows="4"
                   value={edicao.objetivo}
-                  onChange={(evento) => definirEdicao({ ...edicao, objetivo: evento.target.value })}
+                  onChange={(evento) => atualizar('objetivo', evento.target.value)}
                 />
               </label>
               <label>
@@ -168,69 +223,41 @@ export default function PaginaDetalhesSubmissao({
                   required
                   maxLength={200}
                   value={edicao.orientador}
-                  onChange={(evento) =>
-                    definirEdicao({ ...edicao, orientador: evento.target.value })
-                  }
+                  onChange={(evento) => atualizar('orientador', evento.target.value)}
                 />
               </label>
               <label>
-                Integrantes, um por linha no formato Nome &lt;email&gt;
+                Integrantes <small>um por linha, no formato Nome &lt;email&gt;</small>
                 <textarea
                   required
                   rows="3"
-                  value={edicao.autores
+                  defaultValue={edicao.autores
                     .map((autor) => `${autor.nome || ''}${autor.email ? ` <${autor.email}>` : ''}`)
                     .join('\n')}
-                  onChange={(evento) =>
-                    definirEdicao({
-                      ...edicao,
-                      autores: evento.target.value
-                        .split('\n')
-                        .map((linha) => {
-                          const [, nome, email = ''] =
-                            linha.match(/^(.*?)(?:\s*<([^<>]*)>)?$/) || []
-                          return { nome: nome?.trim() || '', email: email.trim() }
-                        })
-                        .filter((autor) => autor.nome && autor.email),
-                    })
-                  }
+                  onChange={(evento) => atualizar('autores', linhasParaAutores(evento.target.value))}
                 />
               </label>
               <label>
-                Disciplinas relacionadas, uma por linha
+                Disciplinas relacionadas <small>uma por linha</small>
                 <textarea
                   rows="3"
-                  value={(edicao.disciplinas || []).join('\n')}
-                  onChange={(evento) =>
-                    definirEdicao({
-                      ...edicao,
-                      disciplinas: evento.target.value.split('\n').map((nome) => nome.trim()),
-                    })
-                  }
+                  defaultValue={(edicao.disciplinas || []).join('\n')}
+                  onChange={(evento) => atualizar('disciplinas', linhasParaLista(evento.target.value))}
                 />
               </label>
               <label>
-                Documentos, um por linha
+                Documentos <small>um por linha</small>
                 <textarea
                   rows="3"
-                  value={(edicao.documentos || []).join('\n')}
-                  onChange={(evento) =>
-                    definirEdicao({
-                      ...edicao,
-                      documentos: evento.target.value.split('\n').map((nome) => nome.trim()),
-                    })
-                  }
+                  defaultValue={(edicao.documentos || []).join('\n')}
+                  onChange={(evento) => atualizar('documentos', linhasParaLista(evento.target.value))}
                 />
               </label>
               <div className="avaliacao-submissao__acoes">
                 <button className="botao-primario" type="submit">
                   Salvar edição
                 </button>
-                <button
-                  className="botao-secundario"
-                  type="button"
-                  onClick={() => definirEditando(false)}
-                >
+                <button className="botao-secundario" type="button" onClick={() => definirEditando(false)}>
                   Cancelar
                 </button>
               </div>
@@ -249,44 +276,59 @@ export default function PaginaDetalhesSubmissao({
               <div className="pagina-detalhes-submissao__documentos">
                 <h2>Documentos enviados</h2>
                 <ul className="documentos-submissao-professor">
-                  {(item.documentos || []).map((documento) => (
-                    <li key={documento}>
-                      <span aria-hidden="true">PDF</span>
-                      <strong>{documento}</strong>
-                      <span className="documento-indisponivel">Arquivo indisponível</span>
-                    </li>
-                  ))}
+                  {(item.documentos || []).map((documento, indice) => {
+                    const objeto = typeof documento === 'object' && documento !== null
+                    const nome = objeto
+                      ? documento.nomeArquivo || documento.nome || `Documento ${indice + 1}`
+                      : documento
+                    const tipo = rotuloDoTipo(objeto ? documento.tipoDocumento : null)
+                    const localizacao = objeto ? documento.localizacao : null
+                    const ehUrl = localizacao && /^https?:\/\//i.test(localizacao)
+
+                    return (
+                      <li key={documento?.id || nome || indice}>
+                        <span className="documento-tipo" aria-hidden="true">
+                          {tipo}
+                        </span>
+                        <strong>{nome}</strong>
+                        {ehUrl ? (
+                          <a
+                            href={localizacao}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="documento-link"
+                          >
+                            Acessar link externo ↗
+                          </a>
+                        ) : (
+                          <span className="documento-indisponivel">Arquivo enviado</span>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </>
           )}
         </section>
+
         <aside className="pagina-detalhes-submissao__lateral">
           <div className="pagina-detalhes-submissao__contexto">
             <span className="pagina-detalhes-submissao__indice">Contexto</span>
             <div>
               <h2>Equipe</h2>
-              <p>
-                {(item.autores || [])
-                  .map((autor) =>
-                    typeof autor === 'string'
-                      ? autor
-                      : `${autor.nome || ''}${autor.email ? ` (${autor.email})` : ''}`,
-                  )
-                  .join(' · ')}
-              </p>
+              <p>{textoAutores(item.autores)}</p>
             </div>
             <div>
               <h2>Curso</h2>
               <p>{item.cursoCompleto}</p>
             </div>
           </div>
+
           {avaliacaoOrientador || avaliacaoCoordenador ? (
             <div className="avaliacao-submissao pagina-detalhes-submissao__decisao">
               <span className="pagina-detalhes-submissao__indice">Próxima decisão</span>
-              <h2>
-                {avaliacaoCoordenador ? 'Avaliação do coordenador' : 'Avaliação do orientador'}
-              </h2>
+              <h2>{avaliacaoCoordenador ? 'Avaliação do coordenador' : 'Avaliação do orientador'}</h2>
               <p className="pagina-detalhes-submissao__decisao-intro">
                 {avaliacaoCoordenador
                   ? 'O orientador aceitou esta submissão. Decida se ela será publicada no portal.'
@@ -318,11 +360,7 @@ export default function PaginaDetalhesSubmissao({
                 >
                   {avaliacaoCoordenador ? 'Aprovar e publicar' : 'Aceitar como orientador'}
                 </button>
-                <button
-                  type="button"
-                  className="botao-secundario"
-                  onClick={() => registrarDecisao('Recusado')}
-                >
+                <button type="button" className="botao-secundario" onClick={() => registrarDecisao('Recusado')}>
                   Recusar submissão
                 </button>
               </div>
@@ -331,16 +369,11 @@ export default function PaginaDetalhesSubmissao({
             <div className="avaliacao-submissao pagina-detalhes-submissao__decisao">
               <span className="pagina-detalhes-submissao__indice">Gestão do curso</span>
               <h2>Editar ou remover</h2>
-              <p>
-                Você pode corrigir ou remover submissões do curso, inclusive as que enviou ou
-                orienta.
+              <p className="pagina-detalhes-submissao__decisao-intro">
+                Você pode corrigir ou remover submissões do curso, inclusive as que enviou ou orienta.
               </p>
               <div className="avaliacao-submissao__acoes">
-                <button
-                  type="button"
-                  className="botao-primario"
-                  onClick={() => definirEditando(true)}
-                >
+                <button type="button" className="botao-primario" onClick={() => definirEditando(true)}>
                   Editar submissão
                 </button>
                 <button
@@ -353,26 +386,24 @@ export default function PaginaDetalhesSubmissao({
               </div>
             </div>
           ) : (
-            <p className="detalhe-submissao__aviso painel-informativo pagina-detalhes-submissao__decisao">
-              {status === 'Aprovado'
-                ? 'Esta submissão foi aprovada e está disponível no portal.'
-                : status === 'Recusado'
-                  ? `Esta submissão foi recusada.${decisao?.justificativa ? ` Motivo: ${decisao.justificativa}` : ''}`
-                  : 'A submissão aguarda avaliação do orientador ou do coordenador.'}
+            <p
+              className={`pagina-detalhes-submissao__aviso pagina-detalhes-submissao__aviso--${status
+                .toLowerCase()
+                .replaceAll(' ', '-')}`}
+              role="status"
+            >
+              {mensagemStatus}
             </p>
           )}
         </aside>
-      </div>{' '}
+      </div>
+
       {confirmandoRemocao && (
         <ConfirmacaoGestao rotulo="titulo-remover-submissao">
           <h2 id="titulo-remover-submissao">Remover esta submissão?</h2>
           <p>A remoção afeta apenas os dados desta sessão.</p>
           <div className="gestao-acoes">
-            <button
-              className="botao-secundario"
-              type="button"
-              onClick={() => definirConfirmandoRemocao(false)}
-            >
+            <button className="botao-secundario" type="button" onClick={() => definirConfirmandoRemocao(false)}>
               Manter submissão
             </button>
             <button
@@ -388,6 +419,7 @@ export default function PaginaDetalhesSubmissao({
           </div>
         </ConfirmacaoGestao>
       )}
+
       {tipoUsuario === 'COORDENADOR' && (aoEditar || aoRemover) && (
         <p className="gestao-nota">
           Decisões, edições e remoções ficam nesta sessão enquanto a API de submissões não estiver

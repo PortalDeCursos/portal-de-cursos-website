@@ -114,12 +114,12 @@
   display: none;
 }
 :root {
-  --erro: #c92020;
-  --erro-suave: #fff0f0;
+  --erro: var(--erro);
+  --erro-suave: var(--erro-suave);
 }
 :root[data-tema='escuro'] {
-  --erro: #ff9898;
-  --erro-suave: #210d0d;
+  --erro: var(--erro-escuro);
+  --erro-suave: var(--erro-suave);
 }
 .pagina-cursos .icone {
   width: auto;

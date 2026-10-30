@@ -40,3 +40,43 @@
   --erro: #f97066;
   --erro-suave: rgb(249 112 102 / 12%);
 }
+:root {
+  --texto-suave: #5f6b7d;
+  --borda-suave: #dfe5ef;
+  --azul-vivo: #1559ff;
+  --azul-escuro: #003b8f;
+  --azul-suave: #eaf0ff;
+  --marinho: #0b1f36;
+  --superficie-escura: #141518;
+  --aviso: #a8510b;
+  --aviso-suave: #fff3c4;
+  --erro-escuro: #9f1d27;
+  --sucesso-suave: #dff3e7;
+  --roxo: #5b2db8;
+  --roxo-suave: #efe7ff;
+  --branco: #ffffff;
+  --preto: #000000;
+}
+
+:root[data-tema='escuro'] {
+  --texto-suave: #9aa3b0;
+  --borda-suave: #26282d;
+  --azul-vivo: #6c93ff;
+  --azul-escuro: #b5ccff;
+  --azul-suave: #182238;
+  --aviso: #ffc14d;
+  --aviso-suave: #33280a;
+  --erro-escuro: #ff8a80;
+  --sucesso-suave: #12301f;
+  --roxo: #bb9aff;
+  --roxo-suave: #2a1d4a;
+  --erro-suave: #2a1210;
+}
+
+:root {
+  --azul-marca: var(--azul);
+  --borda-campo: var(--borda);
+  --texto-secundario: var(--texto-suave);
+  --texto-mutado: var(--texto-suave);
+  --acesso-fundo-aluno: var(--fundo);
+}

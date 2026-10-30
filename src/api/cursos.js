@@ -1,17 +1,17 @@
 import { ErroApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 
 const enderecoCursos =
   import.meta.env.VITE_API_CURSOS_URL ||
   import.meta.env.VITE_API_CURSOS ||
-  `${import.meta.env.BASE_URL}api/v1/cursos`
+  `${import.meta.env.BASE_URL}api/cursos`
 const enderecoDisciplinas =
   import.meta.env.VITE_API_DISCIPLINAS_URL ||
   import.meta.env.VITE_API_DISCIPLINAS ||
-  `${import.meta.env.BASE_URL}api/v1/disciplinas`
-const enderecoCampus = `${import.meta.env.BASE_URL}api/v1/campus`
-const enderecoAreas = `${import.meta.env.BASE_URL}api/v1/areas-conhecimento`
+  `${import.meta.env.BASE_URL}api/disciplinas`
+const enderecoCampus = `${import.meta.env.BASE_URL}api/campus`
+const enderecoAreas = `${import.meta.env.BASE_URL}api/areas-conhecimento`
 
 const rotulos = {
   grau: {

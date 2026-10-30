@@ -1,0 +1,185 @@
+:root[data-tema='escuro'] .pagina-painel h1,
+:root[data-tema='escuro'] .pagina-painel h2 {
+  color: var(--branco);
+}
+:root[data-tema='escuro'] .painel-secao,
+:root[data-tema='escuro'] .administracao-indicador,
+:root[data-tema='escuro'] .gestao-curso-cartao {
+  border-color: var(--borda-suave);
+  background: var(--preto);
+}
+.pagina-painel {
+  max-width: none;
+  padding: 18px 24px 36px;
+  gap: 14px;
+}
+.painel-navegacao__conta > span:last-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.painel-navegacao__conta strong {
+  overflow: hidden;
+  color: var(--titulo);
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.painel-navegacao__conta small {
+  color: var(--texto);
+  font-size: 10px;
+}
+.painel-navegacao__conta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  margin-top: auto;
+  padding: 10px 4px 0;
+  border-top: 1px solid var(--borda);
+}
+.painel-navegacao__avatar {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--azul-vivo);
+  color: var(--branco);
+  font-size: 10px;
+  font-weight: 800;
+}
+@media (max-width: 760px) {
+  .pagina-painel {
+    padding: 14px 16px 28px;
+  }
+
+  .administracao-boas-vindas {
+    align-items: flex-start;
+  }
+
+  .administracao-boas-vindas__acoes {
+    width: 100%;
+  }
+
+  .administracao-boas-vindas__acoes a,
+  .administracao-boas-vindas__acoes button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .painel-navegacao__conta {
+    display: none;
+  }
+}
+.pagina-painel--administracao {
+  font-size: 15px;
+}
+.pagina-painel--administracao .painel-titulo h1 {
+  font-size: clamp(30px, 2.7vw, 36px);
+}
+.pagina-painel--administracao .painel-titulo p,
+.pagina-painel--administracao .painel-secao > header p {
+  font-size: 15px;
+}
+.pagina-painel--administracao .painel-secao > header h2 {
+  font-size: 20px;
+}
+.pagina-painel--administracao .gestao-busca,
+.pagina-painel--administracao .gestao-campo > label,
+.pagina-painel--administracao .gestao-campos label {
+  font-size: 15px;
+}
+.pagina-painel--administracao .gestao-filtro-cursos button,
+.pagina-painel--administracao .gestao-papeis button,
+.pagina-painel--administracao .usuario-papel,
+.pagina-painel--administracao .gestao-tipo-disciplina {
+  font-size: 12px;
+}
+.pagina-painel--administracao .tabela-submissoes th,
+.pagina-painel--administracao .tabela-submissoes td {
+  font-size: 16px;
+}
+.pagina-painel--administracao .tabela-submissoes thead th {
+  font-size: 13px;
+}
+.pagina-painel--administracao .gestao-codigo,
+.pagina-painel--administracao .gestao-tipo-disciplina,
+.pagina-painel--administracao .usuario-papel {
+  font-size: 13px !important;
+}
+.pagina-painel--administracao .gestao-acoes button,
+.pagina-painel--administracao .botao-primario,
+.pagina-painel--administracao .botao-secundario {
+  font-size: 14px;
+}
+.pagina-painel--administracao .gestao-linha-expandida > td {
+  padding: 24px;
+  background: var(--fundo);
+}
+.pagina-painel--administracao .gestao-linha-expandida .gestao-formulario {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  gap: 24px;
+  padding: 26px;
+  border: 1px solid var(--borda-suave);
+  border-radius: 14px;
+  background: var(--branco);
+  box-shadow: 0 5px 18px rgb(25 45 82 / 6%);
+}
+.pagina-painel--administracao .gestao-linha-expandida .gestao-formulario__grupo {
+  gap: 18px;
+  padding-top: 22px;
+}
+.pagina-painel--administracao .gestao-linha-expandida .gestao-campos {
+  gap: 20px 24px;
+}
+:root[data-tema='escuro'] .pagina-painel--administracao .gestao-linha-expandida > td {
+  background: var(--superficie);
+}
+:root[data-tema='escuro'] .pagina-painel--administracao .gestao-linha-expandida .gestao-formulario {
+  border-color: var(--borda-suave);
+  background: var(--superficie);
+  box-shadow: none;
+}
+.pagina-painel--disciplinas .tabela-submissoes tbody th {
+  font-size: 17px;
+  line-height: 1.55;
+}
+.pagina-painel--disciplinas .tabela-submissoes tbody th .gestao-codigo {
+  font-size: 12px !important;
+}
+@media (max-width: 760px) {
+  .pagina-painel--administracao .painel-titulo h1 {
+    font-size: 28px;
+  }
+
+  .pagina-painel--administracao .gestao-linha-expandida > td {
+    padding: 12px;
+  }
+
+  .pagina-painel--administracao .gestao-linha-expandida .gestao-formulario {
+    gap: 20px;
+    padding: 18px;
+  }
+
+  .pagina-painel--administracao .gestao-linha-expandida .gestao-campos {
+    gap: 16px;
+  }
+
+  .pagina-painel--administracao .tabela-submissoes th,
+  .pagina-painel--administracao .tabela-submissoes td {
+    font-size: 14px;
+  }
+
+  .pagina-painel--administracao .tabela-submissoes thead th {
+    font-size: 12px;
+  }
+
+  .pagina-painel--disciplinas .tabela-submissoes tbody th {
+    font-size: 16px;
+  }
+}
