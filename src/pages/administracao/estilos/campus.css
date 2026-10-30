@@ -1,0 +1,239 @@
+.campus-caminho {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  color: var(--texto);
+  font-size: 11px;
+}
+.campus-caminho a,
+.campus-voltar {
+  color: var(--texto);
+  text-decoration: none;
+}
+.campus-caminho a:hover,
+.campus-voltar:hover {
+  color: var(--azul);
+}
+.campus-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  font-size: 12px;
+}
+.campus-detalhe-titulo {
+  margin-top: 4px;
+}
+.campus-detalhe-titulo h1,
+.campus-lista + .painel-titulo h1 {
+  font-size: clamp(23px, 2.2vw, 28px);
+}
+.campus-sigla {
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: var(--etiqueta);
+  color: var(--azul);
+  font-size: 11px;
+  font-weight: 800;
+}
+.campus-detalhe-grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.campus-detalhe-cartao {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+  min-height: 132px;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+}
+.campus-detalhe-cartao > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.campus-detalhe-icone {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--etiqueta);
+  color: var(--azul);
+  font-size: 16px;
+  font-weight: 700;
+}
+.campus-detalhe-cartao h2 {
+  font-size: 13px;
+}
+.campus-detalhe-cartao header p,
+.campus-detalhe-cartao > p {
+  margin: 3px 0 0;
+  color: var(--texto);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.campus-detalhe-cartao dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.campus-detalhe-cartao dl > div {
+  display: grid;
+  gap: 4px;
+}
+.campus-detalhe-cartao dt {
+  color: var(--texto);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.campus-detalhe-cartao dd {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 12px;
+}
+.campus-detalhe-valor {
+  color: var(--titulo);
+  font-size: 23px;
+  line-height: 1;
+}
+.campus-detalhe-valor--texto {
+  font-size: 12px;
+  font-weight: 600;
+}
+.campus-detalhe-descricao {
+  color: var(--titulo) !important;
+  font-size: 12px !important;
+}
+.campus-lista .gestao-busca {
+  grid-template-columns: minmax(180px, 1fr) auto;
+  align-items: center;
+}
+.campus-lista .gestao-busca input {
+  max-width: 280px;
+}
+.campus-lista table {
+  min-width: 760px;
+}
+.campus-lista .tabela-submissoes th,
+.campus-lista .tabela-submissoes td {
+  padding: 10px 14px;
+}
+.campus-lista tbody th {
+  display: table-cell;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.campus-lista tbody td:nth-child(2) {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.campus-lista tbody th > a {
+  color: var(--titulo);
+  text-decoration: none;
+}
+.campus-lista tbody th > a:hover {
+  color: var(--azul);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.campus-lista-sigla {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 46px;
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: var(--suave);
+  color: var(--titulo);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+.campus-lista-contagem {
+  margin: 0;
+  padding: 0 14px 12px;
+  color: var(--texto);
+  font-size: 11px;
+}
+.campus-vazio {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+.campus-vazio h1,
+.campus-vazio p {
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .campus-lista .gestao-busca {
+    grid-template-columns: 1fr;
+  }
+
+  .campus-lista .gestao-busca input {
+    max-width: none;
+  }
+
+  .campus-detalhe-grade {
+    grid-template-columns: 1fr;
+  }
+}
+.campus-sigla,
+.campus-lista-sigla {
+  border: 1px solid var(--etiqueta);
+  background: var(--azul-suave);
+  color: var(--azul);
+}
+.campus-detalhe-icone {
+  border: 1px solid var(--etiqueta);
+  background: var(--azul-suave);
+  color: var(--azul-vivo);
+}
+.campus-detalhe-icone svg {
+  width: 16px;
+  height: 16px;
+}
+.campus-lista .gestao-busca {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  max-width: none;
+  padding: 20px 22px;
+  color: var(--titulo);
+  font-size: 14px;
+  font-weight: 650;
+}
+.campus-lista .gestao-busca input {
+  max-width: 480px;
+  min-height: 46px;
+  border-color: var(--borda-suave);
+  border-radius: 10px;
+  background: var(--fundo);
+  font-size: 15px;
+}
+:root[data-tema='escuro'] .campus-lista .gestao-busca input {
+  border-color: var(--roxo-suave);
+  background: var(--superficie-escura);
+}
+:root[data-tema='escuro'] .campus-sigla,
+:root[data-tema='escuro'] .campus-lista-sigla,
+:root[data-tema='escuro'] .campus-detalhe-icone {
+  border-color: var(--roxo-suave);
+  background: var(--etiqueta);
+  color: var(--azul);
+}

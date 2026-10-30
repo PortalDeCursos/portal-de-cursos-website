@@ -199,8 +199,8 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #0046d2;
-  color: #fff;
+  background: var(--azul);
+  color: var(--branco);
   border: 0;
   border-radius: 6px;
   padding: 14px 22px;
@@ -214,8 +214,8 @@ a:hover {
 }
 
 .botao-primario:hover {
-  background: #0037ac;
-  color: #fff;
+  background: var(--azul);
+  color: var(--branco);
 }
 
 .botao-primario:active,
@@ -330,7 +330,7 @@ a:hover {
   justify-content: center;
   gap: 8px;
   background: var(--azul);
-  color: #fff;
+  color: var(--branco);
   border: 2px solid var(--azul);
   border-radius: 4px; /* Linhas mais retas e estruturadas */
   padding: 12px 24px;

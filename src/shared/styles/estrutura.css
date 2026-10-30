@@ -4,7 +4,7 @@
   z-index: 10;
   background: var(--cabecalho);
   backdrop-filter: blur(6px);
-  box-shadow: 0 1px 8px #0000000a;
+  box-shadow: 0 1px 8px color-mix(in srgb, var(--preto) 4%, transparent);
 }
 
 .cabecalho__conteudo {
@@ -105,7 +105,7 @@
   border: 1px solid var(--borda);
   border-radius: 8px;
   background: var(--superficie);
-  box-shadow: 0 8px 24px #00000026;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--preto) 15%, transparent);
 }
 
 .opcao-tema {
@@ -124,7 +124,7 @@
 }
 
 .opcao-tema--selecionada {
-  color: #fff;
+  color: var(--branco);
   background: var(--azul);
 }
 

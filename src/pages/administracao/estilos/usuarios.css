@@ -1,0 +1,110 @@
+.usuario-papel {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--suave);
+  color: var(--titulo);
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.usuario-papel--admin {
+  background: var(--marinho);
+  color: var(--etiqueta);
+}
+.usuario-papel--coordenador {
+  background: var(--aviso-suave);
+  color: var(--aviso);
+}
+.usuario-papel--professor {
+  background: var(--roxo-suave);
+  color: var(--roxo);
+}
+.usuario-papel--aluno {
+  background: var(--suave);
+  color: var(--azul-vivo);
+}
+:root[data-tema='escuro'] .usuario-papel--admin {
+  background: var(--etiqueta);
+  color: var(--azul-escuro);
+}
+:root[data-tema='escuro'] .usuario-papel--coordenador {
+  background: var(--aviso-suave);
+  color: var(--aviso);
+}
+:root[data-tema='escuro'] .usuario-papel--professor {
+  background: var(--roxo-suave);
+  color: var(--roxo);
+}
+:root[data-tema='escuro'] .usuario-papel--aluno {
+  background: var(--etiqueta);
+  color: var(--azul);
+}
+.usuario-papel {
+  border: 1px solid transparent;
+}
+.usuario-papel--admin {
+  border-color: var(--etiqueta);
+  background: var(--suave);
+  color: var(--texto);
+}
+.usuario-papel--coordenador {
+  border-color: var(--aviso-suave);
+  background: var(--aviso-suave);
+  color: var(--aviso);
+}
+.usuario-papel--professor {
+  border-color: var(--etiqueta);
+  background: var(--roxo-suave);
+  color: var(--roxo);
+}
+.usuario-papel--aluno {
+  border-color: var(--etiqueta);
+  background: var(--azul-suave);
+  color: var(--azul-vivo);
+}
+.usuario-acesso {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.usuario-acesso > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.usuario-acesso--ativo {
+  border-color: var(--borda);
+  background: var(--sucesso-suave);
+  color: var(--sucesso);
+}
+.usuario-acesso--inativo,
+.usuario-acesso--bloqueado {
+  border-color: var(--borda-suave);
+  background: var(--fundo);
+  color: var(--texto-suave);
+}
+.usuario-acesso--indefinido {
+  border-color: var(--borda-suave);
+  background: var(--fundo);
+  color: var(--texto-suave);
+}
+:root[data-tema='escuro'] .usuario-acesso--ativo {
+  border-color: var(--sucesso-suave);
+  background: var(--sucesso-suave);
+  color: var(--verde);
+}
+:root[data-tema='escuro'] .usuario-acesso--inativo,
+:root[data-tema='escuro'] .usuario-acesso--bloqueado,
+:root[data-tema='escuro'] .usuario-acesso--indefinido {
+  border-color: var(--borda-suave);
+  background: var(--superficie-escura);
+  color: var(--texto);
+}

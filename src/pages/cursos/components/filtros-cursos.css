@@ -140,7 +140,7 @@
   border-color: var(--azul);
   box-shadow:
     inset 0 0 0 1px var(--azul),
-    0 10px 28px #00000014;
+    0 10px 28px color-mix(in srgb, var(--preto) 8%, transparent);
 }
 .filtros-cursos__titulo {
   flex-wrap: wrap;

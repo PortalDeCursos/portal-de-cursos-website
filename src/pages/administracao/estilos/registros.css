@@ -1,0 +1,264 @@
+.administracao-registros {
+  margin-bottom: 22px;
+}
+.administracao-registros > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--borda);
+}
+.administracao-registros > header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.administracao-registros > header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--texto);
+}
+.administracao-submissoes > header,
+.administracao-etapas > header {
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 72%, transparent);
+}
+.administracao-etapas dl {
+  display: grid;
+  margin: 0;
+  padding: 0 24px;
+}
+.administracao-etapas dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid color-mix(in srgb, var(--borda) 68%, transparent);
+}
+.administracao-etapas dt {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.administracao-etapas dd {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.administracao-etapas .administracao-etapas__total {
+  margin-top: 4px;
+  border-top-color: var(--borda);
+}
+.administracao-etapas__nota {
+  margin: 0;
+  padding: 12px 24px 22px;
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.administracao-secao-atalhos > header {
+  margin-bottom: 10px;
+}
+.administracao-secao-atalhos > header h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.administracao-secao-atalhos > header {
+  margin-bottom: 14px;
+}
+.administracao-secao-atalhos > header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.administracao-categorias {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 40px;
+  padding-top: 4px;
+}
+.administracao-categoria h3 {
+  margin: 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+.administracao-categoria ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.administracao-categoria li + li {
+  border-top: 1px solid color-mix(in srgb, var(--borda) 68%, transparent);
+}
+.administracao-categoria a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  padding: 10px 4px;
+  border-radius: 6px;
+  transition:
+    color 140ms,
+    background-color 140ms;
+}
+.administracao-categoria a:hover {
+  background: color-mix(in srgb, var(--azul) 4%, var(--fundo));
+}
+.administracao-categoria__texto {
+  display: grid;
+  gap: 3px;
+}
+.administracao-categoria__texto strong {
+  color: var(--titulo);
+  font-size: 14px;
+}
+.administracao-categoria__texto small {
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.administracao-categoria a svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  flex: 0 0 auto;
+}
+.administracao-vazio {
+  padding: 28px 24px;
+  border-top: 1px solid var(--borda);
+}
+.administracao-vazio strong {
+  color: var(--titulo);
+  font-size: 14px;
+}
+.administracao-vazio p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.administracao-vazio .botao-primario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--azul-escuro);
+  color: var(--branco);
+  font-weight: 700;
+}
+.administracao-boas-vindas {
+  min-height: 102px;
+  padding: 16px 18px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+}
+.administracao-boas-vindas__rotulo {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--azul);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.administracao-boas-vindas h1 {
+  font-size: clamp(22px, 2.2vw, 28px);
+  letter-spacing: -0.035em;
+}
+.administracao-boas-vindas p {
+  margin: 5px 0 0;
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.administracao-boas-vindas__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.administracao-boas-vindas__acoes a,
+.administracao-boas-vindas__acoes button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.administracao-registros {
+  margin: 0;
+}
+.administracao-registros > header {
+  padding: 16px;
+}
+.administracao-registros > header h2 {
+  font-size: 15px;
+}
+.administracao-registros > header a {
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.administracao-registros .tabela-submissoes table {
+  min-width: 760px;
+}
+.administracao-registros .tabela-submissoes thead {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.administracao-registros .tabela-submissoes th,
+.administracao-registros .tabela-submissoes td {
+  padding: 12px 14px;
+}
+:root[data-tema='escuro'] .administracao-boas-vindas,
+:root[data-tema='escuro'] .administracao-indicador,
+:root[data-tema='escuro'] .gestao-curso-cartao {
+  border-color: var(--borda-suave);
+  background: var(--preto);
+}
+:root[data-tema='escuro'] .administracao-boas-vindas {
+  border-left: 2px solid var(--azul-vivo);
+}
+:root[data-tema='escuro'] .administracao-registros .tabela-submissoes tbody tr:hover {
+  background: var(--suave);
+}
+.administracao-boas-vindas__rotulo {
+  font-size: 12px;
+}
+.administracao-boas-vindas h1 {
+  font-size: clamp(28px, 2.5vw, 34px);
+}
+.administracao-boas-vindas p {
+  font-size: 15px;
+}
+.administracao-registros > header h2 {
+  font-size: 18px;
+}
+.administracao-registros > header p {
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .administracao-boas-vindas h1 {
+    font-size: 28px;
+  }
+
+  .administracao-indicador__texto > span {
+    font-size: 13px;
+  }
+
+  .administracao-indicador__texto strong {
+    font-size: 28px;
+  }
+}
