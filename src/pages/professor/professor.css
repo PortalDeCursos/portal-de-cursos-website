@@ -1,3 +1,7 @@
+/* ==========================================================================
+   Feed do professor
+   ========================================================================== */
+
 .pagina-professor {
   display: grid;
   gap: 44px;
@@ -12,19 +16,6 @@
   gap: 32px;
 }
 
-.pagina-professor__rotulo,
-.pagina-professor__filtro-etiqueta {
-  color: var(--azul);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.pagina-professor__rotulo {
-  margin: 0 0 12px;
-}
-
 .pagina-professor h1 {
   max-width: 720px;
   margin: 0;
@@ -33,27 +24,19 @@
   letter-spacing: -0.06em;
 }
 
-.pagina-professor__topo p:not(.pagina-professor__rotulo) {
+.pagina-professor__topo p {
   margin: 18px 0 0;
   font-size: 17px;
 }
 
-.pagina-professor__demonstracao {
-  padding: 9px 12px;
-  border: 1px solid var(--borda);
-  border-radius: 6px;
-  color: var(--texto);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .pagina-professor__layout {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   gap: 32px;
   align-items: start;
 }
+
+/* ---------- Painel de filtros ---------- */
 
 .pagina-professor__filtro-painel {
   position: sticky;
@@ -62,6 +45,7 @@
   gap: 24px;
   padding: 22px 20px;
   border: 1px solid var(--borda);
+  border-radius: 12px;
   background: var(--superficie);
 }
 
@@ -82,10 +66,6 @@
   line-height: 1.55;
 }
 
-.pagina-professor__filtro-etiqueta {
-  font-size: 10px;
-}
-
 .pagina-professor__filtros {
   display: grid;
   gap: 4px;
@@ -95,20 +75,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   width: 100%;
   padding: 11px 10px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 8px;
   color: var(--texto);
   background: transparent;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.pagina-professor__filtros button > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .pagina-professor__filtros button small {
+  flex-shrink: 0;
+  min-width: 22px;
+  padding: 2px 6px;
+  border-radius: 999px;
   color: var(--texto);
   font-size: 12px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .pagina-professor__filtros button:hover,
@@ -120,6 +115,13 @@
 .pagina-professor__filtros button:hover small,
 .pagina-professor__filtro--ativo small {
   color: var(--azul);
+}
+
+.pagina-professor__filtros button:focus-visible,
+.pagina-professor__tipo select:focus-visible,
+.submissao-feed__gatilho:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
 }
 
 .pagina-professor__tipo {
@@ -135,13 +137,15 @@
 .pagina-professor__tipo select {
   width: 100%;
   border: 1px solid var(--borda);
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 10px;
   color: var(--titulo);
   background: var(--fundo);
   font: inherit;
   font-size: 13px;
 }
+
+/* ---------- Lista ---------- */
 
 .pagina-professor__resultados {
   min-width: 0;
@@ -170,140 +174,204 @@
   padding-top: 16px;
 }
 
+/* ---------- Card ---------- */
+
 .submissao-feed {
+  overflow: hidden;
   border: 1px solid var(--borda);
+  border-radius: 12px;
   background: var(--superficie);
   transition:
     border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.submissao-feed:hover,
-.submissao-feed--selecionada {
+.submissao-feed:hover {
   border-color: var(--azul);
-  box-shadow: 0 10px 28px #12294f0d;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--marinho) 6%, transparent);
 }
 
 .submissao-feed__gatilho {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: start;
+  display: flex;
+  align-items: center;
+  gap: 18px;
   width: 100%;
   padding: 20px 22px;
-  border: 0;
   color: var(--texto);
   background: transparent;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  transition: background-color 150ms ease-out;
 }
 
-.submissao-feed__marcador {
-  width: 9px;
-  height: 9px;
-  margin-top: 5px;
-  border: 2px solid var(--azul);
+.submissao-feed__gatilho:hover {
+  background-color: var(--suave);
+}
+
+/*
+ * O avatar reaproveita o design do ícone de perfil (.cabecalho__iniciais).
+ * Aqui só ajustamos o tamanho; cor, fundo e peso vêm de .cabecalho__iniciais.
+ * Os valores abaixo são apenas um respaldo de baixa especificidade.
+ */
+.submissao-feed__avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+}
+
+:where(.submissao-feed__avatar) {
+  display: inline-grid;
+  place-items: center;
   border-radius: 50%;
+  color: var(--titulo);
+  background: var(--suave);
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .submissao-feed__conteudo {
-  display: grid;
-  gap: 9px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
 }
 
-.submissao-feed__meta,
-.submissao-feed__rodape {
+.submissao-feed__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   color: var(--texto);
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.submissao-feed strong {
+.submissao-feed__autor-nome {
   color: var(--titulo);
-  font-size: 17px;
-  line-height: 1.35;
+  font-weight: 700;
+}
+
+.submissao-feed__coautores-badge {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--azul) 20%, transparent);
+  border-radius: 999px;
+  color: var(--azul);
+  background: var(--suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.submissao-feed__separador {
+  color: var(--texto);
+  opacity: 0.5;
+}
+
+.submissao-feed__titulo {
+  margin: 0;
+  color: var(--titulo);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .submissao-feed__rodape {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+}
+
+.submissao-feed__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .submissao-feed__expandir {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 16px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
   color: var(--azul);
-  font-size: 12px;
-  font-weight: 800;
+  background: var(--suave);
+  font-size: 13px;
+  font-weight: 700;
   white-space: nowrap;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    border-color 150ms ease-out;
 }
+
+.submissao-feed__gatilho:hover .submissao-feed__expandir,
+.submissao-feed__gatilho:focus-visible .submissao-feed__expandir {
+  border-color: var(--azul);
+  color: #ffffff;
+  background: var(--azul);
+}
+
+/* ---------- Status ---------- */
 
 .status {
   display: inline-flex;
   width: fit-content;
-  padding: 5px 8px;
-  border-radius: 4px;
+  padding: 5px 9px;
+  border-radius: 6px;
   color: var(--texto);
   background: var(--suave);
   font-size: 11px;
   font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .status--em-análise,
 .status--aguardando-orientador {
-  color: #855f00;
-  background: #fff3c4;
+  color: var(--aviso);
+  background: var(--aviso-suave);
 }
 
 .status--aceito,
 .status--aprovado {
-  color: #17633d;
-  background: #dff3e7;
+  color: var(--verde);
+  background: var(--sucesso-suave);
 }
 
 .status--recusado {
-  color: #9c3434;
-  background: #fde8e8;
+  color: var(--erro-escuro);
+  background: var(--erro-suave);
 }
 
-.submissao-feed__detalhes {
-  display: grid;
-  gap: 24px;
-  padding: 0 22px 24px 48px;
-  border-top: 1px solid var(--borda);
+.pagina-professor__vazio {
+  padding: 48px 32px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--superficie);
 }
 
-.submissao-feed__resumo {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr 0.8fr;
-  gap: 24px;
-  padding-top: 22px;
+.pagina-professor__vazio h2 {
+  margin-top: 0;
 }
 
-.submissao-feed__detalhes h3 {
-  margin: 0 0 8px;
-  color: var(--titulo);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.submissao-feed__detalhes p {
-  margin: 0;
-  color: var(--texto);
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-.submissao-feed__documentos {
-  padding-top: 18px;
-  border-top: 1px solid var(--borda);
-}
+/* ==========================================================================
+   Documentos (compartilhado entre feed e detalhes)
+   ========================================================================== */
 
 .documentos-submissao-professor {
   display: grid;
-  gap: 8px;
+  gap: 0;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -311,23 +379,51 @@
 
 .documentos-submissao-professor li {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   color: var(--texto);
   font-size: 13px;
 }
 
-.documentos-submissao-professor li > span {
-  padding: 5px 4px;
+.documento-tipo {
+  min-width: 44px;
+  padding: 5px 8px;
   border: 1px solid var(--borda);
+  border-radius: 6px;
   color: var(--azul);
-  font-size: 9px;
+  background: var(--suave);
+  font-size: 10px;
   font-weight: 800;
+  letter-spacing: 0.04em;
   text-align: center;
+  white-space: nowrap;
 }
 
-.documentos-submissao-professor button,
+.documentos-submissao-professor strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.documento-link {
+  color: var(--azul);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.documento-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.documento-indisponivel {
+  color: var(--texto);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .botao-texto {
   border: 0;
   padding: 0;
@@ -338,9 +434,18 @@
   cursor: pointer;
 }
 
+/* ==========================================================================
+   Avaliação / formulário
+   ========================================================================== */
+
 .avaliacao-submissao {
   padding-top: 20px;
   border-top: 1px solid var(--borda);
+}
+
+.avaliacao-submissao--formulario {
+  display: grid;
+  gap: 18px;
 }
 
 .avaliacao-submissao label {
@@ -356,21 +461,35 @@
   font-weight: 500;
 }
 
+.avaliacao-submissao input,
+.avaliacao-submissao select,
 .avaliacao-submissao textarea {
   width: 100%;
-  min-height: 88px;
   border: 1px solid var(--borda);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 12px;
   color: var(--titulo);
   background: var(--fundo);
+  font: inherit;
   font-size: 14px;
+  font-weight: 400;
+}
+
+.avaliacao-submissao textarea {
+  min-height: 88px;
   resize: vertical;
+}
+
+.avaliacao-submissao input:focus-visible,
+.avaliacao-submissao select:focus-visible,
+.avaliacao-submissao textarea:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
 }
 
 .avaliacao-submissao__erro {
   margin: 10px 0 0;
-  color: var(--erro, #9c3434);
+  color: var(--erro, var(--erro-escuro));
   font-size: 13px;
   font-weight: 700;
 }
@@ -383,19 +502,9 @@
   margin-top: 16px;
 }
 
-.detalhe-submissao__aviso {
-  margin: 0;
-}
-
-.pagina-professor__vazio {
-  padding: 48px 32px;
-  border: 1px solid var(--borda);
-  background: var(--superficie);
-}
-
-.pagina-professor__vazio h2 {
-  margin-top: 0;
-}
+/* ==========================================================================
+   Detalhes da submissão
+   ========================================================================== */
 
 .pagina-detalhes-submissao {
   display: grid;
@@ -429,6 +538,7 @@
 .pagina-detalhes-submissao__cabecalho > div {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .pagina-detalhes-submissao__sinal {
@@ -452,6 +562,7 @@
   font-size: clamp(36px, 5vw, 60px);
   line-height: 1.04;
   letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
 }
 
 .pagina-detalhes-submissao__cabecalho p {
@@ -491,6 +602,7 @@
 .pagina-detalhes-submissao__lateral {
   display: grid;
   gap: 44px;
+  min-width: 0;
 }
 
 .pagina-detalhes-submissao__principal > div,
@@ -514,11 +626,14 @@
   color: var(--texto);
   font-size: 17px;
   line-height: 1.72;
+  overflow-wrap: anywhere;
 }
 
 .pagina-detalhes-submissao__lateral {
+  gap: 28px;
   padding: 24px;
   border: 1px solid var(--borda);
+  border-radius: 12px;
   background: var(--superficie);
 }
 
@@ -553,6 +668,8 @@
   line-height: 1.5;
 }
 
+/* ---------- Documentos enviados ---------- */
+
 .pagina-detalhes-submissao__documentos {
   padding-top: 8px;
 }
@@ -562,7 +679,7 @@
 }
 
 .pagina-detalhes-submissao__documentos li {
-  padding: 12px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--borda);
 }
 
@@ -576,11 +693,14 @@
   font-weight: 600;
 }
 
+/* ---------- Decisão e avisos ---------- */
+
 .pagina-detalhes-submissao__decisao {
   display: grid;
   gap: 14px;
   padding: 22px;
   border: 1px solid var(--borda);
+  border-radius: 10px;
   background: var(--fundo);
 }
 
@@ -595,6 +715,7 @@
 
 .pagina-detalhes-submissao__decisao .avaliacao-submissao__acoes {
   display: grid;
+  margin-top: 4px;
 }
 
 .pagina-detalhes-submissao__decisao .botao-primario,
@@ -602,18 +723,54 @@
   width: 100%;
 }
 
+.pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso {
+  padding: 16px 18px;
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--azul);
+  border-radius: 10px;
+  color: var(--titulo);
+  background: var(--fundo);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso--aprovado {
+  border-left-color: var(--verde);
+}
+
+.pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso--recusado {
+  border-left-color: var(--erro-escuro);
+}
+
+.pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso--em-análise,
+.pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso--aguardando-orientador {
+  border-left-color: var(--aviso);
+}
+
+/* ==========================================================================
+   Responsivo
+   ========================================================================== */
+
 @media (max-width: 900px) {
   .pagina-professor__layout {
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 220px minmax(0, 1fr);
     gap: 20px;
   }
 
-  .submissao-feed__resumo {
-    grid-template-columns: 1fr 1fr;
+  .submissao-feed__gatilho {
+    flex-wrap: wrap;
+  }
+
+  .submissao-feed__conteudo {
+    flex-basis: calc(100% - 62px);
+  }
+
+  .submissao-feed__expandir {
+    margin-left: 62px;
   }
 
   .pagina-detalhes-submissao__grid {
-    grid-template-columns: minmax(0, 1fr) 250px;
+    grid-template-columns: minmax(0, 1fr) 280px;
     gap: 32px;
   }
 }
@@ -640,27 +797,15 @@
   }
 
   .submissao-feed__gatilho {
-    grid-template-columns: 10px minmax(0, 1fr);
     padding: 18px;
   }
 
-  .submissao-feed__expandir {
-    grid-column: 2;
-  }
-
-  .submissao-feed__detalhes {
-    padding: 0 18px 20px 42px;
-  }
-
-  .submissao-feed__resumo {
-    grid-template-columns: 1fr;
-  }
-
   .documentos-submissao-professor li {
-    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .documentos-submissao-professor button {
+  .documentos-submissao-professor .documento-link,
+  .documentos-submissao-professor .documento-indisponivel {
     grid-column: 2;
     justify-self: start;
   }
@@ -692,5 +837,14 @@
 
   .pagina-detalhes-submissao__cabecalho h1 {
     font-size: clamp(36px, 12vw, 48px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submissao-feed,
+  .submissao-feed__gatilho,
+  .submissao-feed__expandir,
+  .pagina-professor__filtros button {
+    transition: none;
   }
 }

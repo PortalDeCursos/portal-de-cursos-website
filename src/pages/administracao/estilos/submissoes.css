@@ -1,0 +1,24 @@
+:root[data-tema='escuro'] .tabela-submissoes thead {
+  background: var(--superficie);
+}
+.tabela-submissoes td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+.tabela-submissoes td:last-child .gestao-acoes {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.tabela-submissoes td:last-child .gestao-acoes button {
+  min-height: 38px;
+  padding: 8px 11px;
+}
+.tabela-submissoes button:focus-visible,
+.gestao-acoes button:focus-visible {
+  outline: 3px solid var(--superficie-escura);
+  outline-offset: 3px;
+}
+.tabela-submissoes button:active,
+.gestao-acoes button:active {
+  transform: translateY(1px);
+}

@@ -1,78 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { listarCursos } from '@/api/cursos.js'
+import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { listarProfessores } from '@/api/professores.js'
+import { cadastrarProjeto } from '@/api/projetos.js'
 import { enderecoPrivado } from '../../app/rotas.js'
+import {
+  TAMANHO_MAXIMO_DOCUMENTO,
+  etapas,
+  formularioInicial,
+  nomesTiposProjeto,
+  tiposProjeto,
+} from './constantes.js'
+import EtapaSubmissaoDocumentos from './etapas/EtapaSubmissaoDocumentos.jsx'
+import EtapaSubmissaoEquipe from './etapas/EtapaSubmissaoEquipe.jsx'
+import EtapaSubmissaoIdentificacao from './etapas/EtapaSubmissaoIdentificacao.jsx'
+import EtapaSubmissaoProjeto from './etapas/EtapaSubmissaoProjeto.jsx'
 import '@/shared/styles/painel-informativo.css'
 import './submissao.css'
-
-const formularioInicial = {
-  nome: '',
-  email: '',
-  curso: '',
-  orientador: '',
-  tipo: '',
-  titulo: '',
-  resumo: '',
-  objetivos: '',
-  informacoesEspecificas: '',
-  disciplinas: [],
-  autores: [],
-  documentos: {},
-  linkMemoria: '',
-  arquivosComplementares: [],
-  aceitaPublicacao: false,
-}
-
-const etapas = ['Identificação', 'Projeto', 'Equipe', 'Documentos']
-const TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024
-
-const nomesTiposProjeto = {
-  'Projeto Integrador': 'Projeto Integrador',
-  TCC: 'TCC',
-  Pesquisa: 'Projeto de Pesquisa',
-  Extensão: 'Projeto de Extensão',
-}
-
-const tiposProjeto = {
-  'Projeto Integrador': {
-    descricao: 'Integra conhecimentos do curso em uma solução aplicada.',
-    campoEspecifico: 'Requisitos, escopo e solução proposta',
-    documentos: [
-      { id: 'requisitos', nome: 'Documento de requisitos', obrigatorio: true },
-      { id: 'relatorio', nome: 'Relatório técnico ou documentação do projeto', obrigatorio: true },
-      { id: 'anexos', nome: 'Anexos complementares', obrigatorio: false, multiplo: true },
-    ],
-  },
-  TCC: {
-    descricao: 'Trabalho de conclusão com pesquisa, fundamentação e resultados.',
-    campoEspecifico: 'Problema de pesquisa, metodologia e resultados esperados',
-    usaLinkMemoria: true,
-    documentos: [],
-  },
-  Pesquisa: {
-    descricao: 'Investigação acadêmica com método e resultados documentados.',
-    campoEspecifico: 'Método, hipótese e resultados da pesquisa',
-    documentos: [
-      { id: 'protocolo', nome: 'Projeto ou protocolo de pesquisa', obrigatorio: true },
-      { id: 'relatorio', nome: 'Relatório de pesquisa', obrigatorio: true },
-      { id: 'anexos', nome: 'Anexos complementares', obrigatorio: false, multiplo: true },
-    ],
-  },
-  Extensão: {
-    descricao: 'Ação acadêmica conectada às necessidades da comunidade.',
-    campoEspecifico: 'Público atendido, impacto e execução da ação',
-    documentos: [
-      { id: 'plano', nome: 'Plano da ação de extensão', obrigatorio: true },
-      { id: 'relatorio', nome: 'Relatório de execução', obrigatorio: true },
-      { id: 'anexos', nome: 'Anexos complementares', obrigatorio: false, multiplo: true },
-    ],
-  },
-}
 
 export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [cursos, definirCursos] = useState([])
   const [orientadores, definirOrientadores] = useState([])
+  const [disciplinasCurso, definirDisciplinasCurso] = useState([])
   const [carregandoCadastros, definirCarregandoCadastros] = useState(true)
+  const [carregandoDisciplinas, definirCarregandoDisciplinas] = useState(false)
   const [formulario, definirFormulario] = useState(() => ({
     ...formularioInicial,
     nome: sessao?.usuario?.nome || '',
@@ -106,6 +57,41 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       })
     return () => controller.abort()
   }, [sessao?.token])
+
+  useEffect(() => {
+    if (!formulario.curso) return
+    let ativo = true
+    const controller = new AbortController()
+
+    async function carregarDisciplinas() {
+      definirCarregandoDisciplinas(true)
+      try {
+        const dados = await listarDisciplinasPorCurso(
+          formulario.curso,
+          sessao?.token,
+          controller.signal,
+        )
+        if (ativo) {
+          definirDisciplinasCurso(Array.isArray(dados) ? dados : [])
+        }
+      } catch {
+        if (ativo) {
+          definirDisciplinasCurso([])
+        }
+      } finally {
+        if (ativo) {
+          definirCarregandoDisciplinas(false)
+        }
+      }
+    }
+
+    carregarDisciplinas()
+
+    return () => {
+      ativo = false
+      controller.abort()
+    }
+  }, [formulario.curso, sessao?.token])
 
   function alterar(campo, valor) {
     definirFormulario((anterior) => ({ ...anterior, [campo]: valor }))
@@ -252,11 +238,26 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         String(item.id) === String(formulario.curso) ||
         String(item.identificador) === String(formulario.curso),
     )
-    const autores = formulario.autores
+    const autoresLista = formulario.autores
       .filter((autor) => autor.nome.trim())
       .map((autor) => ({ nome: autor.nome.trim(), email: autor.email.trim() }))
     const ehTCC = formulario.tipo === 'TCC'
-    aoSubmeter?.({
+
+    // Mapeamento do tipo de produção para o enum do backend
+    const mapasTipoProjeto = {
+      TCC: 'TCC',
+      'Projeto Integrador': 'PROJETO_INTEGRADOR',
+      Pesquisa: 'PROJETO_PESQUISA',
+      Extensão: 'PROJETO_EXTENSAO',
+    }
+
+    const autoresParaSubmissao =
+      sessao?.tipoUsuario === 'ALUNO'
+        ? [{ nome: formulario.nome.trim(), email: formulario.email.trim() }, ...autoresLista]
+        : autoresLista
+
+    // Monta o objeto local para o estado (UI imediata)
+    const submissaoLocal = {
       identificador: crypto.randomUUID(),
       cursoId: cursoProjeto?.id,
       identificadorCurso: cursoProjeto?.identificador,
@@ -265,11 +266,12 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       curso: cursoProjeto?.sigla || formulario.curso,
       cursoCompleto: cursoProjeto?.nome || formulario.curso,
       autor: formulario.nome.trim(),
-      autores:
-        sessao?.tipoUsuario === 'ALUNO'
-          ? [{ nome: formulario.nome.trim(), email: formulario.email.trim() }, ...autores]
-          : autores,
+      autores: autoresParaSubmissao,
       orientador: formulario.orientador,
+      orientadorId:
+        orientadores.find((o) => o.nome === formulario.orientador)?.id ||
+        orientadores.find((o) => o.nome === formulario.orientador)?.professorId ||
+        null,
       enviadoEm: new Intl.DateTimeFormat('pt-BR', {
         dateStyle: 'short',
         timeStyle: 'short',
@@ -288,8 +290,66 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
               .map((arquivo) => arquivo.name),
           }),
       tipoAutor: sessao?.tipoUsuario || 'ALUNO',
-    })
+    }
+
+    // Monta o DTO para a API do backend
+    const orientadorObj = orientadores.find((o) => o.nome === formulario.orientador)
+    const orientadorId =
+      orientadorObj?.id || orientadorObj?.professorId || orientadorObj?.identificador || null
+    const disciplinaIds = formulario.disciplinas
+      .map((nome) => {
+        const d = disciplinasCurso.find((d) => d.nome === nome)
+        return d?.id || null
+      })
+      .filter(Boolean)
+    const hoje = new Date()
+    const dataInicio = hoje.toISOString().split('T')[0]
+    const dataFim = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate())
+      .toISOString()
+      .split('T')[0]
+    const documentosDto = ehTCC
+      ? [
+          {
+            nomeArquivo: 'link-memoria.txt',
+            tipoDocumento: 'LINK_MEMORIA',
+            localizacao: formulario.linkMemoria.trim(),
+          },
+        ]
+      : Object.values(formulario.documentos)
+          .flat()
+          .filter(Boolean)
+          .map((arquivo) => ({
+            nomeArquivo: arquivo.name,
+            tipoDocumento: 'DOCUMENTO',
+            localizacao: arquivo.name,
+          }))
+
+    const dto = {
+      cursoId: cursoProjeto?.id ? Number(cursoProjeto.id) : null,
+      campusId: cursoProjeto?.campusId ? Number(cursoProjeto.campusId) : null,
+      autores: autoresParaSubmissao,
+      disciplinaIds: disciplinaIds.length > 0 ? disciplinaIds : null,
+      nome: formulario.titulo.trim(),
+      descricao: formulario.objetivos.trim(),
+      resumo: formulario.resumo.trim(),
+      tipoProjeto: mapasTipoProjeto[formulario.tipo] || formulario.tipo,
+      dataInicio,
+      dataFim,
+      professores: orientadorId
+        ? [{ professorId: Number(orientadorId), papel: 'ORIENTADOR' }]
+        : [],
+      documentos: documentosDto.length > 0 ? documentosDto : null,
+    }
+
+    // Salva localmente de imediato e tenta enviar para o backend
+    aoSubmeter?.(submissaoLocal)
     definirEnviado(true)
+
+    if (sessao?.token && dto.cursoId && dto.campusId && dto.disciplinaIds && dto.documentos && dto.professores.length > 0) {
+      cadastrarProjeto(dto, sessao.token).catch(() => {
+        /* Submissão salva localmente; falha no backend não bloqueia o usuário */
+      })
+    }
   }
 
   function alterarDocumentos(documento, arquivos) {
@@ -307,6 +367,13 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
   function adicionarAutor() {
     alterar('autores', [...formulario.autores, { nome: '', email: '' }])
+  }
+
+  function removerAutor(indice) {
+    alterar(
+      'autores',
+      formulario.autores.filter((_, i) => i !== indice),
+    )
   }
 
   function alterarAutor(indice, campo, valor) {
@@ -512,403 +579,50 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
       <form className="formulario-submissao" onSubmit={submeter} noValidate>
         {etapa === 0 && (
-          <section className="formulario-submissao__secao" aria-labelledby="dados-identificacao">
-            <div className="formulario-submissao__cabecalho">
-              <span>01</span>
-              <div>
-                <h2 id="dados-identificacao">Identificação</h2>
-                <p>Diga quem você é e a qual curso o projeto pertence.</p>
-              </div>
-            </div>
-            <div className="formulario-submissao__grade">
-              <label>
-                Nome completo <span aria-hidden="true">*</span>
-                <input
-                  required
-                  aria-invalid={Boolean(erros.nome)}
-                  aria-describedby={erroDoCampo('nome')}
-                  placeholder="Seu nome completo"
-                  value={formulario.nome}
-                  readOnly={autorSessao}
-                  onChange={(e) => alterar('nome', e.target.value)}
-                />
-                {erros.nome && (
-                  <small id="erro-nome" className="formulario-submissao__erro-campo">
-                    {erros.nome}
-                  </small>
-                )}
-              </label>
-              <label>
-                E-mail <span aria-hidden="true">*</span>
-                <input
-                  required
-                  type="email"
-                  aria-invalid={Boolean(erros.email)}
-                  aria-describedby={erroDoCampo('email')}
-                  placeholder="voce@email.com"
-                  value={formulario.email}
-                  readOnly={autorSessao}
-                  onChange={(e) => alterar('email', e.target.value)}
-                />
-                {erros.email && (
-                  <small id="erro-email" className="formulario-submissao__erro-campo">
-                    {erros.email}
-                  </small>
-                )}
-              </label>
-              <label className="formulario-submissao__campo-largo">
-                Curso <span aria-hidden="true">*</span>
-                <select
-                  required
-                  aria-invalid={Boolean(erros.curso)}
-                  aria-describedby={erroDoCampo('curso')}
-                  value={formulario.curso}
-                  disabled={autorSessao}
-                  onChange={(e) => {
-                    alterar('curso', e.target.value)
-                    alterar('orientador', '')
-                  }}
-                >
-                  <option value="">
-                    {carregandoCadastros ? 'Carregando cursos…' : 'Selecione o curso'}
-                  </option>
-                  {cursos.map((curso) => (
-                    <option key={curso.id} value={String(curso.id)}>
-                      {curso.nome}
-                      {curso.sigla ? ` · ${curso.sigla}` : ''}
-                    </option>
-                  ))}
-                </select>
-                {!carregandoCadastros && !cursos.length && (
-                  <small className="formulario-submissao__erro-campo" role="status">
-                    Os cursos não puderam ser carregados agora.
-                  </small>
-                )}
-                {erros.curso && (
-                  <small id="erro-curso" className="formulario-submissao__erro-campo">
-                    {erros.curso}
-                  </small>
-                )}
-              </label>
-              <p className="formulario-submissao__privacidade formulario-submissao__campo-largo">
-                Usamos seu nome e e-mail somente para identificar sua submissão e permitir o contato
-                sobre a avaliação.
-              </p>
-            </div>
-          </section>
+          <EtapaSubmissaoIdentificacao
+            cursos={cursos}
+            carregandoCadastros={carregandoCadastros}
+            formulario={formulario}
+            erros={erros}
+            autorSessao={autorSessao}
+            alterar={alterar}
+            erroDoCampo={erroDoCampo}
+          />
         )}
 
         {etapa === 1 && (
-          <section className="formulario-submissao__secao" aria-labelledby="dados-projeto">
-            <div className="formulario-submissao__cabecalho">
-              <span>02</span>
-              <div>
-                <h2 id="dados-projeto">Projeto</h2>
-                <p>Descreva a produção, seu objetivo e o resultado esperado.</p>
-              </div>
-            </div>
-            <div className="formulario-submissao__grade">
-              <label>
-                Tipo de produção <span aria-hidden="true">*</span>
-                <select
-                  required
-                  aria-invalid={Boolean(erros.tipo)}
-                  aria-describedby={erroDoCampo('tipo')}
-                  value={formulario.tipo}
-                  onChange={(e) => alterar('tipo', e.target.value)}
-                >
-                  <option value="">Selecione uma opção</option>
-                  {Object.keys(tiposProjeto).map((tipo) => (
-                    <option key={tipo} value={tipo}>
-                      {nomesTiposProjeto[tipo]}
-                    </option>
-                  ))}
-                </select>
-                {erros.tipo && (
-                  <small id="erro-tipo" className="formulario-submissao__erro-campo">
-                    {erros.tipo}
-                  </small>
-                )}
-              </label>
-              <label>
-                Título <span aria-hidden="true">*</span>
-                <input
-                  required
-                  aria-invalid={Boolean(erros.titulo)}
-                  aria-describedby={erroDoCampo('titulo')}
-                  placeholder="Título do projeto"
-                  value={formulario.titulo}
-                  onChange={(e) => alterar('titulo', e.target.value)}
-                />
-                {erros.titulo && (
-                  <small id="erro-titulo" className="formulario-submissao__erro-campo">
-                    {erros.titulo}
-                  </small>
-                )}
-              </label>
-              <label className="formulario-submissao__campo-largo">
-                Resumo <span aria-hidden="true">*</span>
-                <textarea
-                  required
-                  aria-invalid={Boolean(erros.resumo)}
-                  aria-describedby={erroDoCampo('resumo')}
-                  placeholder="Apresente o problema, a proposta e o contexto do projeto."
-                  rows="5"
-                  value={formulario.resumo}
-                  onChange={(e) => alterar('resumo', e.target.value)}
-                />
-                {erros.resumo && (
-                  <small id="erro-resumo" className="formulario-submissao__erro-campo">
-                    {erros.resumo}
-                  </small>
-                )}
-              </label>
-              <label className="formulario-submissao__campo-largo">
-                Objetivos e resultados <span aria-hidden="true">*</span>
-                <textarea
-                  required
-                  aria-invalid={Boolean(erros.objetivos)}
-                  aria-describedby={erroDoCampo('objetivos')}
-                  placeholder="Quais resultados o projeto pretende alcançar?"
-                  rows="5"
-                  value={formulario.objetivos}
-                  onChange={(e) => alterar('objetivos', e.target.value)}
-                />
-                {erros.objetivos && (
-                  <small id="erro-objetivos" className="formulario-submissao__erro-campo">
-                    {erros.objetivos}
-                  </small>
-                )}
-              </label>
-              {formulario.tipo && (
-                <label className="formulario-submissao__campo-largo">
-                  {tiposProjeto[formulario.tipo].campoEspecifico} <span aria-hidden="true">*</span>
-                  <textarea
-                    required
-                    aria-invalid={Boolean(erros.informacoesEspecificas)}
-                    aria-describedby={erroDoCampo('informacoesEspecificas')}
-                    rows="5"
-                    value={formulario.informacoesEspecificas}
-                    onChange={(e) => alterar('informacoesEspecificas', e.target.value)}
-                  />
-                  {erros.informacoesEspecificas && (
-                    <small
-                      id="erro-informacoesEspecificas"
-                      className="formulario-submissao__erro-campo"
-                    >
-                      {erros.informacoesEspecificas}
-                    </small>
-                  )}
-                </label>
-              )}
-            </div>
-          </section>
+          <EtapaSubmissaoProjeto
+            formulario={formulario}
+            erros={erros}
+            alterar={alterar}
+            erroDoCampo={erroDoCampo}
+          />
         )}
 
         {etapa === 2 && (
-          <section className="formulario-submissao__secao" aria-labelledby="dados-equipe">
-            <div className="formulario-submissao__cabecalho">
-              <span>03</span>
-              <div>
-                <h2 id="dados-equipe">Equipe e orientação</h2>
-                <p>Associe o orientador e os demais autores da produção.</p>
-              </div>
-            </div>
-            <div className="formulario-submissao__grade">
-              <label className="formulario-submissao__campo-largo">
-                Professor orientador <span aria-hidden="true">*</span>
-                <select
-                  required
-                  disabled={!formulario.curso}
-                  aria-invalid={Boolean(erros.orientador)}
-                  aria-describedby={erroDoCampo('orientador')}
-                  value={formulario.orientador}
-                  onChange={(e) => alterar('orientador', e.target.value)}
-                >
-                  <option value="">
-                    {formulario.curso
-                      ? 'Selecione o professor orientador'
-                      : 'Selecione o curso primeiro'}
-                  </option>
-                  {listaOrientadores(formulario.curso).map((orientador) => (
-                    <option key={orientador.id} value={orientador.nome}>
-                      {orientador.nome}
-                    </option>
-                  ))}
-                </select>
-                {formulario.curso && !listaOrientadores(formulario.curso).length && (
-                  <small className="formulario-submissao__erro-campo">
-                    Não há professor disponível para este curso no momento.
-                  </small>
-                )}
-                {erros.orientador && (
-                  <small id="erro-orientador" className="formulario-submissao__erro-campo">
-                    {erros.orientador}
-                  </small>
-                )}
-              </label>
-              <label className="formulario-submissao__campo-largo">
-                Adicionar disciplina
-                <input
-                  placeholder="Digite e pressione Enter"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      adicionarDisciplina(e.currentTarget.value)
-                      e.currentTarget.value = ''
-                    }
-                  }}
-                />
-              </label>
-              <div className="etiquetas-submissao formulario-submissao__campo-largo">
-                {formulario.disciplinas.map((disciplina) => (
-                  <button
-                    key={disciplina}
-                    type="button"
-                    onClick={() =>
-                      alterar(
-                        'disciplinas',
-                        formulario.disciplinas.filter((item) => item !== disciplina),
-                      )
-                    }
-                  >
-                    {disciplina} ×
-                  </button>
-                ))}
-              </div>
-              <div className="autores-submissao formulario-submissao__campo-largo">
-                <div className="autores-submissao__cabecalho">
-                  <strong>Coautores</strong>
-                  <button type="button" className="botao-secundario" onClick={adicionarAutor}>
-                    Adicionar coautor
-                  </button>
-                </div>
-                {formulario.autores.map((autor, indice) => (
-                  <div className="autores-submissao__linha" key={indice}>
-                    <input
-                      placeholder="Nome do coautor"
-                      aria-label={`Nome do coautor ${indice + 1}`}
-                      value={autor.nome}
-                      onChange={(e) => alterarAutor(indice, 'nome', e.target.value)}
-                    />
-                    <input
-                      placeholder="E-mail"
-                      type="email"
-                      aria-label={`E-mail do coautor ${indice + 1}`}
-                      value={autor.email}
-                      onChange={(e) => alterarAutor(indice, 'email', e.target.value)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+          <EtapaSubmissaoEquipe
+            formulario={formulario}
+            erros={erros}
+            alterar={alterar}
+            erroDoCampo={erroDoCampo}
+            listaOrientadores={listaOrientadores}
+            adicionarAutor={adicionarAutor}
+            removerAutor={removerAutor}
+            alterarAutor={alterarAutor}
+            adicionarDisciplina={adicionarDisciplina}
+            disciplinasDisponiveis={formulario.curso ? disciplinasCurso : []}
+            carregandoDisciplinas={carregandoDisciplinas}
+          />
         )}
 
         {etapa === 3 && (
-          <section className="formulario-submissao__secao" aria-labelledby="dados-documentos">
-            <div className="formulario-submissao__cabecalho">
-              <span>04</span>
-              <div>
-                <h2 id="dados-documentos">Documentos e revisão</h2>
-                <p>
-                  {formulario.tipo === 'TCC'
-                    ? 'Informe o link do repositório e confirme a publicação.'
-                    : 'Anexe o material e confirme as condições de publicação.'}
-                </p>
-              </div>
-            </div>
-            {formulario.tipo === 'TCC' ? (
-              <div className="formulario-submissao__grade">
-                <label className="formulario-submissao__campo-largo">
-                  Link do repositório Memória <span aria-hidden="true">*</span>
-                  <input
-                    required
-                    type="url"
-                    aria-invalid={Boolean(erros.linkMemoria)}
-                    aria-describedby={erroDoCampo('linkMemoria')}
-                    placeholder="https://memoria.ifsc.edu.br/..."
-                    value={formulario.linkMemoria}
-                    onChange={(e) => alterar('linkMemoria', e.target.value)}
-                  />
-                  {erros.linkMemoria && (
-                    <small id="erro-linkMemoria" className="formulario-submissao__erro-campo">
-                      {erros.linkMemoria}
-                    </small>
-                  )}
-                </label>
-                <p className="formulario-submissao__privacidade formulario-submissao__campo-largo">
-                  O TCC deve estar depositado no repositório institucional Memória antes do envio.
-                  Informe a URL pública do trabalho.
-                </p>
-              </div>
-            ) : (
-              <div className="documentos-submissao">
-                {(tiposProjeto[formulario.tipo]?.documentos || []).map((documento) => {
-                  const arquivo = formulario.documentos[documento.id]
-                  return (
-                    <label className="campo-arquivo" key={documento.id}>
-                      <span className="campo-arquivo__icone" aria-hidden="true">
-                        ↑
-                      </span>
-                      <strong>
-                        {arquivo
-                          ? Array.isArray(arquivo)
-                            ? `${arquivo.length} arquivo(s)`
-                            : arquivo.name
-                          : documento.nome}
-                      </strong>
-                      <small>
-                        {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} ·{' '}
-                        {documento.multiplo ? 'vários arquivos' : 'um PDF'}
-                      </small>
-                      <input
-                        required={documento.obrigatorio}
-                        type="file"
-                        multiple={documento.multiplo}
-                        accept="application/pdf,.pdf"
-                        aria-invalid={Boolean(erros[documento.id])}
-                        aria-describedby={erroDoCampo(documento.id)}
-                        onChange={(e) => alterarDocumentos(documento, e.target.files)}
-                      />
-                      {erros[documento.id] && (
-                        <small
-                          id={`erro-${documento.id}`}
-                          className="formulario-submissao__erro-campo"
-                        >
-                          {erros[documento.id]}
-                        </small>
-                      )}
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-            <label
-              className={`consentimento-submissao ${
-                formulario.aceitaPublicacao ? 'consentimento-submissao--ativo' : ''
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={formulario.aceitaPublicacao}
-                aria-describedby={erroDoCampo('aceitaPublicacao')}
-                onChange={(e) => alterar('aceitaPublicacao', e.target.checked)}
-              />
-              <span className="consentimento-submissao__texto">
-                <strong>Autorizar publicação</strong>
-                <span>
-                  O projeto poderá ser publicado no portal somente se for aprovado pelo professor
-                  orientador.
-                </span>
-              </span>
-            </label>
-            {erros.aceitaPublicacao && (
-              <small id="erro-aceitaPublicacao" className="formulario-submissao__erro-campo">
-                {erros.aceitaPublicacao}
-              </small>
-            )}
-          </section>
+          <EtapaSubmissaoDocumentos
+            formulario={formulario}
+            erros={erros}
+            alterar={alterar}
+            erroDoCampo={erroDoCampo}
+            alterarDocumentos={alterarDocumentos}
+          />
         )}
 
         {erro && (

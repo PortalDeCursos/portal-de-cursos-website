@@ -31,14 +31,10 @@ desktop.ini
 *.sln
 *.sw?
 
-# Documentação, scripts e arquivos auxiliares
-/docs/
+# Scripts e arquivos auxiliares
 /scripts/
-CHANGELOG.md
-CONTRIBUTING.md
 .husky/
 commitlint.config.*
-.prettierrc*
 /verificacoes/
 /DESIGN-E-REGRAS.md
 /PENDENCIAS-MINIMUNDO.md

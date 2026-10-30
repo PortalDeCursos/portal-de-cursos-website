@@ -1,6 +1,6 @@
 import { ErroApi, obterBaseApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 
 export function formatarPerfilProfessor(item) {
   return {

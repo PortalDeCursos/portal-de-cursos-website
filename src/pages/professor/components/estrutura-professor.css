@@ -136,10 +136,10 @@
 .painel-navegacao nav a[aria-current] {
   border-color: color-mix(in srgb, var(--azul) 22%, var(--borda));
   background: color-mix(in srgb, var(--azul) 9%, var(--superficie));
-  color: #003b8f;
+  color: var(--azul-escuro);
 }
 :root[data-tema='escuro'] .painel-navegacao nav a[aria-current] {
-  color: #a9c8ff;
+  color: var(--azul-escuro);
   background: color-mix(in srgb, var(--azul) 22%, var(--superficie));
 }
 .painel-navegacao nav a[aria-current] small {
@@ -149,7 +149,7 @@
 .painel-navegacao nav a[aria-current] .painel-navegacao__icone {
   border-color: color-mix(in srgb, var(--azul) 28%, var(--borda));
   background: var(--azul);
-  color: #fff;
+  color: var(--branco);
 }
 .painel-navegacao__nota {
   margin: auto 10px 0;
@@ -201,21 +201,21 @@
   gap: 8px;
   min-height: 44px;
   padding: 10px 16px;
-  border: 1px solid #ffffff40;
+  border: 1px solid color-mix(in srgb, var(--branco) 25%, transparent);
   border-radius: 8px;
-  background: #001b5830;
-  color: #fff;
+  background: color-mix(in srgb, var(--marinho) 19%, transparent);
+  color: var(--branco);
   font-size: 14px;
   cursor: pointer;
 }
 .barra-professor__acoes a:hover,
 .barra-professor__acoes button:hover {
-  background: #001b5860;
+  background: color-mix(in srgb, var(--marinho) 38%, transparent);
 }
 .acesso-rodape {
   text-align: center;
   padding: 20px 24px;
-  color: #fff;
+  color: var(--branco);
   font-size: 13px;
 }
 @media (max-width: 1000px) {
@@ -374,13 +374,13 @@
   left: -12px;
   width: 3px;
   border-radius: 0 2px 2px 0;
-  background: var(--azul-marca, #3b82f6);
+  background: var(--azul-marca, var(--azul-vivo));
   content: '';
 }
 
 .painel-navegacao nav a[aria-current] .painel-navegacao__icone {
   background: transparent;
-  color: var(--azul-marca, #3b82f6);
+  color: var(--azul-marca, var(--azul-vivo));
 }
 
 .painel-navegacao__nota {
@@ -389,13 +389,13 @@
 }
 
 :root[data-tema='escuro'] .painel-navegacao {
-  border-right-color: #1f2126;
-  background: #000;
+  border-right-color: var(--borda-suave);
+  background: var(--preto);
 }
 
 :root[data-tema='escuro'] .painel-navegacao nav a[aria-current] {
-  background: #141518;
-  color: #fff;
+  background: var(--superficie-escura);
+  color: var(--branco);
 }
 
 @media (max-width: 1000px) {

@@ -1,4 +1,4 @@
-export const VERSAO_PADRAO_API = 'v1'
+export const VERSAO_PADRAO_API = ''
 
 let versaoAtiva = import.meta.env.VITE_API_VERSAO || VERSAO_PADRAO_API
 
@@ -7,7 +7,7 @@ export function obterVersaoApi() {
 }
 
 export function definirVersaoApi(novaVersao) {
-  if (typeof novaVersao === 'string' && novaVersao.trim()) {
+  if (typeof novaVersao === 'string') {
     versaoAtiva = novaVersao.trim()
   }
 }
@@ -19,26 +19,17 @@ export class ErroApi extends Error {
     this.status = status
     this.dados = dados
     this.causa = causa
+    this.detalhe = dados?.detail || null
+    this.titulo = dados?.title || null
+    this.errosValidacao = dados?.errors || null
   }
 }
 
 export function obterBaseApi(modulo = 'usuarios', versao = versaoAtiva) {
-  const customizada = import.meta.env.VITE_API_AUTENTICACAO
-  if (customizada && modulo === 'usuarios') {
-    try {
-      const url = new URL(customizada, window.location.origin)
-      url.pathname = url.pathname.replace(/\/auth\/login$/, '')
-      url.search = ''
-      url.hash = ''
-      return url.href.replace(/\/$/, '')
-    } catch {
-      /* Segue com o caminho padrão versionado abaixo */
-    }
-  }
-
   const basePortal = import.meta.env.BASE_URL || '/'
   const baseLimpa = basePortal.endsWith('/') ? basePortal : `${basePortal}/`
-  return `${window.location.origin}${baseLimpa}api/${versao}/${modulo}`
+  const segmentoVersao = versao ? `${versao}/` : ''
+  return `${window.location.origin}${baseLimpa}api/${segmentoVersao}${modulo}`
 }
 
 export async function requisitarApi(caminhoCompletoOuRelativo, opcoes = {}) {
@@ -106,24 +97,41 @@ export async function requisitarApi(caminhoCompletoOuRelativo, opcoes = {}) {
   }
 
   if (!resposta.ok) {
-    let mensagem = 'Ocorreu um erro ao comunicar com a API.'
-    if (resposta.status < 500) {
-      mensagem =
-        (typeof dados?.detail === 'string' && dados.detail) ||
-        (typeof dados?.title === 'string' && dados.title) ||
-        mensagem
-    }
+    // Tratamento global para 401: notifica aplicação para limpar sessão e redirecionar ao login
     if (resposta.status === 401) {
-      mensagem = 'Sua autenticação não foi aceita. Verifique seus dados ou faça login novamente.'
+      try {
+        sessionStorage.removeItem('portal-cursos-sessao')
+        window.dispatchEvent(new CustomEvent('portal-sessao-expirada'))
+      } catch {
+        /* storage bloqueado */
+      }
+    }
+
+    let mensagem = 'Ocorreu um erro ao comunicar com a API.'
+
+    if (dados?.detail && typeof dados.detail === 'string') {
+      mensagem = dados.detail
+    } else if (dados?.title && typeof dados.title === 'string') {
+      mensagem = dados.title
+    }
+
+    if (dados?.errors && typeof dados.errors === 'object' && Object.keys(dados.errors).length > 0) {
+      const msgs = Object.values(dados.errors)
+      mensagem = msgs.join('. ')
+    }
+
+    if (resposta.status === 401) {
+      mensagem = 'Sua autenticação não foi aceita. Faça login novamente.'
     } else if (resposta.status === 403) {
       mensagem = 'Sua conta não tem permissão para realizar esta operação.'
-    } else if (resposta.status === 404) {
+    } else if (resposta.status === 404 && !dados?.detail) {
       mensagem = 'O recurso solicitado não foi encontrado.'
     } else if (resposta.status === 429) {
       mensagem = 'Muitas requisições. Aguarde um momento antes de tentar novamente.'
-    } else if (resposta.status >= 500) {
+    } else if (resposta.status >= 500 && !dados?.detail) {
       mensagem = 'O serviço está temporariamente indisponível. Tente novamente em breve.'
     }
+
     throw new ErroApi(mensagem, { status: resposta.status, dados })
   }
 

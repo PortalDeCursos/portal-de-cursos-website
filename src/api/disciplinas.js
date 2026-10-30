@@ -1,10 +1,10 @@
 import { requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 const enderecoDisciplinas =
   import.meta.env.VITE_API_DISCIPLINAS_URL ||
   import.meta.env.VITE_API_DISCIPLINAS ||
-  `${import.meta.env.BASE_URL}api/v1/disciplinas`
+  `${import.meta.env.BASE_URL}api/disciplinas`
 
 export async function listarDisciplinasPorCurso(cursoId, token, sinal) {
   const query = new URLSearchParams({ cursoId: String(cursoId) })
@@ -35,6 +35,22 @@ export async function listarDisciplinasPorCurso(cursoId, token, sinal) {
   }))
 }
 
+export async function filtrarDisciplinas(filtros = {}, token, sinal) {
+  const query = new URLSearchParams()
+  if (filtros.cursoId) query.set('cursoId', String(filtros.cursoId))
+  if (filtros.semestre) query.set('semestre', String(filtros.semestre))
+  if (filtros.obrigatoria !== undefined && filtros.obrigatoria !== null) {
+    query.set('obrigatoria', String(filtros.obrigatoria))
+  }
+  const dados = await requisitarApi(`${enderecoDisciplinas}/filtros?${query}`, {
+    metodo: 'GET',
+    token,
+    sinal,
+  })
+  if (!Array.isArray(dados)) return []
+  return dados
+}
+
 export async function cadastrarDisciplina(token, dados, sinal) {
   return requisitarApi(enderecoDisciplinas, { metodo: 'POST', corpo: dados, token, sinal })
 }
@@ -59,6 +75,7 @@ export async function excluirDisciplina(token, id, sinal) {
 export const moduloDisciplinas = {
   versao: VERSAO,
   listarPorCurso: listarDisciplinasPorCurso,
+  filtrar: filtrarDisciplinas,
   cadastrar: cadastrarDisciplina,
   atualizar: atualizarDisciplina,
   excluir: excluirDisciplina,

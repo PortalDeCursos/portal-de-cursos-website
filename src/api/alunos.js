@@ -1,6 +1,6 @@
 import { obterBaseApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 
 function urlAlunos() {
   return `${obterBaseApi('usuarios', VERSAO)}/alunos`

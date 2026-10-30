@@ -116,18 +116,18 @@
 
 .pagina-painel-aluno .status--em-análise,
 .pagina-painel-aluno .status--aguardando-orientador {
-  color: #855f00;
-  background: #fff3c4;
+  color: var(--aviso);
+  background: var(--aviso-suave);
 }
 
 .pagina-painel-aluno .status--aprovado {
-  color: #17633d;
-  background: #dff3e7;
+  color: var(--verde);
+  background: var(--sucesso-suave);
 }
 
 .pagina-painel-aluno .status--recusado {
-  color: #9c3434;
-  background: #fde8e8;
+  color: var(--erro-escuro);
+  background: var(--erro-suave);
 }
 
 @media (max-width: 1000px) {
