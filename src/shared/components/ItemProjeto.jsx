@@ -4,7 +4,7 @@ import '@/shared/styles/projetos.css'
 export default function ItemProjeto({ projeto }) {
   return (
     <article className="item-projeto">
-      <div>
+      <div className="item-projeto__corpo">
         <div className="item-projeto__tipo">
           <span className="etiqueta">{projeto.tipo}</span>
           <span>• Curso {projeto.curso}</span>
