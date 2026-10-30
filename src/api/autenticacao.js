@@ -1,6 +1,23 @@
 import { ErroApi, obterBaseApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
+
+export function decodificarPayloadJwt(token) {
+  try {
+    const partes = token.split('.')
+    if (partes.length !== 3) return null
+    const base64 = partes[1].replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    )
+    return JSON.parse(jsonPayload)
+  } catch {
+    return null
+  }
+}
 
 export async function autenticar(email, senha, sinal) {
   if (!email || !senha) {
@@ -19,8 +36,9 @@ export async function autenticar(email, senha, sinal) {
     })
   } catch (erro) {
     if (erro.status === 400 || erro.status === 401 || erro.status === 403) {
-      throw new ErroApi('Não foi possível entrar. Confira seu e-mail e sua senha.', {
+      throw new ErroApi(erro.message || 'Não foi possível entrar. Confira seu e-mail e sua senha.', {
         status: erro.status,
+        dados: erro.dados,
         causa: erro,
       })
     }
@@ -33,17 +51,23 @@ export async function autenticar(email, senha, sinal) {
     !resposta.token ||
     typeof resposta.expiracao !== 'number' ||
     !Number.isFinite(resposta.expiracao) ||
-    resposta.expiracao <= 0 ||
-    resposta.expiracao > 86400000
+    resposta.expiracao <= 0
   ) {
     throw new ErroApi('Não foi possível confirmar sua sessão. Resposta inválida do servidor.', {
       status: 502,
     })
   }
 
+  // Extrai a role primariamente do claim "role" do JWT; fallback para o corpo da resposta
+  const payloadJwt = decodificarPayloadJwt(resposta.token)
+  const roleJwt = payloadJwt?.role?.replace(/^ROLE_/, '')
+  const roleFinal = roleJwt || resposta.role || resposta.tipoUsuario || 'ALUNO'
+
   return {
     token: resposta.token,
-    tipoUsuario: resposta.tipoUsuario || resposta.role,
+    role: roleFinal,
+    tipoUsuario: roleFinal,
+    email: payloadJwt?.sub || email,
     expiraEm: Date.now() + resposta.expiracao,
     expiracao: resposta.expiracao,
   }
@@ -52,6 +76,7 @@ export async function autenticar(email, senha, sinal) {
 export const moduloAutenticacao = {
   versao: VERSAO,
   autenticar,
+  decodificarPayloadJwt,
 }
 
 export default moduloAutenticacao

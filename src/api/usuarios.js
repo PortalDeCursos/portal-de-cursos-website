@@ -1,10 +1,10 @@
 import { ErroApi, obterBaseApi, requisitarApi } from './cliente.js'
 
-export const VERSAO = 'v1'
+export const VERSAO = ''
 
 export async function consultarUsuarios(token, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
-  return requisitarApi(`${base}/usuarios`, {
+  return requisitarApi(`${base}/admin`, {
     metodo: 'GET',
     token,
     sinal,
@@ -16,12 +16,12 @@ export async function buscarUsuarios(token, filtros = {}, sinal) {
   const parametros = new URLSearchParams()
   if (filtros.nome?.trim()) parametros.set('nome', filtros.nome.trim())
   const query = parametros.size ? `?${parametros}` : ''
-  return requisitarApi(`${base}/usuarios/buscar${query}`, { metodo: 'GET', token, sinal })
+  return requisitarApi(`${base}/admin/buscar${query}`, { metodo: 'GET', token, sinal })
 }
 
 export async function obterUsuarioPorId(token, id, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
-  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, {
+  return requisitarApi(`${base}/admin/${encodeURIComponent(id)}`, {
     metodo: 'GET',
     token,
     sinal,
@@ -30,12 +30,12 @@ export async function obterUsuarioPorId(token, id, sinal) {
 
 export async function cadastrarUsuario(dados, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
-  return requisitarApi(`${base}/usuarios`, { metodo: 'POST', corpo: dados, sinal })
+  return requisitarApi(`${base}/admin`, { metodo: 'POST', corpo: dados, sinal })
 }
 
 export async function atualizarUsuario(token, id, dados, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
-  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, {
+  return requisitarApi(`${base}/admin/${encodeURIComponent(id)}`, {
     metodo: 'PUT',
     corpo: dados,
     token,
@@ -45,7 +45,7 @@ export async function atualizarUsuario(token, id, dados, sinal) {
 
 export async function excluirUsuario(token, id, sinal) {
   const base = obterBaseApi('usuarios', VERSAO)
-  return requisitarApi(`${base}/usuarios/${encodeURIComponent(id)}`, {
+  return requisitarApi(`${base}/admin/${encodeURIComponent(id)}`, {
     metodo: 'DELETE',
     token,
     sinal,
@@ -57,7 +57,7 @@ export async function identificarConta(token, email, sinal) {
   const corresponde = (conta) =>
     typeof conta?.email === 'string' && conta.email.toLowerCase() === email.toLowerCase()
 
-  // Este endpoint aceita contas autenticadas; /usuarios exige papel ADMIN.
+  // Consulta lista de professores para saber se a conta é de professor ou coordenador
   let listaProfessores
   try {
     listaProfessores = await requisitarApi(`${base}/professores/buscar`, {
@@ -66,52 +66,25 @@ export async function identificarConta(token, email, sinal) {
       sinal,
     })
   } catch (falhaProf) {
-    throw new ErroApi('Não foi possível consultar o perfil desta conta.', {
-      status: falhaProf.status,
-      causa: falhaProf,
-    })
+    if (falhaProf.status === 401 || falhaProf.status === 403) {
+      throw falhaProf
+    }
   }
 
   if (Array.isArray(listaProfessores)) {
     const professor = listaProfessores.find(
       (item) =>
         corresponde(item.usuario) &&
-        ['PROFESSOR', 'COORDENADOR'].includes(item.usuario.tipoUsuario),
+        ['PROFESSOR', 'COORDENADOR'].includes(item.usuario?.tipoUsuario),
     )
-    const aluno = listaProfessores.find(
-      (item) => corresponde(item.usuario) && item.usuario.tipoUsuario === 'ALUNO',
-    )
-    if (aluno) {
-      return {
-        tipoUsuario: 'ALUNO',
-        usuario: {
-          id: aluno.usuario.id,
-          alunoId: aluno.id,
-          cursoId: aluno.cursoId ?? aluno.curso?.id,
-          nome: aluno.usuario.nome || email,
-          email: aluno.usuario.email,
-        },
-      }
-    }
     if (professor) {
-      const cursoId = professor.cursoId ?? professor.curso?.id ?? professor.curso?.identificador
-      if (professor.usuario.tipoUsuario === 'COORDENADOR' && !cursoId) {
-        throw new ErroApi('A conta de coordenação não possui um curso vinculado.', { status: 403 })
-      }
+      const cursoId = professor.cursoId
       return {
         tipoUsuario: professor.usuario.tipoUsuario,
         usuario: {
           id: professor.usuario.id,
           professorId: professor.id,
           cursoId,
-          curso: professor.curso
-            ? {
-                id: professor.curso.id,
-                identificador: professor.curso.identificador,
-                nome: professor.curso.nome,
-                sigla: professor.curso.sigla,
-              }
-            : null,
           nome: professor.usuario.nome || email,
           email: professor.usuario.email,
           titulacao: professor.titulacao || '',
@@ -121,18 +94,18 @@ export async function identificarConta(token, email, sinal) {
     }
   }
 
+  // Tenta consultar admin
   let listaUsuarios
   try {
-    listaUsuarios = await requisitarApi(`${base}/usuarios`, {
+    listaUsuarios = await requisitarApi(`${base}/admin`, {
       metodo: 'GET',
       token,
       sinal,
     })
   } catch (falha) {
-    throw new ErroApi('Não foi possível confirmar as permissões da conta. Tente novamente.', {
-      status: falha.status,
-      causa: falha,
-    })
+    if (falha.status === 401 || falha.status === 403) {
+      // Ignora e tenta perfil de aluno abaixo
+    }
   }
 
   if (Array.isArray(listaUsuarios)) {
@@ -149,7 +122,15 @@ export async function identificarConta(token, email, sinal) {
     }
   }
 
-  throw new ErroApi('Esta conta não possui acesso à área de professor ou de administração.', {
+  // Tenta aluno
+  try {
+    const perfilAluno = await identificarAluno(token, email, sinal)
+    if (perfilAluno) return perfilAluno
+  } catch {
+    // Aluno não encontrado
+  }
+
+  throw new ErroApi('Esta conta não possui perfil correspondente cadastrado.', {
     status: 403,
   })
 }
@@ -192,6 +173,7 @@ export const moduloUsuarios = {
   atualizar: atualizarUsuario,
   excluir: excluirUsuario,
   identificarConta,
+  identificarAluno,
 }
 
 export default moduloUsuarios
