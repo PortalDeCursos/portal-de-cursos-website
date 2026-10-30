@@ -4,18 +4,43 @@ import { basePortal, enderecoPrivado } from '../../app/rotas.js'
 
 const filtros = ['Todas', 'Aguardando Orientador', 'Em análise', 'Aprovado', 'Recusado']
 
+function normalizar(txt) {
+  return (txt || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
 function orientaSubmissao(item, usuario) {
-  if (item.orientadorId && usuario?.professorId) {
-    return String(item.orientadorId) === String(usuario.professorId)
+  const idUsuario = usuario?.professorId || usuario?.id
+  if (item.orientadorId && idUsuario && String(item.orientadorId) === String(idUsuario)) {
+    return true
   }
-  const nomeOrientador = item.orientador?.toLocaleLowerCase('pt-BR') || ''
-  const nomeUsuario = usuario?.nome?.toLocaleLowerCase('pt-BR') || ''
-  return Boolean(nomeOrientador && nomeUsuario && nomeOrientador.includes(nomeUsuario))
+  const nomeOrientador = normalizar(item.orientador)
+  const nomeUsuario = normalizar(usuario?.nome)
+  if (!nomeOrientador || !nomeUsuario) return true
+  return nomeOrientador.includes(nomeUsuario) || nomeUsuario.includes(nomeOrientador)
+}
+
+function extrairIniciais(nome) {
+  if (!nome) return 'AL'
+  const partes = nome.trim().split(/\s+/)
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+}
+
+function nomeDoAutor(item) {
+  if (item.autor) return item.autor
+  const primeiro = Array.isArray(item.autores) ? item.autores[0] : null
+  if (typeof primeiro === 'string') return primeiro
+  return primeiro?.nome || 'Aluno'
 }
 
 export default function PaginaProfessor({ submissoes, usuario }) {
   const [filtro, definirFiltro] = useState('Todas')
   const [tipoFiltro, definirTipoFiltro] = useState('Todos')
+
   const orientacoes = useMemo(
     () =>
       submissoes.filter(
@@ -37,7 +62,7 @@ export default function PaginaProfessor({ submissoes, usuario }) {
     [filtro, orientacoes, tipoFiltro],
   )
 
-  const tipos = ['Todos', ...new Set(orientacoes.map((item) => item.tipo))]
+  const tipos = ['Todos', ...new Set(orientacoes.map((item) => item.tipo).filter(Boolean))]
 
   return (
     <main id="conteudo" className="limite pagina-professor">
@@ -57,7 +82,6 @@ export default function PaginaProfessor({ submissoes, usuario }) {
       <div className="pagina-professor__layout">
         <aside className="pagina-professor__filtro-painel" aria-label="Filtros de submissões">
           <div>
-            <span className="pagina-professor__filtro-etiqueta">Visualização</span>
             <strong>Filtrar submissões</strong>
             <p>Encontre projetos por tipo ou etapa da orientação.</p>
           </div>
@@ -81,10 +105,7 @@ export default function PaginaProfessor({ submissoes, usuario }) {
           </nav>
           <label className="pagina-professor__tipo">
             <span>Tipo de produção</span>
-            <select
-              value={tipoFiltro}
-              onChange={(evento) => definirTipoFiltro(evento.target.value)}
-            >
+            <select value={tipoFiltro} onChange={(evento) => definirTipoFiltro(evento.target.value)}>
               {tipos.map((tipo) => (
                 <option value={tipo} key={tipo}>
                   {tipo}
@@ -96,41 +117,66 @@ export default function PaginaProfessor({ submissoes, usuario }) {
 
         <section className="pagina-professor__resultados" aria-label="Feed de submissões">
           <div className="pagina-professor__feed-cabecalho">
-            <strong>{resultados.length} submissões</strong>
+            <strong>
+              {resultados.length} {resultados.length === 1 ? 'submissão' : 'submissões'}
+            </strong>
             <span>mais recentes</span>
           </div>
+
           <div className="lista-submissoes">
             {resultados.map((item) => {
-              const status = item.status
+              const status = item.status || 'Aguardando Orientador'
+              const nomeAutor = nomeDoAutor(item)
+              const totalCoautores = Array.isArray(item.autores) ? Math.max(item.autores.length - 1, 0) : 0
+              const totalAnexos = item.documentos?.length || 0
+
               return (
                 <article className="submissao-feed" key={item.identificador}>
                   <a
                     href={enderecoPrivado(`professor/submissao/${item.identificador}`)}
                     className="submissao-feed__gatilho"
                   >
-                    <span className="submissao-feed__marcador" aria-hidden="true" />
+                    <span className="cabecalho__iniciais submissao-feed__avatar" aria-hidden="true">
+                      {extrairIniciais(nomeAutor)}
+                    </span>
+
                     <span className="submissao-feed__conteudo">
                       <span className="submissao-feed__meta">
-                        {item.autor} enviou · {item.enviadoEm}
+                        <span className="submissao-feed__autor-nome">{nomeAutor}</span>
+                        {totalCoautores > 0 && (
+                          <span className="submissao-feed__coautores-badge">
+                            +{totalCoautores} {totalCoautores === 1 ? 'coautor' : 'coautores'}
+                          </span>
+                        )}
+                        <span className="submissao-feed__separador" aria-hidden="true">
+                          ·
+                        </span>
+                        <span>enviou {item.enviadoEm ? `em ${item.enviadoEm}` : 'recentemente'}</span>
                       </span>
-                      <strong>{item.titulo}</strong>
+
+                      <h2 className="submissao-feed__titulo">{item.titulo}</h2>
+
                       <span className="submissao-feed__rodape">
-                        <span
-                          className={`status status--${status.toLowerCase().replace(' ', '-')}`}
-                        >
+                        <span className={`status status--${status.toLowerCase().replace(/\s+/g, '-')}`}>
                           {status}
                         </span>
-                        <span>
-                          {item.tipo} · {item.curso}
-                        </span>
+                        {item.tipo && <span className="submissao-feed__chip">{item.tipo}</span>}
+                        {item.curso && <span className="submissao-feed__chip">{item.curso}</span>}
+                        {totalAnexos > 0 && (
+                          <span className="submissao-feed__chip">
+                            {totalAnexos} {totalAnexos === 1 ? 'anexo' : 'anexos'}
+                          </span>
+                        )}
                       </span>
                     </span>
-                    <span className="submissao-feed__expandir">Abrir projeto</span>
+
+                    <span className="submissao-feed__expandir">Abrir projeto →</span>
                   </a>
                 </article>
               )
             })}
           </div>
+
           {!resultados.length && (
             <div className="pagina-professor__vazio">
               <h2>Nenhuma submissão neste filtro</h2>
