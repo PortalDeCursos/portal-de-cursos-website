@@ -795,13 +795,15 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             )}
             {etapa < etapas.length - 1 ? (
               <button
-                data-testid="submissao-continuar className="botao-primario" type="button" onClick={avancar}>
+                data-testid="submissao-continuar"
+                className="botao-primario" type="button" onClick={avancar}>
                 Continuar para{' '}
                 {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
               </button>
             ) : (
               <button
-                data-testid="submissao-enviar className="botao-primario" type="submit" disabled={enviando}>
+                data-testid="submissao-enviar"
+                className="botao-primario" type="submit" disabled={enviando}>
                 {enviando ? 'Salvando projeto…' : 'Enviar projeto'}
               </button>
             )}
