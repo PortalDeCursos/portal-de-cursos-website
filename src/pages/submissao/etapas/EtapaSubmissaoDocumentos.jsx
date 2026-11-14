@@ -106,6 +106,7 @@ export default function EtapaSubmissaoDocumentos({
                     Escolher arquivo
                   </span>
                   <input
+                    data-testid={`arquivo-${documento.id}`}
                     id={idDaZona}
                     required={documento.obrigatorio}
                     type="file"
@@ -183,6 +184,7 @@ export default function EtapaSubmissaoDocumentos({
         }`}
       >
         <input
+          data-testid="autorizacao-publicacao-submissao"
           type="checkbox"
           checked={formulario.aceitaPublicacao}
           aria-describedby={erroDoCampo('aceitaPublicacao')}
