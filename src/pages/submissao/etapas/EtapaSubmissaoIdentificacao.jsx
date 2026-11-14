@@ -55,6 +55,7 @@ export default function EtapaSubmissaoIdentificacao({
         <label className="formulario-submissao__campo-largo">
           Curso <span aria-hidden="true">*</span>
           <select
+            data-testid="curso-submissao"
             required
             aria-invalid={Boolean(erros.curso)}
             aria-describedby={erroDoCampo('curso')}
