@@ -581,6 +581,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
               Acompanhar submissão
             </a>
             <button
+              data-testid="submissao-novo-projeto"
               className="botao-secundario"
               type="button"
               onClick={() => {
@@ -793,12 +794,14 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
               </button>
             )}
             {etapa < etapas.length - 1 ? (
-              <button className="botao-primario" type="button" onClick={avancar}>
+              <button
+                data-testid="submissao-continuar className="botao-primario" type="button" onClick={avancar}>
                 Continuar para{' '}
                 {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
               </button>
             ) : (
-              <button className="botao-primario" type="submit" disabled={enviando}>
+              <button
+                data-testid="submissao-enviar className="botao-primario" type="submit" disabled={enviando}>
                 {enviando ? 'Salvando projeto…' : 'Enviar projeto'}
               </button>
             )}
