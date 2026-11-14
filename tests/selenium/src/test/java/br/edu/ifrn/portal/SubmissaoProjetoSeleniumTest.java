@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Properties;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,9 +27,10 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 class SubmissaoProjetoSeleniumTest {
-  private static final String PORTAL_URL = env("PORTAL_URL", "http://localhost:5173");
-  private static final String EMAIL = requiredEnv("SELENIUM_EMAIL");
-  private static final String SENHA = requiredEnv("SELENIUM_PASSWORD");
+  private static final Properties CONFIGURACAO = carregarConfiguracao();
+  private static final String PORTAL_URL = valor("portal.url", "http://localhost:5173");
+  private static final String EMAIL = obrigatorio("aluno.email");
+  private static final String SENHA = obrigatorio("aluno.senha");
 
   private WebDriver driver;
   private LoginPage login;
@@ -53,10 +53,9 @@ class SubmissaoProjetoSeleniumTest {
 
   @BeforeEach
   void iniciarNavegador() throws Exception {
-    verificarPortalEGateway();
     ChromeOptions options = new ChromeOptions();
     options.enableBiDi();
-    String executavelNavegador = System.getenv("BROWSER_BINARY");
+    String executavelNavegador = valor("navegador.executavel", "");
     if (executavelNavegador != null && !executavelNavegador.isBlank()) {
       options.setBinary(executavelNavegador);
     }
@@ -71,7 +70,7 @@ class SubmissaoProjetoSeleniumTest {
             "portal-selenium-" + java.util.UUID.randomUUID()).toAbsolutePath());
 
     try {
-      String executavelDriver = System.getenv("CHROMEDRIVER_PATH");
+      String executavelDriver = valor("navegador.driver", "");
       if (executavelDriver == null || executavelDriver.isBlank()) {
         driver = new org.openqa.selenium.chrome.ChromeDriver(options);
       } else {
@@ -85,7 +84,7 @@ class SubmissaoProjetoSeleniumTest {
       driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
     } catch (Exception falha) {
       throw new IllegalStateException(
-          "Não foi possível iniciar o navegador Selenium. Confira o navegador e, se necessário, configure BROWSER_BINARY e CHROMEDRIVER_PATH.",
+          "Não foi possível iniciar o navegador Selenium. Confira navegador.executavel e navegador.driver em selenium.local.properties.",
           falha);
     }
 
@@ -136,52 +135,31 @@ class SubmissaoProjetoSeleniumTest {
     assertFalse(submissao.mostraErro());
   }
 
-  private static String env(String key, String fallback) {
-    String value = System.getenv(key);
-    return value == null || value.isBlank() ? fallback : value;
+  private static Properties carregarConfiguracao() {
+    Properties properties = new Properties();
+    Path arquivo = Path.of("selenium.local.properties");
+    if (!Files.exists(arquivo)) return properties;
+
+    try (Reader reader = Files.newBufferedReader(arquivo)) {
+      properties.load(reader);
+      return properties;
+    } catch (IOException falha) {
+      throw new IllegalStateException("Não foi possível ler selenium.local.properties.", falha);
+    }
   }
 
-  private static String requiredEnv(String key) {
-    String value = System.getenv(key);
+  private static String valor(String chave, String padrao) {
+    return CONFIGURACAO.getProperty(chave, padrao).trim();
+  }
+
+  private static String obrigatorio(String chave) {
+    String value = CONFIGURACAO.getProperty(chave, "").trim();
     if (value == null || value.isBlank()) {
       throw new IllegalStateException(
-          "Configure " + key + " no ambiente para executar o teste integrado com os serviços reais.");
-    }
-    String valorNormalizado = value.toLowerCase(java.util.Locale.ROOT);
-    if (value.startsWith("<") || valorNormalizado.contains("aluno de teste")
-        || valorNormalizado.contains("senha definida no seeder")) {
-      throw new IllegalStateException(
-          key + " ainda contém um texto de exemplo. Use os dados reais da conta criada pelo seeder.");
+          "Preencha " + chave + " em tests/selenium/selenium.local.properties "
+              + "(crie o arquivo a partir de selenium.local.properties.example).");
     }
     return value;
-  }
-
-  private static void verificarPortalEGateway() throws Exception {
-    HttpClient cliente = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(4))
-        .build();
-    verificarResposta(cliente, "/aluno/login", "Portal Vite");
-    verificarResposta(cliente, "/api/academico/cursos", "Gateway e microsserviço acadêmico");
-  }
-
-  private static void verificarResposta(HttpClient cliente, String caminho, String servico)
-      throws Exception {
-    URI uri = URI.create(PORTAL_URL.replaceAll("/+$", "") + caminho);
-    HttpRequest requisicao = HttpRequest.newBuilder(uri)
-        .timeout(Duration.ofSeconds(6))
-        .GET()
-        .build();
-    try {
-      int status = cliente.send(requisicao, HttpResponse.BodyHandlers.discarding()).statusCode();
-      if (status < 200 || status >= 400) {
-        throw new IllegalStateException(
-            servico + " respondeu HTTP " + status + " em " + uri + ". Confira se está ativo.");
-      }
-    } catch (java.io.IOException falha) {
-      throw new IllegalStateException(
-          servico + " não respondeu em " + uri + ". Inicie o portal e os serviços locais antes do teste.",
-          falha);
-    }
   }
 }
 
