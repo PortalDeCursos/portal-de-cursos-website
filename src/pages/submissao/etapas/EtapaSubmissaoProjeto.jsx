@@ -194,6 +194,7 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
         <label>
           Tipo de produção <span aria-hidden="true">*</span>
           <select
+            data-testid="tipo-projeto-submissao"
             required
             aria-invalid={Boolean(erros.tipo)}
             aria-describedby={erroDoCampo('tipo')}
@@ -216,6 +217,7 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
         <label>
           Título <span aria-hidden="true">*</span>
           <input
+            data-testid="titulo-projeto-submissao"
             required
             aria-invalid={Boolean(erros.titulo)}
             aria-describedby={erroDoCampo('titulo')}
