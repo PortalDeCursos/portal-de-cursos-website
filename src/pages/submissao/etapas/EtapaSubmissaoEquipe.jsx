@@ -70,6 +70,7 @@ export default function EtapaSubmissaoEquipe({
         <label className="formulario-submissao__campo-largo">
           Professor orientador <span aria-hidden="true">*</span>
           <select
+            data-testid="orientador-submissao"
             required
             disabled={!formulario.curso}
             aria-invalid={Boolean(erros.orientador)}
@@ -111,6 +112,7 @@ export default function EtapaSubmissaoEquipe({
           <label>
             Outros professores participantes / colaboradores
             <select
+              data-testid="professor-participante-submissao"
               disabled={!formulario.curso}
               value=""
               onChange={(e) => adicionarProfessorParticipante(e.target.value)}
@@ -157,6 +159,7 @@ export default function EtapaSubmissaoEquipe({
         <label className="formulario-submissao__campo-largo">
           Adicionar disciplina curricular associada
           <select
+            data-testid="disciplina-submissao"
             disabled={!formulario.curso || carregandoDisciplinas}
             value=""
             onChange={(e) => {
@@ -223,7 +226,8 @@ export default function EtapaSubmissaoEquipe({
 
         {/* Se for projeto sem alunos, oculta coautores e mostra aviso */}
         {formulario.projetoSemAlunos ? (
-          <div className="formulario-submissao__campo-largo painel-informativo">
+          <div
+            data-testid="disciplinas-selecionadas" className="formulario-submissao__campo-largo painel-informativo">
             <p>
               <strong>Produção conduzida por docentes:</strong> O projeto será publicado sob a
               titularidade e responsabilidade dos professores orientador e colaboradores indicados.
