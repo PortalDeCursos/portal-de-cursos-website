@@ -1,47 +1,63 @@
 # Testes Selenium integrados
 
-Os cenários usam o navegador para autenticar um aluno e submeter um Projeto Integrador pelos
-serviços reais do Portal de Cursos. O teste não substitui `fetch`, não injeta sessão e não cria
-respostas ou dados de API simulados.
-
-O fluxo validado cobre login do aluno, consulta real de curso, professor e disciplina, validação do
-título, cadastro da submissão e envio dos dois PDFs obrigatórios. O Selenium gera arquivos PDF
-mínimos e fictícios em diretório temporário. A submissão é gravada no ambiente local e pode acionar
-as notificações configuradas nos serviços; não execute estes testes contra produção.
+Os cenários autenticam um aluno pelo formulário do portal e submetem um Projeto Integrador pelos microsserviços reais. O teste não injeta sessão, não substitui `fetch` e não simula respostas das APIs.
 
 ## Pré-requisitos
 
 - Java 21 ou superior
-- Node.js compatível com o projeto
-- Gateway e microsserviços locais ativos, incluindo os serviços de usuários e projetos
-- Portal Vite iniciado em `http://localhost:5173`
-- Chrome ou Brave instalado
-- Conta de aluno criada pelo seeder do serviço de usuários
-- Arquivo local `selenium.local.properties` configurado uma vez
+- Node.js compatível com o frontend
+- Portal Vite, gateway e microsserviços locais ativos, incluindo usuários e projetos
+- Brave ou Chrome instalado
+- Conta de aluno disponível pelo seeder do serviço de usuários
+
+O navegador Brave é detectado automaticamente nos caminhos comuns do Windows, macOS e Linux. Se não for encontrado, o módulo procura Chrome. O Selenium Manager resolve o driver quando `navegador.driver` estiver vazio.
 
 ## Executar
 
-Na raiz do frontend, inicie o portal:
+Na raiz do frontend, inicie o portal, caso ainda não esteja ativo:
 
 ```powershell
 npm run dev -- --host 0.0.0.0
 ```
 
-Na pasta `tests/selenium`, crie o arquivo local de configuração a partir do exemplo e informe os
-dados da conta criada pelo seeder. O arquivo local é ignorado pelo Git e a senha não será publicada.
+Com os serviços locais ativos, entre em `tests/selenium` e execute:
 
 ```powershell
-Copy-Item .\selenium.local.properties.example .\selenium.local.properties
-notepad .\selenium.local.properties
 .\mvnw.cmd test
 ```
 
-O arquivo aceita `portal.url`, `aluno.email`, `aluno.senha` e, opcionalmente,
-`navegador.executavel` e `navegador.driver`. Deixe os dois últimos vazios para usar o Selenium
-Manager, ou preencha-os para selecionar um navegador e driver instalados localmente.
+O arquivo versionado `src/test/resources/selenium.defaults.properties` já define URL, conta do seeder e rotas. Não é necessário copiar arquivos nem configurar variáveis de ambiente.
 
-Depois da configuração inicial, basta manter o portal e os serviços ativos e executar
-`.\mvnw.cmd test` na pasta `tests/selenium`.
+## Regras cobertas
 
-Em caso de falha, o navegador salva uma captura em `target/screenshots`.
+| ID | Cenário |
+| --- | --- |
+| RN01 | Aluno autenticado abre a submissão sem voltar ao login |
+| RN02 | Cursos, orientadores e disciplinas são carregados e selecionados pelas APIs reais |
+| RN03 | Título vazio é bloqueado |
+| RN04 | Título composto apenas por espaços é bloqueado |
+| RN05 | Título acima do limite real de 255 caracteres é rejeitado |
+| RN06 | Submissão com os dois PDFs obrigatórios é gravada e confirmada |
+| RN07 | Submissão repetida com o mesmo título é rejeitada pelo backend |
+| RN08 | Submissão sem os documentos obrigatórios é bloqueada |
 
+## Configuração opcional
+
+A precedência é `-Dchave=valor` > `selenium.local.properties` > `selenium.defaults.properties`. Por exemplo:
+
+```powershell
+.\mvnw.cmd test "-Dportal.url=http://localhost:5173" "-Dheadless=true"
+```
+
+Para ajustes persistentes apenas na máquina local, crie `selenium.local.properties` ao lado do `pom.xml`. O arquivo é ignorado pelo Git. Propriedades aceitas incluem `portal.url`, `aluno.email`, `aluno.senha`, `navegador.executavel`, `navegador.driver`, `headless` e `timeout.segundos`.
+
+## Segurança e dados de teste
+
+A proteção bloqueia hosts externos por padrão e aceita localhost ou endereços de redes privadas. Os testes criam submissões reais no ambiente local e podem enviar notificações pelos serviços. Cada execução usa um título único, e os PDFs mínimos são criados em diretório temporário. Não execute contra produção.
+
+## Solução de problemas
+
+- **Portal ou formulário indisponível:** confirme Vite, rota e microsserviços; a configuração padrão usa `http://localhost:5173`.
+- **Seletores não encontrados:** confira os `data-testid` estáveis adicionados aos campos e botões do formulário.
+- **Brave ou driver incompatível:** verifique a versão em `brave://version`. Se necessário, defina `navegador.executavel` e `navegador.driver` no arquivo local ou por `-D`.
+- **Capturas de falha:** os screenshots ficam em `target/screenshots`.
