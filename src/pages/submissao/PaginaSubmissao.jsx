@@ -54,7 +54,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   useEffect(() => {
     const controller = new AbortController()
     Promise.allSettled([
-      listarCursos(controller.signal),
+      listarCursos(controller.signal, sessao?.token),
       listarProfessores(sessao?.token, {}, controller.signal),
     ])
       .then(([resultadoCursos, resultadoOrientadores]) => {

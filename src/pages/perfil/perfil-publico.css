@@ -240,9 +240,9 @@
 }
 
 .perfil-publico__bloco-vazio {
-  padding: 40px;
+  padding: var(--espaco-4);
   background: var(--superficie);
-  border: 1px dashed var(--borda);
+  border: 1px solid var(--borda-suave);
   border-radius: 14px;
   text-align: center;
   display: flex;
