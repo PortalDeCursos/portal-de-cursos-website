@@ -207,7 +207,10 @@ export default function EtapaSubmissaoEquipe({
           />
         </label>
 
-        <div className="etiquetas-submissao formulario-submissao__campo-largo">
+        <div
+          data-testid="disciplinas-selecionadas"
+          className="etiquetas-submissao formulario-submissao__campo-largo"
+        >
           {formulario.disciplinas.map((disciplina) => (
             <button
               key={disciplina}
@@ -226,8 +229,7 @@ export default function EtapaSubmissaoEquipe({
 
         {/* Se for projeto sem alunos, oculta coautores e mostra aviso */}
         {formulario.projetoSemAlunos ? (
-          <div
-            data-testid="disciplinas-selecionadas" className="formulario-submissao__campo-largo painel-informativo">
+          <div className="formulario-submissao__campo-largo painel-informativo">
             <p>
               <strong>Produção conduzida por docentes:</strong> O projeto será publicado sob a
               titularidade e responsabilidade dos professores orientador e colaboradores indicados.

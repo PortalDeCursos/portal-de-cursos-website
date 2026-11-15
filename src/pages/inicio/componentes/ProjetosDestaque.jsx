@@ -12,7 +12,7 @@ const destaques = [
     descricao:
       'Conheça iniciativas de pesquisa, extensão e projetos integradores da comunidade acadêmica.',
     conviteRotulo: 'Seu projeto pode ser o próximo',
-    vazio: 'Os projetos publicados pela coordenação aparecerão aqui.',
+    vazio: 'Nenhum projeto publicado ainda.',
   },
   {
     id: 'tccs',
@@ -21,7 +21,7 @@ const destaques = [
     descricao:
       'Explore trabalhos de conclusão desenvolvidos pelos estudantes e aprovados para publicação.',
     conviteRotulo: 'Seu TCC pode ser o próximo',
-    vazio: 'Os TCCs publicados pela coordenação aparecerão aqui.',
+    vazio: 'Nenhum TCC publicado ainda.',
   },
 ]
 
@@ -86,15 +86,9 @@ function SecaoDestaque({ item, projetos, estado }) {
           )}
         </ul>
       ) : (
-        <div className="secao-producoes__vazio">
-          <div>
-            <h3>A próxima publicação pode aparecer aqui</h3>
-            <p>{item.vazio}</p>
-          </div>
-          <a className="botao-secundario botao--pequeno" href="#submeter">
-            Enviar uma proposta
-          </a>
-        </div>
+        <p className="secao-producoes__vazio" role="status">
+          {item.vazio}
+        </p>
       )}
     </section>
   )
