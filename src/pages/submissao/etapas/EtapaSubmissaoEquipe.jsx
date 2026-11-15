@@ -70,6 +70,7 @@ export default function EtapaSubmissaoEquipe({
         <label className="formulario-submissao__campo-largo">
           Professor orientador <span aria-hidden="true">*</span>
           <select
+            data-testid="orientador-submissao"
             required
             disabled={!formulario.curso}
             aria-invalid={Boolean(erros.orientador)}
@@ -111,6 +112,7 @@ export default function EtapaSubmissaoEquipe({
           <label>
             Outros professores participantes / colaboradores
             <select
+              data-testid="professor-participante-submissao"
               disabled={!formulario.curso}
               value=""
               onChange={(e) => adicionarProfessorParticipante(e.target.value)}
@@ -157,6 +159,7 @@ export default function EtapaSubmissaoEquipe({
         <label className="formulario-submissao__campo-largo">
           Adicionar disciplina curricular associada
           <select
+            data-testid="disciplina-submissao"
             disabled={!formulario.curso || carregandoDisciplinas}
             value=""
             onChange={(e) => {
@@ -204,7 +207,10 @@ export default function EtapaSubmissaoEquipe({
           />
         </label>
 
-        <div className="etiquetas-submissao formulario-submissao__campo-largo">
+        <div
+          data-testid="disciplinas-selecionadas"
+          className="etiquetas-submissao formulario-submissao__campo-largo"
+        >
           {formulario.disciplinas.map((disciplina) => (
             <button
               key={disciplina}

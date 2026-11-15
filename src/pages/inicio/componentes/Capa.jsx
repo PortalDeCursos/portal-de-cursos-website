@@ -7,15 +7,10 @@ export default function Capa() {
       <div className="hero-inicial__sombra" aria-hidden="true" />
 
       <div className="hero-inicial__conteudo">
-        <span className="hero-inicial__tag">Rede Integrada de Ensino e Pesquisa</span>
-
-        <h1 className="hero-inicial__titulo-principal">
-          Formação acadêmica e produção científica em todos os campi.
-        </h1>
+        <h1 className="hero-inicial__titulo-principal">Cursos e projetos acadêmicos</h1>
 
         <p className="hero-inicial__descricao">
-          Conecte-se aos cursos, matrizes curriculares e projetos de pesquisa, extensão e TCCs
-          desenvolvidos por estudantes e docentes em toda a nossa instituição.
+          Consulte matrizes curriculares, conheça os docentes e veja os trabalhos publicados.
         </p>
 
         <div className="hero-inicial__acoes">
@@ -23,7 +18,7 @@ export default function Capa() {
             Explorar cursos
           </Botao>
           <a href="#projetos" className="hero-inicial__cta-secundario">
-            Ver projetos e TCCs <span aria-hidden="true">→</span>
+            Ver projetos e TCCs
           </a>
         </div>
       </div>

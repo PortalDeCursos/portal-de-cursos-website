@@ -8,6 +8,7 @@ export function pegarEnderecoRecurso(recurso) {
   if (['cursos', 'disciplinas', 'campus', 'areas-conhecimento'].includes(recurso)) {
     const baseAcademica = import.meta.env.VITE_API_ACADEMICO_URL
     if (baseAcademica) return `${baseAcademica.replace(/\/+$/, '')}/${recurso}`
+    return `${pegarBaseApi('academico')}/${recurso}`
   }
   return pegarBaseApi(recurso)
 }
