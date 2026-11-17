@@ -78,7 +78,7 @@ function IconeMenu({ aberto }) {
   )
 }
 
-function Avatar({ usuario }) {
+export function Avatar({ usuario }) {
   if (usuario?.foto) {
     return <img src={usuario.foto} alt="" />
   }
@@ -130,6 +130,7 @@ export default function Cabecalho({
   autenticado = false,
   tipoUsuario,
   areaProfessor = false,
+  nomeArea,
   modoAcesso = false,
   aoSair,
   usuario,
@@ -314,14 +315,15 @@ export default function Cabecalho({
     <header className={classes}>
       <div className="limite cabecalho__conteudo">
         <a
-          className="marca marca--cabecalho"
+          className={`marca marca--cabecalho${nomeArea ? ' marca--com-area' : ''}`}
           href={areaProfessor ? enderecoPrivado(destinoArea) : `${basePortal}#inicio`}
-          aria-label={areaProfessor ? 'Portal de Cursos — Minha área' : 'Portal de Cursos — Início'}
+          aria-label={nomeArea ? `Portal de Cursos — ${nomeArea}` : areaProfessor ? 'Portal de Cursos — Minha área' : 'Portal de Cursos — Início'}
         >
           <img className="marca__simbolo" src={logoPortal} alt="" width="28" height="28" />
           <span className="marca__texto">
             Portal de <span className="marca__cursos">Cursos</span>
           </span>
+          {nomeArea && <small className="marca__area">{nomeArea}</small>}
         </a>
 
         {!modoAcesso && (
