@@ -42,6 +42,9 @@
   --texto-md: 16px;
   --texto-lg: 20px;
   --texto-xl: 28px;
+  --texto-titulo-painel: clamp(1.5rem, 2.4vw, 2rem);
+  --entrelinha-titulo: 1.25;
+  --entrelinha-texto: 1.5;
   --texto-hero: clamp(38px, 5.2vw, 68px);
   --texto-titulo-secao: clamp(30px, 4vw, 42px);
   --fonte-titulo: 'Source Serif 4', Georgia, serif;

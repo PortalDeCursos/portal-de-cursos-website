@@ -36,8 +36,8 @@
 }
 
 .coordenacao-boas-vindas h1 {
-  font-size: clamp(26px, 2.5vw, 34px);
-  letter-spacing: -0.035em;
+  font-size: var(--texto-titulo-painel);
+  letter-spacing: normal;
 }
 
 .coordenacao-boas-vindas p {
@@ -99,7 +99,7 @@
 .coordenacao-secao-atalhos > header h2 {
   margin: 0;
   font-size: var(--texto-md);
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
 }
 
 .coordenacao-secao-atalhos > header p {

@@ -19,9 +19,9 @@
 .pagina-professor h1 {
   max-width: 720px;
   margin: 0 0 8px;
-  font-size: clamp(28px, 3vw, 36px);
+  font-size: var(--texto-titulo-painel);
   line-height: 1.2;
-  letter-spacing: -0.035em;
+  letter-spacing: normal;
 }
 
 .pagina-professor__topo p:not(.pagina-professor__rotulo) {

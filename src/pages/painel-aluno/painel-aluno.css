@@ -21,14 +21,14 @@
 .pagina-painel-aluno h1 {
   margin: 0 0 8px;
   color: var(--titulo);
-  font-size: clamp(28px, 3vw, 36px);
-  letter-spacing: -0.035em;
+  font-size: var(--texto-titulo-painel);
+  letter-spacing: normal;
   line-height: 1.2;
 }
 
 .pagina-painel-aluno h1 + p {
   margin: 0;
-  font-size: var(--texto-sm);
+  font-size: var(--texto-titulo-painel);
   line-height: 1.6;
   max-width: 64ch;
 }

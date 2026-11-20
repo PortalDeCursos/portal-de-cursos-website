@@ -144,7 +144,7 @@
 .marca__area {
   grid-column: 1 / -1;
   color: var(--texto-suave);
-  font-size: 0.625rem;
+  font-size: var(--texto-xs);
   font-weight: 600;
   line-height: 1.2;
 }

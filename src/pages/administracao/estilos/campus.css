@@ -28,7 +28,7 @@
 }
 .campus-detalhe-titulo h1,
 .campus-lista + .painel-titulo h1 {
-  font-size: clamp(23px, 2.2vw, 28px);
+  font-size: var(--texto-titulo-painel);
 }
 .campus-sigla {
   padding: 6px 10px;
@@ -104,7 +104,7 @@
 .campus-detalhe-valor {
   color: var(--titulo);
   font-size: var(--texto-lg);
-  line-height: 1;
+  line-height: var(--entrelinha-titulo);
 }
 .campus-detalhe-valor--texto {
   font-size: var(--texto-xs);
@@ -160,7 +160,7 @@
   background: var(--suave);
   color: var(--titulo);
   font-size: var(--texto-xs);
-  line-height: 1;
+  line-height: var(--entrelinha-titulo);
   font-weight: 800;
   letter-spacing: normal;
   white-space: nowrap;
