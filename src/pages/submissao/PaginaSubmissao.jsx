@@ -30,6 +30,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [disciplinasCurso, mudarDisciplinasCurso] = useState([])
   const [carregandoCadastros, mudarCarregandoCadastros] = useState(true)
   const [carregandoDisciplinas, mudarCarregandoDisciplinas] = useState(false)
+  const [erroDisciplinas, mudarErroDisciplinas] = useState('')
+  const [tentativaDisciplinas, mudarTentativaDisciplinas] = useState(0)
+  const [avisoDisciplinas, mudarAvisoDisciplinas] = useState('')
   const [formulario, mudarFormulario] = useState(() => ({
     ...formularioInicial,
     nome: sessao?.usuario?.nome || '',
@@ -50,6 +53,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [falhaDocumentos, mudarFalhaDocumentos] = useState(false)
   const [falhaEncaminhamento, mudarFalhaEncaminhamento] = useState(false)
   const resumoErros = useRef(null)
+  const campoDisciplinas = useRef(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -77,6 +81,8 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
     async function carregarDisciplinas() {
       mudarCarregandoDisciplinas(true)
+      mudarErroDisciplinas('')
+      mudarDisciplinasCurso([])
       try {
         const dados = await listarDisciplinasPorCurso(
           formulario.curso,
@@ -89,6 +95,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       } catch {
         if (ativo) {
           mudarDisciplinasCurso([])
+          mudarErroDisciplinas('Não foi possível carregar as disciplinas deste curso.')
         }
       } finally {
         if (ativo) {
@@ -103,13 +110,21 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       ativo = false
       controller.abort()
     }
-  }, [formulario.curso, sessao?.token])
+  }, [formulario.curso, sessao?.token, tentativaDisciplinas])
 
   function alterar(campo, valor) {
+    const trocouCurso = campo === 'curso' && String(valor) !== String(formulario.curso)
+    if (trocouCurso) {
+      mudarAvisoDisciplinas(
+        formulario.disciplinas.length
+          ? 'O curso mudou. As disciplinas anteriores foram removidas. Selecione as do novo curso na etapa Equipe.'
+          : '',
+      )
+    }
     mudarFormulario((anterior) => ({
       ...anterior,
       [campo]: valor,
-      ...(campo === 'curso' ? { disciplinas: [] } : {}),
+      ...(trocouCurso ? { disciplinas: [] } : {}),
     }))
     mudarErro('')
     mudarErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
@@ -118,7 +133,11 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   function registrarErros(proximosErros, mensagem = 'Revise os campos destacados para continuar.') {
     mudarErros(proximosErros)
     mudarErro(mensagem)
-    window.requestAnimationFrame(() => resumoErros.current?.focus())
+    window.requestAnimationFrame(() => {
+      const campo = proximosErros.disciplinas ? campoDisciplinas.current : null
+      if (campo && !campo.disabled) campo.focus()
+      else resumoErros.current?.focus()
+    })
   }
 
   function erroDoCampo(campo) {
@@ -761,6 +780,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       </nav>
 
       <form className="formulario-submissao" onSubmit={submeter} noValidate>
+        {avisoDisciplinas && <p role="status">{avisoDisciplinas}</p>}
         {etapa === 0 && (
           <EtapaSubmissaoIdentificacao
             cursos={cursos}
@@ -795,6 +815,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             adicionarDisciplina={adicionarDisciplina}
             disciplinasDisponiveis={formulario.curso ? disciplinasCurso : []}
             carregandoDisciplinas={carregandoDisciplinas}
+            erroDisciplinas={erroDisciplinas}
+            tentarDisciplinas={() => mudarTentativaDisciplinas((valor) => valor + 1)}
+            campoDisciplinas={campoDisciplinas}
             sessao={sessao}
           />
         )}
