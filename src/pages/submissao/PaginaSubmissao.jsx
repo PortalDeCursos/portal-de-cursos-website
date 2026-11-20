@@ -106,7 +106,11 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   }, [formulario.curso, sessao?.token])
 
   function alterar(campo, valor) {
-    mudarFormulario((anterior) => ({ ...anterior, [campo]: valor }))
+    mudarFormulario((anterior) => ({
+      ...anterior,
+      [campo]: valor,
+      ...(campo === 'curso' ? { disciplinas: [] } : {}),
+    }))
     mudarErro('')
     mudarErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
   }
@@ -269,6 +273,28 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         String(item.id) === String(formulario.curso) ||
         String(item.identificador) === String(formulario.curso),
     )
+    const disciplinasSelecionadas = formulario.disciplinas.map((nome) =>
+      disciplinasCurso.find(
+        (disciplina) =>
+          disciplina.nome === nome &&
+          Number.isSafeInteger(disciplina.id) &&
+          disciplina.id > 0 &&
+          String(disciplina.cursoId) === String(cursoProjeto?.id),
+      ),
+    )
+    if (
+      carregandoDisciplinas ||
+      disciplinasSelecionadas.length === 0 ||
+      disciplinasSelecionadas.some((disciplina) => !disciplina)
+    ) {
+      mudarEtapa(2)
+      registrarErros({
+        disciplinas: carregandoDisciplinas
+          ? 'Aguarde o carregamento das disciplinas e selecione uma para continuar.'
+          : 'Selecione pelo menos uma disciplina cadastrada no curso para continuar.',
+      })
+      return
+    }
     const autoresLista = formulario.autores
       .filter((autor) => autor.nome.trim())
       .map((autor) => ({ nome: autor.nome.trim(), email: autor.email.trim() }))
@@ -339,12 +365,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       })
     }
 
-    const disciplinaIds = formulario.disciplinas
-      .map((nome) => {
-        const d = disciplinasCurso.find((d) => d.nome === nome)
-        return d?.id || null
-      })
-      .filter(Boolean)
+    const disciplinaIds = disciplinasSelecionadas.map((disciplina) => disciplina.id)
     const hoje = new Date()
     const dataInicio = hoje.toISOString().split('T')[0]
     const dataFim = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate())
@@ -376,7 +397,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       cursoId: cursoProjeto?.id ? Number(cursoProjeto.id) : null,
       campusId: cursoProjeto?.campusId ? Number(cursoProjeto.campusId) : null,
       autores: autoresParaDto,
-      disciplinaIds: disciplinaIds.length > 0 ? disciplinaIds : null,
+      disciplinaIds,
       nome: formulario.titulo.trim(),
       descricao: [
         `Objetivos e resultados:\n${formulario.objetivos.trim()}`,
@@ -531,7 +552,14 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
   function adicionarDisciplina(valor) {
     const disciplina = valor.trim()
-    if (disciplina && !formulario.disciplinas.includes(disciplina)) {
+    const cadastrada = disciplinasCurso.some(
+      (item) =>
+        item.nome === disciplina &&
+        Number.isSafeInteger(item.id) &&
+        item.id > 0 &&
+        String(item.cursoId) === String(formulario.curso),
+    )
+    if (cadastrada && !formulario.disciplinas.includes(disciplina)) {
       alterar('disciplinas', [...formulario.disciplinas, disciplina])
     }
   }
@@ -796,14 +824,20 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             {etapa < etapas.length - 1 ? (
               <button
                 data-testid="submissao-continuar"
-                className="botao-primario" type="button" onClick={avancar}>
+                className="botao-primario"
+                type="button"
+                onClick={avancar}
+              >
                 Continuar para{' '}
                 {etapa === 0 ? 'o projeto' : etapa === 1 ? 'a equipe' : 'os documentos'}
               </button>
             ) : (
               <button
                 data-testid="submissao-enviar"
-                className="botao-primario" type="submit" disabled={enviando}>
+                className="botao-primario"
+                type="submit"
+                disabled={enviando}
+              >
                 {enviando ? 'Salvando projeto…' : 'Enviar projeto'}
               </button>
             )}
