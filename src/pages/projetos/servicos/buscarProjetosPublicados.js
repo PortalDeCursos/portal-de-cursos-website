@@ -11,26 +11,17 @@ const ROTULOS_TIPO = {
 
 // Funcao de validacao de projetos para exibicao publica
 function ehProjetoValido(p) {
-  const nome = (p.nome || '').trim().toLowerCase()
+  const nome = (p.nome || '').trim()
   const resumo = (p.resumo || p.descricao || '').trim()
 
-  // Elimina rascunhos invalidos
-  if (['dgdg', 'teste', 'meu primeiro proeto', 'projeto teste', 'drgdrgdrg'].includes(nome))
-    return false
   if (nome.length < 5) return false
   if (resumo.length < 10) return false
   return true
 }
 
 export async function buscarProjetosPublicados(sinal) {
-  try {
-    localStorage.removeItem('portal-cursos-publicados-cache')
-  } catch {
-    /* Cache limpo */
-  }
-
-  const [dadosAprovados, dadosCursos, dadosProfessores] = await Promise.all([
-    listarProjetosAprovados(sinal).catch(() => listarProjetos(null, sinal).catch(() => [])),
+  const [dadosProjetos, dadosCursos, dadosProfessores] = await Promise.all([
+    listarProjetos(null, sinal).catch(() => listarProjetosAprovados(sinal)),
     listarCursos(sinal).catch(() => []),
     listarProfessores(null, {}, sinal).catch(() => []),
   ])
@@ -45,7 +36,7 @@ export async function buscarProjetosPublicados(sinal) {
     ]),
   )
 
-  const listaBruta = Array.isArray(dadosAprovados) ? dadosAprovados : []
+  const listaBruta = Array.isArray(dadosProjetos) ? dadosProjetos : []
   const publicadosValidos = listaBruta
     .filter((p) => {
       const status = p.statusProjeto || p.status

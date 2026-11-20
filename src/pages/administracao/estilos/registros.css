@@ -62,7 +62,7 @@
 .administracao-secao-atalhos > header h2 {
   margin: 0;
   font-size: var(--texto-md);
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
 }
 .administracao-secao-atalhos > header {
   margin-bottom: 14px;
@@ -85,7 +85,7 @@
   border-radius: var(--raio-cartao);
 }
 :root[data-tema='escuro'] .administracao-categoria {
-  background: var(--preto);
+  background: var(--superficie);
   border-color: var(--borda-suave);
 }
 .administracao-categoria h3 {
@@ -186,8 +186,8 @@
   letter-spacing: normal;
 }
 .administracao-boas-vindas h1 {
-  font-size: clamp(22px, 2.2vw, 28px);
-  letter-spacing: -0.035em;
+  font-size: var(--texto-titulo-painel);
+  letter-spacing: normal;
 }
 .administracao-boas-vindas p {
   margin: 5px 0 0;
@@ -237,7 +237,7 @@
 :root[data-tema='escuro'] .administracao-indicador,
 :root[data-tema='escuro'] .curso-gestao {
   border-color: var(--borda-suave);
-  background: var(--preto);
+  background: var(--superficie);
 }
 :root[data-tema='escuro'] .administracao-boas-vindas {
   border-left: 2px solid var(--azul-vivo);
@@ -249,7 +249,7 @@
   font-size: var(--texto-xs);
 }
 .administracao-boas-vindas h1 {
-  font-size: clamp(28px, 2.5vw, 34px);
+  font-size: var(--texto-titulo-painel);
 }
 .administracao-boas-vindas p {
   font-size: var(--texto-sm);
@@ -262,7 +262,7 @@
 }
 @media (max-width: 760px) {
   .administracao-boas-vindas h1 {
-    font-size: var(--texto-xl);
+    font-size: var(--texto-titulo-painel);
   }
 
   .administracao-indicador__texto > span {

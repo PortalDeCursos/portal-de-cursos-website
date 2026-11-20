@@ -2,7 +2,7 @@ import { pegarEnderecoRecurso } from './enderecos.js'
 import { chamarApi } from './cliente.js'
 
 export async function enviarNotificacaoProjeto(
-  { statusProjeto, nomeProjeto, tipoProjeto, destinatarios, justificativa = '' },
+  { statusProjeto, nomeProjeto, tipoProjeto, destinatarios, nomeResponsavel, justificativa = '' },
   token,
   sinal = null,
 ) {
@@ -13,7 +13,14 @@ export async function enviarNotificacaoProjeto(
 
   return chamarApi(`${pegarEnderecoRecurso('notificacoes')}`, {
     metodo: 'POST',
-    corpo: { statusProjeto, nomeProjeto, tipoProjeto, destinatarios: emails, justificativa },
+    corpo: {
+      statusProjeto,
+      nomeProjeto,
+      tipoProjeto,
+      destinatarios: emails,
+      nomeResponsavel,
+      justificativa,
+    },
     token,
     sinal,
   })

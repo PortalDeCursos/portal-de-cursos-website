@@ -777,3 +777,54 @@
     gap: var(--espaco-5);
   }
 }
+
+
+/* ==========================================================================
+   Unificação de cabeçalho dos perfis e padronização do card de projeto
+   ========================================================================== */
+
+.perfil-publico__eyebrow {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: var(--azul);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.perfil-publico__nome {
+  font-family: var(--fonte-titulo);
+}
+
+.perfil-publico__email {
+  color: var(--texto-suave);
+}
+
+.pagina-perfil-docente .item-projeto,
+.pagina-perfil-discente .item-projeto {
+  border: 1px solid var(--borda-suave);
+  box-shadow: none;
+  transition:
+    border-color 160ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 160ms cubic-bezier(0.2, 0, 0, 1),
+    transform 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pagina-perfil-docente .item-projeto::before,
+.pagina-perfil-discente .item-projeto::before {
+  display: none;
+}
+
+.pagina-perfil-docente .item-projeto:hover,
+.pagina-perfil-discente .item-projeto:hover {
+  border-color: var(--azul);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--azul) 20%, transparent),
+    var(--sombra-elevada);
+  transform: translateY(-2px);
+}
+
+.pagina-perfil-docente .item-projeto:active,
+.pagina-perfil-discente .item-projeto:active {
+  transform: translateY(0);
+}

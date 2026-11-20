@@ -1,7 +1,7 @@
 import { ordenarSubmissoes } from '@/shared/utils/ordenarSubmissoes.js'
 import Indicadores from '@/shared/componentes/Indicadores.jsx'
 import EtapasSubmissao from '@/shared/componentes/EtapasSubmissao.jsx'
-import { useMemo } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import '@/shared/styles/painel-informativo.css'
 import EstadoVazio from '@/shared/componentes/EstadoVazio.jsx'
 import { basePortal } from '../../app/rotas.js'
@@ -17,6 +17,7 @@ const classeStatus = {
 }
 
 export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
+  const [abertaId, mudarAbertaId] = useState(null)
   const emailAluno = sessao?.usuario?.email?.toLowerCase() || ''
   const nomeAluno = sessao?.usuario?.nome?.toLowerCase() || ''
 
@@ -140,42 +141,126 @@ export default function PaginaPainelAluno({ sessao, submissoes = [] }) {
               <thead>
                 <tr>
                   <th scope="col">Projeto</th>
-                  <th scope="col">Curso</th>
                   <th scope="col">Enviado em</th>
                   <th scope="col">Situação</th>
+                  <th scope="col" className="tabela-projetos-aluno__col-acao">
+                    Ação
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {minhasSubmissoes.map((item) => (
-                  <tr key={item.identificador}>
-                    <th scope="row">
-                      <span className="tabela__titulo">{item.titulo}</span>
-                      <EtapasSubmissao status={item.status} compact />
-                      <span className="tabela__descricao">
-                        {item.tipo}
-                        {item.orientador && ` · ${item.orientador}`}
-                      </span>
-                    </th>
-                    <td data-label="Curso">{item.cursoCompleto || item.curso || '—'}</td>
-                    <td data-label="Enviado em">{item.enviadoEm}</td>
-                    <td data-label="Situação">
-                      <span
-                        className={`status ${classeStatus[item.status] || 'status--em-análise'}`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {minhasSubmissoes.map((item) => {
+                  const recusado = ['Recusado pelo orientador', 'Publicação recusada'].includes(
+                    item.status,
+                  )
+                  const aprovado = item.status === 'Aprovado'
+                  const aberta = abertaId === item.identificador
+                  const metadados = [item.tipo, item.curso, item.orientador]
+                    .filter(Boolean)
+                    .join(' · ')
+
+                  return (
+                    <Fragment key={item.identificador}>
+                      <tr className={aberta ? 'painel-aluno__linha-aberta' : ''}>
+                        <th scope="row">
+                          <span className="tabela__titulo">{item.titulo}</span>
+                          {metadados && <span className="tabela__descricao">{metadados}</span>}
+                        </th>
+                        <td data-label="Enviado em">{item.enviadoEm}</td>
+                        <td data-label="Situação">
+                          <span
+                            className={`status ${classeStatus[item.status] || 'status--em-análise'}`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td data-label="Ação" className="tabela-projetos-aluno__col-acao">
+                          <button
+                            type="button"
+                            className="painel-aluno__acao"
+                            aria-expanded={aberta}
+                            aria-controls={`storyline-${item.identificador}`}
+                            onClick={() =>
+                              mudarAbertaId((atual) =>
+                                atual === item.identificador ? null : item.identificador,
+                              )
+                            }
+                          >
+                            {aberta ? 'Fechar' : 'Acompanhar'}{' '}
+                            <span aria-hidden="true">{aberta ? '↑' : '↓'}</span>
+                          </button>
+                        </td>
+                      </tr>
+                      {aberta && (
+                        <tr
+                          id={`storyline-${item.identificador}`}
+                          className="painel-aluno__storyline-linha"
+                        >
+                          <td colSpan={4}>
+                            <div className="painel-aluno__storyline">
+                              <div className="painel-aluno__storyline-etapas">
+                                <span className="painel-aluno__storyline-rotulo">
+                                  Linha do tempo
+                                </span>
+                                <EtapasSubmissao
+                                  status={item.status}
+                                  vertical
+                                  enviadoEm={item.enviadoEm}
+                                  parecer={item.parecer || item.justificativa || item.observacao}
+                                />
+                              </div>
+
+                              <div className="painel-aluno__storyline-detalhes">
+                                {recusado && (item.parecer || item.justificativa || item.observacao) && (
+                                  <div className="painel-aluno__parecer">
+                                    <span className="painel-aluno__storyline-rotulo">
+                                      Parecer do orientador
+                                    </span>
+                                    <p>{item.parecer || item.justificativa || item.observacao}</p>
+                                  </div>
+                                )}
+
+                                {(item.resumo || item.objetivo) && (
+                                  <div className="painel-aluno__storyline-bloco">
+                                    <span className="painel-aluno__storyline-rotulo">Resumo</span>
+                                    <p className="painel-aluno__storyline-resumo">
+                                      {item.resumo || item.objetivo}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {(recusado || aprovado) && (
+                                  <div className="painel-aluno__storyline-acoes">
+                                    {recusado && (
+                                      <a
+                                        className="botao-primario botao--pequeno"
+                                        href={`${basePortal}#submeter`}
+                                      >
+                                        Corrigir e reenviar
+                                      </a>
+                                    )}
+                                    {aprovado && (
+                                      <a
+                                        className="botao-secundario botao--pequeno"
+                                        href={`${basePortal}#projeto/${item.identificador}`}
+                                      >
+                                        Abrir projeto publicado
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         )}
-
-        <footer className="painel-aluno__rodape-aviso">
-          <strong>Acompanhamento de submissões.</strong> Projetos em análise aguardam o parecer
-          docente. Em caso de devolução para ajustes, você poderá editar e reenviar o projeto.
-        </footer>
       </section>
     </main>
   )

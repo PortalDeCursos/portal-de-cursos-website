@@ -96,3 +96,113 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ==========================================================
+   Versão vertical (linha do tempo completa e organizada)
+   ========================================================== */
+
+.etapas--vertical {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.etapas--vertical .etapas__passo {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 14px;
+  padding-bottom: 18px;
+}
+
+.etapas--vertical .etapas__passo:last-child {
+  padding-bottom: 0;
+}
+
+.etapas--vertical .etapas__passo:not(:last-child)::after {
+  position: absolute;
+  top: 26px;
+  bottom: 2px;
+  left: 11px;
+  width: 2px;
+  height: auto;
+  margin: 0;
+  background: var(--borda-suave);
+}
+
+.etapas--vertical .etapas__passo--concluido:not(:last-child)::after {
+  background: var(--sucesso);
+  opacity: 0.55;
+}
+
+.etapas--vertical .etapas__marcador {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.etapas--vertical .etapas__passo--devolvido .etapas__marcador {
+  background: var(--erro);
+  border-color: var(--erro);
+  color: var(--branco);
+}
+
+.etapas--vertical .etapas__passo:not(.etapas__passo--atual) .etapas__conteudo {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.etapas--vertical .etapas__conteudo {
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.etapas--vertical .etapas__cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.etapas--vertical .etapas__conteudo strong {
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  color: var(--titulo);
+}
+
+.etapas--vertical .etapas__descricao {
+  font-size: var(--texto-xs);
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.etapas--vertical .etapas__estado {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--raio-pilula);
+  background: var(--suave);
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.etapas--vertical .etapas__passo--concluido .etapas__estado {
+  background: var(--sucesso-suave);
+  color: var(--sucesso);
+}
+
+.etapas--vertical .etapas__passo--atual .etapas__estado {
+  background: var(--azul-suave);
+  color: var(--azul);
+}
+
+.etapas--vertical .etapas__passo--devolvido .etapas__estado {
+  background: var(--erro-suave);
+  color: var(--erro);
+}

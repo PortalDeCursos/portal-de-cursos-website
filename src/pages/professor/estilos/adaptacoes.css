@@ -87,7 +87,7 @@
   }
 
   .pagina-detalhes-submissao__cabecalho h1 {
-    font-size: clamp(36px, 12vw, 48px);
+    font-size: var(--texto-titulo-painel);
   }
 }
 
@@ -305,7 +305,7 @@
   border-radius: var(--raio-pilula);
   color: var(--texto-suave);
   background: var(--suave);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .area-professor--conectada .pagina-professor__filtros button[aria-pressed='true'] small {
@@ -439,7 +439,7 @@
     font-size: 8px;
   }
   .submissao-feed__capa strong {
-    font-size: 11px;
+    font-size: var(--texto-xs);
   }
   .submissao-feed__expandir {
     grid-column: 2;
@@ -754,7 +754,7 @@
 }
 .submissao-feed__meta {
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed__titulo {
   font-size: clamp(16px, 1.2vw, 18px);
@@ -764,18 +764,18 @@
   gap: 6px 10px;
 }
 .submissao-feed__status {
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed__status-ponto {
   width: 7px;
   height: 7px;
 }
 .submissao-feed__metadados {
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed__expandir {
   min-height: 36px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed:hover .submissao-feed__tipo-icone {
   transform: scale(1.04);
@@ -873,7 +873,7 @@
   border-radius: 50%;
   background: var(--superficie);
   color: var(--titulo);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 700;
   transition:
     border-color var(--transicao),
@@ -884,12 +884,12 @@
 }
 .submissao-feed__tipo {
   color: var(--cor, var(--azul));
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 700;
 }
 .submissao-feed__meta {
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed__titulo {
   font-size: clamp(16px, 1.2vw, 18px);
@@ -899,7 +899,7 @@
 }
 .submissao-feed__status,
 .submissao-feed__metadados {
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 .submissao-feed:hover .submissao-feed__avatar {
   border-color: var(--azul);
@@ -917,7 +917,7 @@
   .submissao-feed__avatar {
     width: 32px;
     height: 32px;
-    font-size: 10px;
+    font-size: var(--texto-xs);
   }
   .submissao-feed__expandir {
     grid-column: 2;
@@ -955,7 +955,7 @@
   border-radius: var(--raio-pilula);
   background: color-mix(in srgb, var(--cor, var(--azul)) 9%, var(--superficie));
   color: var(--cor, var(--azul));
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1026,7 +1026,7 @@
   .submissao-feed__avatar {
     width: 32px;
     height: 32px;
-    font-size: 11px;
+    font-size: var(--texto-xs);
   }
 }
 
@@ -1122,9 +1122,9 @@
 }
 .area-professor--conectada .pagina-detalhes-submissao__cabecalho h1 {
   max-width: 30ch;
-  font-size: clamp(30px, 3.2vw, 44px);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: var(--texto-titulo-painel);
+  line-height: var(--entrelinha-titulo);
+  letter-spacing: normal;
 }
 .pagina-detalhes-submissao__cabecalho p {
   color: var(--texto-suave);
@@ -1200,7 +1200,7 @@
   border-radius: 0;
   background: transparent;
   color: var(--texto-suave);
-  font-size: 10px;
+  font-size: var(--texto-xs);
 }
 .pagina-detalhes-submissao__lateral .pagina-detalhes-submissao__aviso {
   padding: var(--espaco-3) 0 0 var(--espaco-3);
@@ -1241,15 +1241,86 @@
   }
 }
 
-.pagina-professor .submissao-feed {
+/* ==========================================================================
+   Feed de submissões — lista contínua limpa e filtros sem caixa
+   ========================================================================== */
+
+.area-professor--conectada .pagina-professor__filtro-painel,
+.pagina-professor .pagina-professor__filtro-painel {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
-  transition: background-color 220ms ease;
+}
+
+.area-professor--conectada .pagina-professor__filtros button,
+.pagina-professor .pagina-professor__filtros button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--raio-controle);
+  background: transparent;
+  color: var(--texto);
+  transition:
+    background-color 140ms cubic-bezier(0.2, 0, 0, 1),
+    color 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.area-professor--conectada .pagina-professor__filtros button:hover,
+.pagina-professor .pagina-professor__filtros button:hover {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--titulo) 6%, transparent);
+  color: var(--titulo);
+}
+
+.area-professor--conectada .pagina-professor__filtros button[aria-pressed='true'],
+.pagina-professor .pagina-professor__filtros button[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--azul-suave);
+  color: var(--azul);
+}
+
+.area-professor--conectada .pagina-professor__filtros button[aria-pressed='true'] small,
+.pagina-professor .pagina-professor__filtros button[aria-pressed='true'] small {
+  background: color-mix(in srgb, var(--azul) 12%, transparent);
+  color: var(--azul);
+}
+
+.pagina-professor .pagina-professor__feed-cabecalho {
+  padding: 0 0 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 45%, transparent);
+}
+
+.pagina-professor .lista-submissoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 12px;
+  padding-top: 0;
+  border-radius: var(--raio-superficie);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.pagina-professor .submissao-feed {
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--borda) 45%, transparent);
+  border-inline-start: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background-color 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pagina-professor .submissao-feed:last-child {
+  border-bottom: 0;
 }
 
 .pagina-professor .submissao-feed:hover {
   transform: none;
-  border-color: var(--borda-suave);
-  background: color-mix(in srgb, var(--azul) 5%, var(--superficie));
+  border-color: color-mix(in srgb, var(--borda) 45%, transparent);
+  background: color-mix(in srgb, var(--azul) 4%, var(--superficie));
   box-shadow: none;
 }
 
@@ -1257,46 +1328,71 @@
   display: none;
 }
 
-.pagina-professor .submissao-feed--pendente {
-  border-inline-start: 3px solid var(--aviso);
+.pagina-professor .submissao-feed--pendente,
+.pagina-professor .submissao-feed--pendente:hover {
+  border-inline-start: 0;
 }
 
-.pagina-professor .submissao-feed--pendente:hover {
-  border-inline-start-color: var(--aviso);
+.pagina-professor .submissao-feed__gatilho {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 16px 20px;
+}
+
+.pagina-professor .submissao-feed__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--sucesso);
+  color: var(--texto-sobre-cor);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .pagina-professor .submissao-feed__expandir {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-height: 40px;
-  padding-inline: 0.8rem;
-  border: 1px solid var(--borda-suave);
-  border-radius: var(--raio-botao);
-  background: var(--superficie);
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--raio-controle);
+  background: transparent;
   color: var(--azul);
   font-size: var(--texto-xs);
   font-weight: 700;
   white-space: nowrap;
   transition:
-    background-color 220ms ease,
-    border-color 220ms ease;
+    background-color 140ms cubic-bezier(0.2, 0, 0, 1),
+    color 140ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .pagina-professor .submissao-feed__gatilho:is(:hover, :focus-visible) .submissao-feed__expandir {
-  border-color: var(--azul);
+  border-color: transparent;
   background: var(--azul-suave);
+  color: var(--azul);
 }
 
 .pagina-professor .submissao-feed__seta {
   display: inline-block;
-  transition: transform 220ms ease;
+  transition: transform 140ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .pagina-professor .submissao-feed__gatilho:hover .submissao-feed__seta {
-    transform: translate(2px, -2px);
+    transform: translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina-professor .pagina-professor__filtros button,
+  .pagina-professor .submissao-feed,
+  .pagina-professor .submissao-feed__expandir,
+  .pagina-professor .submissao-feed__seta {
+    transition: none;
   }
 }
 

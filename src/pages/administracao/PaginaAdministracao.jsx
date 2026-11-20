@@ -12,8 +12,6 @@ export default function PaginaAdministracao({
   secao,
   identificador,
   sessao,
-  rascunhos,
-  aoAlterar,
   submissoes,
 }) {
   if (secao === 'campus')
@@ -49,11 +47,7 @@ export default function PaginaAdministracao({
         <GestaoConteudos
           key={secao}
           dominio={secao}
-          itens={rascunhos[secao]}
-          cursos={rascunhos.cursos}
-          disciplinas={rascunhos.disciplinas}
           token={sessao.token}
-          aoAlterar={(itens) => aoAlterar(secao, itens)}
         />
       </main>
     )

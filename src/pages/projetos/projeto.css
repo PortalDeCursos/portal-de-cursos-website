@@ -1,0 +1,20 @@
+
+
+/* ==========================================================================
+   Refinamento visual — hierarquia de subtítulos e remoção de divisória extra
+   ========================================================================== */
+
+.detalhe-projeto__sidebar {
+  border-left: 0 !important;
+  padding-left: 0;
+}
+
+.detalhe-projeto__secao-bloco h3,
+.detalhe-projeto__secao-bloco .texto-formatado h2,
+.detalhe-projeto__secao-bloco .texto-formatado h3 {
+  font-weight: 700;
+  color: var(--titulo);
+  font-size: var(--texto-md);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}

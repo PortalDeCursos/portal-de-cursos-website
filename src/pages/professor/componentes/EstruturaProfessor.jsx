@@ -37,6 +37,7 @@ export default function EstruturaProfessor({
       {usuario ? (
         <Cabecalho
           areaProfessor
+          contaNaBarraLateral={administrador || coordenador}
           nomeArea={administrador ? 'Administração' : coordenador ? 'Coordenação' : undefined}
           autenticado
           pagina={

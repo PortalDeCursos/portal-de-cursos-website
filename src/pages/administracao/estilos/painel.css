@@ -6,7 +6,7 @@
 :root[data-tema='escuro'] .administracao-indicador,
 :root[data-tema='escuro'] .curso-gestao {
   border-color: var(--borda-suave);
-  background: var(--preto);
+  background: var(--superficie);
 }
 .pagina-painel {
   max-width: none;
@@ -81,7 +81,7 @@
   font-size: var(--texto-sm);
 }
 .pagina-painel--administracao .painel-titulo h1 {
-  font-size: clamp(30px, 2.7vw, 36px);
+  font-size: var(--texto-titulo-painel);
 }
 .pagina-painel--administracao .painel-titulo p,
 .pagina-painel--administracao .painel-secao > header p {
@@ -155,7 +155,7 @@
 }
 @media (max-width: 760px) {
   .pagina-painel--administracao .painel-titulo h1 {
-    font-size: var(--texto-xl);
+    font-size: var(--texto-titulo-painel);
   }
 
   .pagina-painel--administracao .gestao-linha-expandida > td {
@@ -183,4 +183,12 @@
   .pagina-painel--disciplinas .tabela-submissoes tbody th {
     font-size: var(--texto-md);
   }
+}
+
+.tabela .tabela__numero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tabela tbody tr:hover {
+  background: var(--suave);
 }

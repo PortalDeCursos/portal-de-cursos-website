@@ -36,8 +36,8 @@
 }
 
 .coordenacao-boas-vindas h1 {
-  font-size: clamp(26px, 2.5vw, 34px);
-  letter-spacing: -0.035em;
+  font-size: var(--texto-titulo-painel);
+  letter-spacing: normal;
 }
 
 .coordenacao-boas-vindas p {
@@ -99,7 +99,7 @@
 .coordenacao-secao-atalhos > header h2 {
   margin: 0;
   font-size: var(--texto-md);
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
 }
 
 .coordenacao-secao-atalhos > header p {
@@ -275,4 +275,23 @@
   color: var(--texto);
   font-size: var(--texto-sm);
   font-variant-numeric: tabular-nums;
+}
+
+
+/* ==========================================================================
+   Refinamentos da fila de avaliação da coordenação
+   ========================================================================== */
+
+.coordenacao-fila .status--aguardando-coordenação,
+.coordenacao-fila .status--aguardando-coordenacao,
+.coordenacao-fila .status--aguardando-orientador {
+  background: var(--aviso-suave);
+  color: var(--aviso);
+  border-color: transparent;
+}
+
+.coordenacao-fila table th:last-child,
+.coordenacao-fila table td:last-child {
+  text-align: right;
+  white-space: nowrap;
 }

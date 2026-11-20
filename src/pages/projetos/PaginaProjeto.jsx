@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Icone from '@/shared/componentes/Icone.jsx'
+import { formatarTitulacao } from '@/shared/utils/formatarTitulacao.js'
 import { buscarProjetoPorId, listarDocumentosProjeto, pegarUrlDownload } from '@/api/projetos.js'
 import { listarCursos } from '@/api/cursos.js'
 import { listarProfessores } from '@/api/professores.js'
@@ -70,7 +71,7 @@ export default function PaginaProjeto({ identificador }) {
       mudarEstado('carregando')
       try {
         const [dadosProjeto, listaCursos, listaProfessores] = await Promise.all([
-          buscarProjetoPorId(identificador, null, controle.signal).catch(() => null),
+          buscarProjetoPorId(identificador, null, controle.signal),
           listarCursos(controle.signal).catch(() => []),
           listarProfessores(null, {}, controle.signal).catch(() => []),
         ])
@@ -425,8 +426,8 @@ export default function PaginaProjeto({ identificador }) {
                   <strong>{orientadorInfo.nome}</strong>
                   <span className="detalhe-projeto__membro-papel">
                     {orientadorInfo.titulacao
-                      ? `Professor (${orientadorInfo.titulacao})`
-                      : 'Docente Orientador'}
+                      ? `Professor · ${formatarTitulacao(orientadorInfo.titulacao)}`
+                      : 'Docente orientador'}
                   </span>
                   <span className="detalhe-projeto__membro-link-acao">Ver perfil docente →</span>
                 </div>

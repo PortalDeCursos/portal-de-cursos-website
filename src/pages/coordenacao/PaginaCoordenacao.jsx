@@ -11,7 +11,7 @@ import { filtrarContextoCoordenacao } from './servicos/filtrarContextoCoordenaca
 import '@/shared/styles/painel.css'
 import './coordenacao.css'
 
-export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar, submissoes }) {
+export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
   const [cursos, mudarCursos] = useState([])
   useEffect(() => {
     const controller = new AbortController()
@@ -39,8 +39,6 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
           <GestaoConteudos
             restritoAoCurso
             dominio="cursos"
-            itens={cursos}
-            aoAlterar={(itens) => aoAlterar('cursos', itens)}
             cursoId={curso?.id || cursoId}
             token={sessao.token}
             somenteEdicao
@@ -69,11 +67,8 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
         <GestaoConteudos
           restritoAoCurso
           dominio="disciplinas"
-          itens={rascunhos.disciplinas}
           cursos={cursosDaCoordenacao}
-          disciplinas={rascunhos.disciplinas}
           token={sessao.token}
-          aoAlterar={(itens) => aoAlterar('disciplinas', itens)}
           cursoId={curso?.id || cursoId}
           curso={curso}
         />
@@ -86,11 +81,8 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
         <GestaoConteudos
           restritoAoCurso
           dominio="projetos"
-          itens={rascunhos.projetos}
           cursos={cursosDaCoordenacao}
-          disciplinas={rascunhos.disciplinas}
           token={sessao.token}
-          aoAlterar={(itens) => aoAlterar('projetos', itens)}
           cursoId={curso?.id || cursoId}
           curso={curso}
         />
@@ -217,7 +209,7 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
                 ['curso', 'Dados do curso', 'Atualize apresentação, turno e carga horária'],
                 [
                   'disciplinas',
-                  'Matriz curricular',
+                  'Disciplinas',
                   'Organize as disciplinas obrigatórias e optativas',
                 ],
               ],
@@ -225,9 +217,9 @@ export default function PaginaCoordenacao({ secao, sessao, rascunhos, aoAlterar,
             [
               'Comunidade e acervo',
               [
-                ['professores', 'Corpo docente', 'Gerencie os professores vinculados ao curso'],
-                ['projetos', 'Acervo de projetos', 'Consulte e edite os trabalhos do curso'],
-                ['submissoes', 'Fila de avaliação', 'Publique ou recuse submissões validadas'],
+                ['professores', 'Professores', 'Gerencie os professores vinculados ao curso'],
+                ['projetos', 'Projetos', 'Consulte e edite os trabalhos do curso'],
+                ['submissoes', 'Submissões', 'Publique ou recuse submissões validadas'],
               ],
             ],
           ].map(([titulo, itens]) => (

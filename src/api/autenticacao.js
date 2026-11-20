@@ -56,7 +56,7 @@ export async function fazerLogin(email, senha, sinal) {
     !Number.isFinite(resposta.expiracao) ||
     resposta.expiracao <= 0
   ) {
-    throw new ErroApi('Não foi possível confirmar sua sessão. Resposta inválida do servidor.', {
+    throw new ErroApi('Não foi possível entrar na sua conta agora. Tente novamente.', {
       status: 502,
     })
   }

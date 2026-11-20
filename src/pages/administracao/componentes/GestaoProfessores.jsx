@@ -291,7 +291,7 @@ export default function GestaoProfessores({ token, cursoId }) {
       <p className="gestao-nota">
         {cursoId
           ? 'A lista e os cadastros estão limitados ao curso vinculado à coordenação.'
-          : 'A edição de dados de professor por administrador depende de liberação no contrato atual da API.'}
+          : 'A edição de professores ainda não está disponível por aqui.'}
       </p>
     </>
   )

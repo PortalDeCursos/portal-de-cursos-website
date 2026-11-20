@@ -1,7 +1,6 @@
 import PainelInstitucional from '@/shared/componentes/PainelInstitucional.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { basePortal } from '@/app/rotas.js'
-import logoPortal from '@/assets/marca/logo-portal.png'
 import { listarCursos } from '@/api/cursos.js'
 import { cadastrarAluno } from '@/api/alunos.js'
 import { ErroApi } from '@/api/cliente.js'
@@ -79,17 +78,6 @@ function MensagemErro({ id, texto }) {
   )
 }
 
-function IconeCampo({ tipo }) {
-  const mapaTipo = {
-    usuario: 'usuario',
-    email: 'email',
-    curso: 'formacao-cursos',
-    senha: 'senha',
-  }
-
-  return <Icone nome={mapaTipo[tipo] || 'ponto'} classe="cadastro-aluno__icone-campo" />
-}
-
 export default function PaginaCadastroAluno() {
   const [cursos, mudarCursos] = useState([])
   const [carregandoCursos, mudarCarregandoCursos] = useState(true)
@@ -99,9 +87,14 @@ export default function PaginaCadastroAluno() {
   const [tocados, mudarTocados] = useState({})
   const [erros, mudarErros] = useState({})
   const [mostrarSenha, mudarMostrarSenha] = useState(false)
+  const [mostrarConfirmarSenha, mudarMostrarConfirmarSenha] = useState(false)
   const [enviando, mudarEnviando] = useState(false)
   const [erroGeral, mudarErroGeral] = useState('')
   const resumoErro = useRef(null)
+
+  useEffect(() => {
+    document.title = 'Criar conta — Portal de Cursos'
+  }, [])
 
   useEffect(() => {
     const controle = new AbortController()
@@ -182,17 +175,12 @@ export default function PaginaCadastroAluno() {
   }
 
   const tipoSenha = mostrarSenha ? 'text' : 'password'
+  const tipoConfirmarSenha = mostrarConfirmarSenha ? 'text' : 'password'
 
   return (
     <main id="conteudo" className="limite pagina-acesso cadastro-aluno">
       <div className="cadastro-aluno__cartao layout-autenticacao">
         <section className="cadastro-aluno__conteudo" aria-labelledby="titulo-cadastro">
-          <div className="cadastro-aluno__marca">
-            <span className="cadastro-aluno__logo">
-              <img src={logoPortal} alt="" width="30" height="30" />
-            </span>
-            <span>Portal de Cursos</span>
-          </div>
           <div className="cadastro-aluno__cabecalho">
             <h1 id="titulo-cadastro">Crie sua conta</h1>
             <p>Cadastre-se para submeter seus projetos acadêmicos.</p>
@@ -210,57 +198,52 @@ export default function PaginaCadastroAluno() {
           )}
 
           <form onSubmit={cadastrar} noValidate aria-busy={enviando}>
-            <div className="acesso-campo cadastro-aluno__campo">
-              <label className="somente-leitores" htmlFor="aluno-nome">
-                Nome completo
-              </label>
-              <IconeCampo tipo="usuario" />
-              <input
-                id="aluno-nome"
-                type="text"
-                autoComplete="name"
-                autoCapitalize="words"
-                maxLength={120}
-                placeholder="Nome completo"
-                value={valores.nome}
-                onChange={(evento) => alterar('nome', evento.target.value)}
-                onBlur={() => sairDoCampo('nome')}
-                readOnly={enviando}
-                aria-invalid={erros.nome ? true : undefined}
-                aria-describedby={descrever(erros.nome && 'erro-nome')}
-              />
+            <div className="acesso-campo">
+              <label htmlFor="aluno-nome">Nome completo</label>
+              <div className="acesso-entrada">
+                <input
+                  id="aluno-nome"
+                  type="text"
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  maxLength={120}
+                  placeholder="Digite seu nome completo"
+                  value={valores.nome}
+                  onChange={(evento) => alterar('nome', evento.target.value)}
+                  onBlur={() => sairDoCampo('nome')}
+                  readOnly={enviando}
+                  aria-invalid={erros.nome ? true : undefined}
+                  aria-describedby={descrever(erros.nome && 'erro-nome')}
+                />
+              </div>
               <MensagemErro id="erro-nome" texto={erros.nome} />
             </div>
 
-            <div className="acesso-campo cadastro-aluno__campo">
-              <label className="somente-leitores" htmlFor="aluno-email">
-                E-mail institucional
-              </label>
-              <IconeCampo tipo="email" />
-              <input
-                id="aluno-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                maxLength={254}
-                placeholder="E-mail institucional"
-                value={valores.email}
-                onChange={(evento) => alterar('email', evento.target.value)}
-                onBlur={() => sairDoCampo('email')}
-                readOnly={enviando}
-                aria-invalid={erros.email ? true : undefined}
-                aria-describedby={descrever(erros.email && 'erro-email')}
-              />
+            <div className="acesso-campo">
+              <label htmlFor="aluno-email">E-mail institucional</label>
+              <div className="acesso-entrada">
+                <input
+                  id="aluno-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                  placeholder="voce@instituicao.edu.br"
+                  value={valores.email}
+                  onChange={(evento) => alterar('email', evento.target.value)}
+                  onBlur={() => sairDoCampo('email')}
+                  readOnly={enviando}
+                  aria-invalid={erros.email ? true : undefined}
+                  aria-describedby={descrever(erros.email && 'erro-email')}
+                />
+              </div>
               <MensagemErro id="erro-email" texto={erros.email} />
             </div>
 
-            <div className="acesso-campo cadastro-aluno__campo">
-              <label className="somente-leitores" htmlFor="aluno-curso">
-                Curso
-              </label>
-              <IconeCampo tipo="curso" />
+            <div className="acesso-campo">
+              <label htmlFor="aluno-curso">Curso</label>
               <div className="acesso-select">
                 <select
                   id="aluno-curso"
@@ -308,11 +291,8 @@ export default function PaginaCadastroAluno() {
               <MensagemErro id="erro-curso" texto={erros.curso} />
             </div>
 
-            <div className="acesso-campo cadastro-aluno__campo">
-              <label className="somente-leitores" htmlFor="aluno-senha">
-                Senha
-              </label>
-              <IconeCampo tipo="senha" />
+            <div className="acesso-campo">
+              <label htmlFor="aluno-senha">Senha</label>
               <div className="acesso-senha">
                 <input
                   id="aluno-senha"
@@ -330,7 +310,7 @@ export default function PaginaCadastroAluno() {
                 <button
                   type="button"
                   onClick={() => mudarMostrarSenha(!mostrarSenha)}
-                  aria-controls="aluno-senha aluno-confirmar-senha"
+                  aria-controls="aluno-senha"
                   aria-pressed={mostrarSenha}
                   aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                   title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
@@ -338,39 +318,43 @@ export default function PaginaCadastroAluno() {
                   <Icone nome={mostrarSenha ? 'ocultar' : 'mostrar'} />
                 </button>
               </div>
-              <p id="ajuda-senha" className="acesso-ajuda-campo cadastro-aluno__dica">
+              <p id="ajuda-senha" className="acesso-ajuda-campo">
                 Use pelo menos {TAMANHO_MINIMO_SENHA} caracteres.
               </p>
               <MensagemErro id="erro-senha" texto={erros.senha} />
             </div>
 
-            <div className="acesso-campo cadastro-aluno__campo">
-              <label className="somente-leitores" htmlFor="aluno-confirmar-senha">
-                Confirmar senha
-              </label>
-              <IconeCampo tipo="senha" />
-              <input
-                id="aluno-confirmar-senha"
-                type={tipoSenha}
-                autoComplete="new-password"
-                placeholder="Confirmar senha"
-                value={valores.confirmarSenha}
-                onChange={(evento) => alterar('confirmarSenha', evento.target.value)}
-                onBlur={() => sairDoCampo('confirmarSenha')}
-                readOnly={enviando}
-                aria-invalid={erros.confirmarSenha ? true : undefined}
-                aria-describedby={descrever(erros.confirmarSenha && 'erro-confirmarSenha')}
-              />
+            <div className="acesso-campo">
+              <label htmlFor="aluno-confirmar-senha">Confirmar senha</label>
+              <div className="acesso-senha">
+                <input
+                  id="aluno-confirmar-senha"
+                  type={tipoConfirmarSenha}
+                  autoComplete="new-password"
+                  placeholder="Repita sua senha"
+                  value={valores.confirmarSenha}
+                  onChange={(evento) => alterar('confirmarSenha', evento.target.value)}
+                  onBlur={() => sairDoCampo('confirmarSenha')}
+                  readOnly={enviando}
+                  aria-invalid={erros.confirmarSenha ? true : undefined}
+                  aria-describedby={descrever(erros.confirmarSenha && 'erro-confirmarSenha')}
+                />
+                <button
+                  type="button"
+                  onClick={() => mudarMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                  aria-controls="aluno-confirmar-senha"
+                  aria-pressed={mostrarConfirmarSenha}
+                  aria-label={mostrarConfirmarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={mostrarConfirmarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  <Icone nome={mostrarConfirmarSenha ? 'ocultar' : 'mostrar'} />
+                </button>
+              </div>
               <MensagemErro id="erro-confirmarSenha" texto={erros.confirmarSenha} />
             </div>
 
-            <button
-              className="botao-primario acesso-entrar cadastro-aluno__enviar"
-              type="submit"
-              disabled={enviando}
-            >
-              {enviando ? 'Criando conta…' : 'Criar conta'}
-              <Icone nome="seta" classe="cadastro-aluno__seta" />
+            <button className="botao-primario acesso-entrar" type="submit" disabled={enviando}>
+              <span>{enviando ? 'Criando conta…' : 'Criar conta'}</span>
             </button>
 
             <span className="somente-leitores" role="status">
@@ -380,10 +364,6 @@ export default function PaginaCadastroAluno() {
 
           <p className="cadastro-aluno__links">
             Já tem uma conta? <a href={`${basePortal}login`}>Entrar</a>
-            <span>
-              Só quer conhecer os cursos?{' '}
-              <a href={`${basePortal}#cursos`}>Explorar como visitante</a>
-            </span>
           </p>
         </section>
         <PainelInstitucional />
