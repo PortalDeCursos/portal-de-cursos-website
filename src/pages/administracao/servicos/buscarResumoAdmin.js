@@ -4,8 +4,8 @@ import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 export async function buscarResumoAdmin(token, sinal) {
   const [cursos, campus, areas] = await Promise.all([
     listarCursos(sinal),
-    listarCampus(sinal),
-    listarAreasConhecimento(sinal),
+    listarCampus(sinal, token),
+    listarAreasConhecimento(sinal, token),
   ])
 
   const disciplinasPorCurso = await Promise.all(

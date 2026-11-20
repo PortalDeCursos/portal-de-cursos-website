@@ -115,26 +115,29 @@ export default function GestaoCampus({ identificador, token }) {
   const [exclusao, mudarExclusao] = useState(null)
   const [salvando, mudarSalvando] = useState(false)
 
-  const carregar = useCallback(async (sinal) => {
-    mudarEstado('carregando')
-    mudarErro('')
-    try {
-      const [itensCampus, itensCursos] = await Promise.all([
-        listarCampus(sinal),
-        listarCursos(sinal).catch(() => null),
-      ])
-      if (sinal?.aborted) return
-      if (!Array.isArray(itensCampus)) throw new Error('A lista de campus recebida é inválida.')
-      mudarCampus(itensCampus)
-      mudarCursos(itensCursos)
-      mudarEstado('pronto')
-    } catch (falha) {
-      if (!sinal?.aborted) {
-        mudarErro(falha.message || 'Não foi possível carregar os campus.')
-        mudarEstado('erro')
+  const carregar = useCallback(
+    async (sinal) => {
+      mudarEstado('carregando')
+      mudarErro('')
+      try {
+        const [itensCampus, itensCursos] = await Promise.all([
+          listarCampus(sinal, token),
+          listarCursos(sinal).catch(() => null),
+        ])
+        if (sinal?.aborted) return
+        if (!Array.isArray(itensCampus)) throw new Error('A lista de campus recebida é inválida.')
+        mudarCampus(itensCampus)
+        mudarCursos(itensCursos)
+        mudarEstado('pronto')
+      } catch (falha) {
+        if (!sinal?.aborted) {
+          mudarErro(falha.message || 'Não foi possível carregar os campus.')
+          mudarEstado('erro')
+        }
       }
-    }
-  }, [])
+    },
+    [token],
+  )
 
   useEffect(() => {
     const controller = new AbortController()

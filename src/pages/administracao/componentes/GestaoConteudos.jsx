@@ -74,8 +74,8 @@ export default function GestaoConteudos({
         if (dominio === 'cursos') {
           const [lista, listaCampus, listaAreas] = await Promise.all([
             listarCursos(sinal),
-            listarCampus(sinal),
-            listarAreasConhecimento(sinal),
+            listarCampus(sinal, token),
+            listarAreasConhecimento(sinal, token),
           ])
           mudarRegistrosApi(lista)
           mudarCursosApi(lista)
