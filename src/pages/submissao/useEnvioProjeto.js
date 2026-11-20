@@ -26,6 +26,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
   const cadastroBloqueado = useRef(false)
   const projetoId = useRef(null)
   const cadastroIncerto = useRef(false)
+  const encaminhamentoEmAndamento = useRef(false)
 
   function atualizarEtapa(etapa, estado, mensagem) {
     mudarEnvio((anterior) => ({ ...anterior, [etapa]: { estado, mensagem } }))
@@ -38,6 +39,31 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         atual === indice ? { ...item, estado, mensagem } : item,
       ),
     }))
+  }
+
+  async function executarEncaminhamento(id) {
+    if (encaminhamentoEmAndamento.current) return false
+    encaminhamentoEmAndamento.current = true
+    atualizarEtapa('encaminhamento', 'enviando', 'Consultando e atualizando o encaminhamento…')
+    try {
+      await encaminharProjetoParaCoordenacao(id, sessao.token)
+      atualizarEtapa('encaminhamento', 'concluido', 'Encaminhado à coordenação.')
+      return true
+    } catch {
+      atualizarEtapa(
+        'encaminhamento',
+        'falhou',
+        'Não conseguimos confirmar o encaminhamento. Tente novamente para consultar a situação atual e continuar.',
+      )
+      return false
+    } finally {
+      encaminhamentoEmAndamento.current = false
+    }
+  }
+
+  async function tentarEncaminhamento() {
+    if (!projetoId.current || envio.encaminhamento.estado !== 'falhou') return
+    await executarEncaminhamento(projetoId.current)
   }
 
   async function enviarProjeto({ dto, submissaoLocal, orientador, arquivos }) {
@@ -107,18 +133,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         'A avaliação do orientador faz parte do cadastro. Acompanhe o andamento no painel.',
       )
     } else {
-      atualizarEtapa('encaminhamento', 'enviando', 'Encaminhando à coordenação…')
-      try {
-        await encaminharProjetoParaCoordenacao(projetoCriado.id, sessao.token)
-        atualizarEtapa('encaminhamento', 'concluido', 'Encaminhado à coordenação.')
-      } catch {
-        encaminhamentoFalhou = true
-        atualizarEtapa(
-          'encaminhamento',
-          'falhou',
-          'Não conseguimos confirmar o encaminhamento. Confira a situação no painel.',
-        )
-      }
+      encaminhamentoFalhou = !(await executarEncaminhamento(projetoCriado.id))
     }
 
     if (erroDestinatarios) {
@@ -126,8 +141,8 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     } else if (encaminhamentoFalhou) {
       atualizarEtapa(
         'notificacao',
-        'pendente',
-        'O aviso aguarda a confirmação do encaminhamento. Acompanhe a situação no painel.',
+        'falhou',
+        'O aviso não foi enviado porque o encaminhamento não foi confirmado. Avise a coordenação e acompanhe o projeto pelo painel.',
       )
     } else {
       atualizarEtapa('notificacao', 'enviando', 'Enviando o aviso por e-mail…')
@@ -187,5 +202,5 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     mudarEnvio(criarEnvioInicial())
   }
 
-  return { envio, enviarProjeto, liberarNovoCadastro, limparEnvio }
+  return { envio, enviarProjeto, tentarEncaminhamento, liberarNovoCadastro, limparEnvio }
 }

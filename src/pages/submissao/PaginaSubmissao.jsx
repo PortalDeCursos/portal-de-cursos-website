@@ -45,10 +45,11 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [erros, mudarErros] = useState({})
   const [enviado, mudarEnviado] = useState(false)
   const [enviando, mudarEnviando] = useState(false)
-  const { envio, enviarProjeto, liberarNovoCadastro, limparEnvio } = useEnvioProjeto({
-    sessao,
-    aoSubmeter,
-  })
+  const { envio, enviarProjeto, tentarEncaminhamento, liberarNovoCadastro, limparEnvio } =
+    useEnvioProjeto({
+      sessao,
+      aoSubmeter,
+    })
   const resumoErros = useRef(null)
   const campoDisciplinas = useRef(null)
 
@@ -536,7 +537,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           </span>
           <h1 id="titulo-confirmacao">Projeto cadastrado.</h1>
           <p>Confira abaixo o resultado de cada etapa antes de acompanhar o projeto no painel.</p>
-          <SituacaoEnvio envio={envio} />
+          <SituacaoEnvio envio={envio} tentarEncaminhamento={tentarEncaminhamento} />
           <div className="submissao-confirmacao__resumo">
             <strong>{formulario.titulo}</strong>
             <span>
