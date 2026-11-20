@@ -124,10 +124,23 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     } catch (falha) {
       const incerto = resultadoIncerto(falha)
       cadastroIncerto.current = incerto
-      const mensagem = incerto
-        ? 'Não conseguimos confirmar se o projeto foi enviado. Confira seu painel antes de tentar de novo.'
-        : falha.message ||
-          'Não foi possível cadastrar o projeto. Confira os dados e tente novamente.'
+      let mensagem =
+        falha.message || 'Não foi possível cadastrar o projeto. Confira os dados e tente novamente.'
+      if (incerto) {
+        mensagem =
+          'Não conseguimos confirmar se o projeto foi enviado. Confira seu painel antes de tentar de novo.'
+      } else if (falha.status >= 500) {
+        mensagem =
+          'Não foi possível concluir o envio agora. Confira no painel antes de tentar novamente.'
+      } else if (
+        falha.status === 409 &&
+        falha.detalhe === 'Já existe um projeto cadastrado com esse nome.'
+      ) {
+        mensagem =
+          sessao.tipoUsuario === 'ALUNO'
+            ? 'Já existe um projeto com esse nome. Confira no painel do aluno.'
+            : 'Já existe um projeto com esse nome. Confira no seu painel.'
+      }
       atualizarEtapa('cadastro', incerto ? 'incerto' : 'falhou', mensagem)
       cadastroBloqueado.current = false
       throw new Error(mensagem)
