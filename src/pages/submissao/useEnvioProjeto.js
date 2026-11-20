@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   cadastrarProjeto,
   encaminharProjetoParaCoordenacao,
@@ -27,6 +27,23 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
   const projetoId = useRef(null)
   const cadastroIncerto = useRef(false)
   const encaminhamentoEmAndamento = useRef(false)
+  const arquivosEmAndamento = useRef(new Set())
+  const temPendencias =
+    ['enviando', 'incerto'].includes(envio.cadastro.estado) ||
+    envio.notificacao.estado === 'enviando' ||
+    (envio.projetoId &&
+      (['pendente', 'enviando', 'falhou'].includes(envio.encaminhamento.estado) ||
+        envio.arquivos.some((item) => item.estado !== 'concluido')))
+
+  useEffect(() => {
+    if (!temPendencias) return
+    function avisarAntesDeSair(evento) {
+      evento.preventDefault()
+      evento.returnValue = ''
+    }
+    window.addEventListener('beforeunload', avisarAntesDeSair)
+    return () => window.removeEventListener('beforeunload', avisarAntesDeSair)
+  }, [temPendencias])
 
   function atualizarEtapa(etapa, estado, mensagem) {
     mudarEnvio((anterior) => ({ ...anterior, [etapa]: { estado, mensagem } }))
@@ -64,6 +81,34 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
   async function tentarEncaminhamento() {
     if (!projetoId.current || envio.encaminhamento.estado !== 'falhou') return
     await executarEncaminhamento(projetoId.current)
+  }
+
+  async function executarArquivo(indice, arquivo) {
+    if (arquivosEmAndamento.current.has(indice)) return
+    arquivosEmAndamento.current.add(indice)
+    atualizarArquivo(indice, 'enviando', 'Enviando arquivo…')
+    try {
+      await enviarDocumentoProjeto(projetoId.current, arquivo, sessao.token)
+      atualizarArquivo(indice, 'concluido', 'Arquivo enviado.')
+    } catch (falha) {
+      const incerto = resultadoIncerto(falha)
+      atualizarArquivo(
+        indice,
+        incerto ? 'incerto' : 'falhou',
+        incerto
+          ? 'Não conseguimos confirmar o envio deste arquivo. Confira os anexos do projeto no painel antes de reenviar.'
+          : 'O serviço recusou este arquivo. Tente novamente. Se continuar, informe a coordenação.',
+      )
+    } finally {
+      arquivosEmAndamento.current.delete(indice)
+    }
+  }
+
+  async function tentarArquivo(indice, confirmouAusencia = false) {
+    const item = envio.arquivos[indice]
+    if (!projetoId.current || !item) return
+    if (item.estado !== 'falhou' && !(item.estado === 'incerto' && confirmouAusencia)) return
+    await executarArquivo(indice, item.arquivo)
   }
 
   async function enviarProjeto({ dto, submissaoLocal, orientador, arquivos }) {
@@ -168,19 +213,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     }
 
     for (const [indice, arquivo] of arquivosParaEnviar.entries()) {
-      atualizarArquivo(indice, 'enviando', 'Enviando arquivo…')
-      try {
-        await enviarDocumentoProjeto(projetoCriado.id, arquivo, sessao.token)
-        atualizarArquivo(indice, 'concluido', 'Arquivo enviado.')
-      } catch (falha) {
-        atualizarArquivo(
-          indice,
-          resultadoIncerto(falha) ? 'incerto' : 'falhou',
-          resultadoIncerto(falha)
-            ? 'Não conseguimos confirmar o envio deste arquivo. Confira os anexos do projeto no painel.'
-            : 'O serviço recusou este arquivo. Confira os anexos do projeto no painel.',
-        )
-      }
+      await executarArquivo(indice, arquivo)
     }
     aoSubmeter?.({
       ...submissaoLocal,
@@ -202,5 +235,13 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     mudarEnvio(criarEnvioInicial())
   }
 
-  return { envio, enviarProjeto, tentarEncaminhamento, liberarNovoCadastro, limparEnvio }
+  return {
+    envio,
+    temPendencias,
+    enviarProjeto,
+    tentarEncaminhamento,
+    tentarArquivo,
+    liberarNovoCadastro,
+    limparEnvio,
+  }
 }

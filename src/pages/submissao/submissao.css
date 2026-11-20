@@ -1239,6 +1239,22 @@
   margin: var(--espaco-1) 0;
   color: var(--texto-suave);
 }
+
+.situacao-envio__confirmacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 44px;
+  margin-block: var(--espaco-2);
+}
+
+.situacao-envio__confirmacao input {
+  flex: 0 0 auto;
+}
+
+.situacao-envio button {
+  min-height: 44px;
+}
 .etapas-submissao {
   margin-top: var(--espaco-6);
 }

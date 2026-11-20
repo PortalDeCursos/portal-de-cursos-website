@@ -45,11 +45,18 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [erros, mudarErros] = useState({})
   const [enviado, mudarEnviado] = useState(false)
   const [enviando, mudarEnviando] = useState(false)
-  const { envio, enviarProjeto, tentarEncaminhamento, liberarNovoCadastro, limparEnvio } =
-    useEnvioProjeto({
-      sessao,
-      aoSubmeter,
-    })
+  const {
+    envio,
+    temPendencias,
+    enviarProjeto,
+    tentarEncaminhamento,
+    tentarArquivo,
+    liberarNovoCadastro,
+    limparEnvio,
+  } = useEnvioProjeto({
+    sessao,
+    aoSubmeter,
+  })
   const resumoErros = useRef(null)
   const campoDisciplinas = useRef(null)
 
@@ -537,7 +544,13 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           </span>
           <h1 id="titulo-confirmacao">Projeto cadastrado.</h1>
           <p>Confira abaixo o resultado de cada etapa antes de acompanhar o projeto no painel.</p>
-          <SituacaoEnvio envio={envio} tentarEncaminhamento={tentarEncaminhamento} />
+          <SituacaoEnvio
+            envio={envio}
+            temPendencias={temPendencias}
+            tentarEncaminhamento={tentarEncaminhamento}
+            tentarArquivo={tentarArquivo}
+            destinoPainel={destinoPainel}
+          />
           <div className="submissao-confirmacao__resumo">
             <strong>{formulario.titulo}</strong>
             <span>
@@ -545,7 +558,12 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             </span>
           </div>
           <div className="submissao-confirmacao__acoes">
-            <a className="botao-primario" href={destinoPainel}>
+            <a
+              className="botao-primario"
+              href={destinoPainel}
+              target={temPendencias ? '_blank' : undefined}
+              rel={temPendencias ? 'noreferrer' : undefined}
+            >
               Acompanhar submissão
             </a>
             <button
@@ -568,7 +586,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                 mudarEnviado(false)
                 limparEnvio()
               }}
-              disabled={enviando}
+              disabled={enviando || Boolean(temPendencias)}
             >
               Enviar outro projeto
             </button>
@@ -702,7 +720,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
       <form className="formulario-submissao" onSubmit={submeter} noValidate>
         {avisoDisciplinas && <p role="status">{avisoDisciplinas}</p>}
-        {envio.cadastro.estado !== 'pendente' && <SituacaoEnvio envio={envio} />}
+        {envio.cadastro.estado !== 'pendente' && (
+          <SituacaoEnvio envio={envio} temPendencias={temPendencias} />
+        )}
         {envio.cadastro.estado === 'incerto' && (
           <div>
             <a
@@ -715,7 +735,14 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             >
               Conferir meu painel em outra aba
             </a>
-            <button type="button" className="botao-secundario" onClick={liberarNovoCadastro}>
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => {
+                liberarNovoCadastro()
+                mudarErro('')
+              }}
+            >
               Conferi o painel e quero tentar novamente
             </button>
           </div>
@@ -798,7 +825,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                 data-testid="submissao-enviar"
                 className="botao-primario"
                 type="submit"
-                disabled={enviando || envio.cadastro.estado === 'incerto'}
+                disabled={
+                  enviando || envio.cadastro.estado === 'incerto' || Boolean(envio.projetoId)
+                }
               >
                 {enviando ? 'Salvando projeto…' : 'Enviar projeto'}
               </button>
