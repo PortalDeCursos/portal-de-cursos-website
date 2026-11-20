@@ -339,7 +339,7 @@
 /* ---------- Botão Mostrar/Ocultar Senha ---------- */
 
 .acesso-login__conteudo .acesso-senha input {
-  padding-right: 48px;
+  padding-right: 60px;
 }
 
 .acesso-login__conteudo .acesso-senha button {
@@ -349,9 +349,9 @@
   translate: 0 -50%;
   display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  min-height: 36px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
   padding: 0;
   border: 0;
   border-radius: var(--raio-botao);
