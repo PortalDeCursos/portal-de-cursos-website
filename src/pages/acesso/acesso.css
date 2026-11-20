@@ -339,7 +339,7 @@
 /* ---------- Botão Mostrar/Ocultar Senha ---------- */
 
 .acesso-login__conteudo .acesso-senha input {
-  padding-right: 48px;
+  padding-right: 60px;
 }
 
 .acesso-login__conteudo .acesso-senha button {
@@ -349,9 +349,9 @@
   translate: 0 -50%;
   display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  min-height: 36px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
   padding: 0;
   border: 0;
   border-radius: var(--raio-botao);
@@ -688,4 +688,31 @@
   .acesso-login.limite {
     padding-inline: 14px;
   }
+}
+
+
+/* ==========================================================================
+   Unificação Login / Cadastro — split limpo sem borda dupla
+   ========================================================================== */
+
+.acesso-login .layout-autenticacao.acesso-login__cartao,
+.cadastro-aluno .layout-autenticacao.cadastro-aluno__cartao {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--raio-superficie);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+.acesso-login .layout-autenticacao > .painel-institucional,
+.cadastro-aluno .layout-autenticacao > .painel-institucional {
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+.acesso-login__cabecalho h1,
+.cadastro-aluno__cabecalho h1 {
+  text-wrap: balance;
 }

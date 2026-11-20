@@ -24,11 +24,17 @@
   font-size: var(--texto-xs);
 }
 .campus-detalhe-titulo {
-  margin-top: 4px;
+  align-items: center;
+}
+.campus-detalhe-nome {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
 }
 .campus-detalhe-titulo h1,
 .campus-lista + .painel-titulo h1 {
-  font-size: clamp(23px, 2.2vw, 28px);
+  font-size: var(--texto-titulo-painel);
 }
 .campus-sigla {
   padding: 6px 10px;
@@ -40,18 +46,18 @@
 }
 .campus-detalhe-grade {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-5);
 }
 .campus-detalhe-cartao {
   display: grid;
   align-content: start;
-  gap: 16px;
+  gap: var(--espaco-5);
   min-width: 0;
-  min-height: 132px;
-  padding: 16px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-botao);
+  padding: var(--espaco-5);
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--raio-cartao);
   background: var(--superficie);
 }
 .campus-detalhe-cartao > header {
@@ -72,7 +78,7 @@
   font-weight: 700;
 }
 .campus-detalhe-cartao h2 {
-  font-size: var(--texto-xs);
+  font-size: var(--texto-md);
 }
 .campus-detalhe-cartao header p,
 .campus-detalhe-cartao > p {
@@ -83,7 +89,7 @@
 }
 .campus-detalhe-cartao dl {
   display: grid;
-  gap: 10px;
+  gap: var(--espaco-4);
   margin: 0;
 }
 .campus-detalhe-cartao dl > div {
@@ -99,12 +105,51 @@
 .campus-detalhe-cartao dd {
   margin: 0;
   color: var(--titulo);
-  font-size: var(--texto-xs);
+  font-size: var(--texto-sm);
+  line-height: var(--entrelinha-texto);
+  overflow-wrap: anywhere;
+}
+
+.campus-cursos-cabecalho {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.campus-cursos-contagem {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+.campus-cursos-lista {
+  display: grid;
+  gap: var(--espaco-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.campus-cursos-lista li {
+  display: grid;
+  gap: var(--espaco-1);
+  padding-bottom: var(--espaco-4);
+  border-bottom: 1px solid var(--borda-suave);
+}
+.campus-cursos-lista strong {
+  color: var(--titulo);
+  font-size: var(--texto-sm);
+}
+.campus-cursos-lista span,
+.campus-cursos-vazio p {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+.campus-cursos-vazio p {
+  margin: 0 0 var(--espaco-2);
+}
+.campus-cursos-acao {
+  justify-self: start;
 }
 .campus-detalhe-valor {
   color: var(--titulo);
   font-size: var(--texto-lg);
-  line-height: 1;
+  line-height: var(--entrelinha-titulo);
 }
 .campus-detalhe-valor--texto {
   font-size: var(--texto-xs);
@@ -160,7 +205,7 @@
   background: var(--suave);
   color: var(--titulo);
   font-size: var(--texto-xs);
-  line-height: 1;
+  line-height: var(--entrelinha-titulo);
   font-weight: 800;
   letter-spacing: normal;
   white-space: nowrap;
@@ -191,6 +236,16 @@
 
   .campus-detalhe-grade {
     grid-template-columns: 1fr;
+  }
+  .campus-detalhe-acoes {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .campus-detalhe-acoes > *,
+  .campus-cursos-acao {
+    flex: 1;
+    width: 100%;
+    justify-content: center;
   }
 }
 .campus-sigla,
@@ -238,4 +293,36 @@
   border-color: var(--roxo-suave);
   background: var(--superficie);
   color: var(--azul);
+}
+
+.campus-detalhe-dados {
+  padding: var(--espaco-4) 0;
+  border-width: 1px 0;
+  border-radius: 0;
+  background: transparent;
+}
+.campus-detalhe-dados dl {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.campus-detalhe-dados dl > div + div {
+  padding-left: var(--espaco-4);
+  border-left: 1px solid var(--borda-suave);
+}
+@media (max-width: 900px) {
+  .campus-detalhe-dados dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .campus-detalhe-dados dl > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 480px) {
+  .campus-detalhe-dados dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .campus-detalhe-dados dl > div + div {
+    padding-left: 0;
+    border-left: 0;
+  }
 }

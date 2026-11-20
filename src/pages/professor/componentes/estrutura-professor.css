@@ -1,11 +1,12 @@
 .painel-estrutura {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  min-height: calc(100dvh - var(--cabecalho-altura, 64px));
+  min-height: calc(100dvh - var(--altura-cabecalho));
 }
 
 .painel-estrutura__conteudo {
   min-width: 0;
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
 }
 
 .painel-navegacao {
@@ -64,7 +65,7 @@
 .painel-navegacao__grupo h2 {
   margin: 0 8px 2px;
   color: var(--texto-suave);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -167,7 +168,7 @@
   padding-top: 10px;
   border-top: 1px solid var(--borda-suave);
   color: var(--texto-suave);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   line-height: 1.4;
 }
 .painel-navegacao__conta {
@@ -214,6 +215,22 @@
   background: var(--fundo);
 }
 
+.area-professor--conectada {
+  --fonte-titulo: var(--fonte-corpo);
+  padding-top: var(--altura-cabecalho);
+  line-height: var(--entrelinha-texto);
+  letter-spacing: normal;
+}
+
+.area-professor--conectada main :is(h1, h2, h3) {
+  font-weight: 700;
+  line-height: var(--entrelinha-titulo);
+}
+
+.area-professor--conectada main :is(p, small, label, li, td, th) {
+  line-height: var(--entrelinha-texto);
+}
+
 .area-professor--conectada .cabecalho__conteudo {
   max-width: none;
   padding-inline: 32px;
@@ -228,7 +245,7 @@
 }
 
 .area-professor--conectada .pagina-detalhes-submissao h1 {
-  font-size: clamp(28px, 3vw, 38px);
+  font-size: var(--texto-titulo-painel);
 }
 
 .documento-indisponivel {
@@ -242,9 +259,9 @@
 }
 
 .area-professor--conectada .pagina-professor h1 {
-  font-size: clamp(28px, 3vw, 36px);
-  letter-spacing: -0.035em;
-  line-height: 1.15;
+  font-size: var(--texto-titulo-painel);
+  letter-spacing: normal;
+  line-height: var(--entrelinha-titulo);
 }
 
 .area-professor--conectada .pagina-professor__filtro-painel {

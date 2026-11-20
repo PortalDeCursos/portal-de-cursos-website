@@ -57,9 +57,9 @@
   max-width: 820px;
   margin: 0;
   color: var(--titulo);
-  font-size: clamp(28px, 3vw, 40px);
-  line-height: 1.04;
-  letter-spacing: -0.055em;
+  font-size: var(--texto-titulo-painel);
+  line-height: var(--entrelinha-titulo);
+  letter-spacing: normal;
   overflow-wrap: anywhere;
 }
 
@@ -113,7 +113,7 @@
   margin: 0;
   color: var(--titulo);
   font-size: var(--texto-md);
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
 }
 
 .pagina-detalhes-submissao__principal p,

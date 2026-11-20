@@ -2,7 +2,6 @@ import EstadoErro from '@/shared/componentes/EstadoErro.jsx'
 import Indicadores from '@/shared/componentes/Indicadores.jsx'
 import { useCallback, useEffect, useState } from 'react'
 import { enderecoPrivado } from '@/app/rotas.js'
-import Icone from '@/shared/componentes/Icone.jsx'
 import { buscarResumoAdmin } from '../servicos/buscarResumoAdmin.js'
 import '../estilos/indicadores.css'
 import '../estilos/registros.css'
@@ -41,11 +40,6 @@ export default function PainelAdministracao({ token }) {
       <header className="painel-titulo administracao-boas-vindas">
         <div>
           <h1>Gestão do portal</h1>
-          <p>
-            {resumo
-              ? `${resumo.cursos.length} cursos e ${resumo.disciplinas.length} disciplinas cadastrados.`
-              : 'Acompanhe a estrutura acadêmica cadastrada no portal.'}
-          </p>
         </div>
         <div className="administracao-boas-vindas__acoes">
           <a className="botao-secundario" href={enderecoPrivado('administracao/cursos')}>
@@ -59,7 +53,7 @@ export default function PainelAdministracao({ token }) {
       {erro && (
         <EstadoErro
           titulo="As informações do portal não foram carregadas"
-          mensagem="Confira se os serviços estão disponíveis e tente novamente."
+          mensagem="Não foi possível atualizar o painel agora. Tente novamente."
           aoTentarNovamente={() => carregar()}
           carregando={carregando}
         />
@@ -110,7 +104,6 @@ export default function PainelAdministracao({ token }) {
             <header>
               <div>
                 <h2 id="cursos-recentes">Cursos cadastrados</h2>
-                <p>Dados acadêmicos disponíveis no portal.</p>
               </div>
               <a href={enderecoPrivado('administracao/cursos')}>
                 Ver todos os cursos <span aria-hidden="true">→</span>
@@ -131,7 +124,9 @@ export default function PainelAdministracao({ token }) {
                       <th scope="col">Grau</th>
                       <th scope="col">Turno</th>
                       <th scope="col">Modalidade</th>
-                      <th scope="col">Carga horária</th>
+                      <th scope="col" className="tabela__numero">
+                        Carga horária
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -144,7 +139,7 @@ export default function PainelAdministracao({ token }) {
                         <td>{curso.grau}</td>
                         <td>{curso.turno || '—'}</td>
                         <td>{curso.modalidade || '—'}</td>
-                        <td>{curso.cargaHoraria || '—'}</td>
+                        <td className="tabela__numero">{curso.cargaHoraria || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -159,54 +154,6 @@ export default function PainelAdministracao({ token }) {
                 </a>
               </div>
             )}
-          </section>
-          <section className="administracao-secao-atalhos">
-            <header>
-              <div>
-                <h2>O que você quer fazer?</h2>
-                <p>Escolha uma tarefa para continuar.</p>
-              </div>
-            </header>
-            <div className="administracao-categorias">
-              {[
-                [
-                  'Pessoas',
-                  [
-                    ['usuarios', 'Contas de acesso', 'Gerencie quem pode entrar no portal'],
-                    ['professores', 'Professores', 'Cadastre e atualize quem dá aula'],
-                  ],
-                ],
-                [
-                  'Formações e matérias',
-                  [
-                    ['cursos', 'Formações', `${resumo.cursos.length} no portal · ver e organizar`],
-                    [
-                      'disciplinas',
-                      'Matérias',
-                      `${resumo.disciplinas.length} no portal · ver e organizar`,
-                    ],
-                    ['projetos', 'Trabalhos acadêmicos', 'Consulte os trabalhos cadastrados'],
-                  ],
-                ],
-              ].map(([titulo, itens]) => (
-                <section className="administracao-categoria" key={titulo}>
-                  <h3>{titulo}</h3>
-                  <ul>
-                    {itens.map(([destino, nome, descricao]) => (
-                      <li key={destino}>
-                        <a href={enderecoPrivado(`administracao/${destino}`)}>
-                          <span className="administracao-categoria__texto">
-                            <strong>{nome}</strong>
-                            <small>{descricao}</small>
-                          </span>
-                          <Icone nome="seta" />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
           </section>
         </>
       ) : null}

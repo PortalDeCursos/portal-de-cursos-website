@@ -12,7 +12,13 @@ const passos = [
   },
 ]
 
-export default function EtapasSubmissao({ status, compact = false }) {
+export default function EtapasSubmissao({
+  status,
+  compact = false,
+  vertical = false,
+  enviadoEm = '',
+  parecer = '',
+}) {
   const concluido = ['Aprovado', 'Publicado'].includes(status)
   const atual = ['Aprovado pelo orientador', 'Aguardando Coordenação', 'Em análise'].includes(
     status,
@@ -31,36 +37,69 @@ export default function EtapasSubmissao({ status, compact = false }) {
     'Precisa de revisão',
   ].includes(status)
 
+  const classesLista = [
+    'etapas',
+    compact && 'etapas--compactas',
+    vertical && 'etapas--vertical',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <ol
-      className={compact ? 'etapas etapas--compactas' : 'etapas'}
-      aria-label="Fluxo de avaliação da submissão"
-    >
+    <ol className={classesLista} aria-label="Fluxo de avaliação da submissão">
       {passos.map((passo, indice) => {
         const feito = concluido || indice < atual
         const emAndamento = !concluido && indice === atual
+        const passoDevolvido = emAndamento && devolvido
         const estado = feito
-          ? 'Etapa concluída'
+          ? vertical
+            ? 'Concluído'
+            : 'Etapa concluída'
           : emAndamento
             ? devolvido
-              ? 'Devolvido ao aluno'
+              ? vertical
+                ? 'Devolvido'
+                : 'Devolvido ao aluno'
               : indice === 0
                 ? 'Em preparação'
                 : 'Em avaliação'
-            : 'Aguardando etapa anterior'
+            : vertical
+              ? 'Aguardando'
+              : 'Aguardando etapa anterior'
+
+        const detalheReal = vertical
+          ? indice === 0 && enviadoEm
+            ? `Enviado em ${enviadoEm}`
+            : passoDevolvido
+              ? parecer || 'Aguardando ajustes'
+              : ''
+          : !compact
+            ? passo.descricao
+            : ''
+
         return (
           <li
             key={passo.titulo}
-            className={`etapas__passo${feito ? ' etapas__passo--concluido' : emAndamento ? ' etapas__passo--atual' : ''}`}
+            className={`etapas__passo${
+              feito
+                ? ' etapas__passo--concluido'
+                : passoDevolvido
+                  ? ' etapas__passo--atual etapas__passo--devolvido'
+                  : emAndamento
+                    ? ' etapas__passo--atual'
+                    : ''
+            }`}
             aria-current={emAndamento ? 'step' : undefined}
           >
             <span className="etapas__marcador" aria-hidden="true">
-              {feito ? '✓' : indice + 1}
+              {feito ? '✓' : passoDevolvido ? '!' : indice + 1}
             </span>
             <div className="etapas__conteudo">
-              <strong>{passo.titulo}</strong>
-              {!compact && <span className="etapas__descricao">{passo.descricao}</span>}
-              <span className="etapas__estado">{estado}</span>
+              <div className="etapas__cabecalho">
+                <strong>{passo.titulo}</strong>
+                <span className="etapas__estado">{estado}</span>
+              </div>
+              {detalheReal && <span className="etapas__descricao">{detalheReal}</span>}
             </div>
           </li>
         )

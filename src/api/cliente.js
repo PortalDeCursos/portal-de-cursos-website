@@ -71,13 +71,13 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
       throw falha
     }
     if (sinalCombinado.aborted && !sinal?.aborted) {
-      throw new ErroApi('O serviço demorou para responder. Tente novamente em instantes.', {
+      throw new ErroApi('A operação demorou mais que o esperado. Tente novamente.', {
         status: 408,
         causa: falha,
       })
     }
     throw new ErroApi(
-      'Não foi possível conectar ao serviço. Verifique sua conexão e tente novamente.',
+      'Sem conexão no momento. Verifique sua internet e tente novamente.',
       { causa: falha },
     )
   }
@@ -94,7 +94,7 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
     try {
       dados = await resposta.json()
     } catch (falhaJson) {
-      throw new ErroApi('O serviço retornou uma resposta inesperada.', {
+      throw new ErroApi('Não foi possível concluir a ação agora. Tente novamente.', {
         status: resposta.status,
         causa: falhaJson,
       })
@@ -112,7 +112,7 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
       }
     }
 
-    let mensagem = 'Ocorreu um erro ao comunicar com a API.'
+    let mensagem = 'Não foi possível completar sua solicitação. Tente novamente.'
 
     if (dados?.detail && typeof dados.detail === 'string') {
       mensagem = dados.detail
@@ -127,16 +127,16 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
 
     if (resposta.status === 401) {
       mensagem = token
-        ? 'Sua autenticação não foi aceita. Faça login novamente.'
-        : 'O serviço recusou o acesso. Confira os dados de entrada ou a configuração de acesso da API.'
+        ? 'Sua sessão expirou. Entre novamente.'
+        : 'E-mail ou senha incorretos.'
     } else if (resposta.status === 403) {
       mensagem = 'Sua conta não tem permissão para realizar esta operação.'
     } else if (resposta.status === 404 && !dados?.detail) {
-      mensagem = 'O recurso solicitado não foi encontrado.'
+      mensagem = 'Este item não foi encontrado ou foi removido.'
     } else if (resposta.status === 429) {
-      mensagem = 'Muitas requisições. Aguarde um momento antes de tentar novamente.'
+      mensagem = 'Muitas tentativas seguidas. Aguarde alguns instantes.'
     } else if (resposta.status >= 500 && !dados?.detail) {
-      mensagem = 'O serviço está temporariamente indisponível. Tente novamente em breve.'
+      mensagem = 'Sistema temporariamente indisponível. Tente novamente em instantes.'
     }
 
     throw new ErroApi(mensagem, { status: resposta.status, dados })

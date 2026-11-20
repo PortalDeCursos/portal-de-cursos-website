@@ -7,7 +7,6 @@ import {
   listarCursos,
 } from '@/api/cursos.js'
 import { enderecoPrivado } from '@/app/rotas.js'
-import Icone from '@/shared/componentes/Icone.jsx'
 import ConfirmacaoGestao from './ConfirmacaoGestao.jsx'
 import '../estilos/campus.css'
 import '../estilos/gestao.css'
@@ -106,6 +105,7 @@ function FormularioCampus({ inicial, salvando, aoSalvar, aoCancelar }) {
 export default function GestaoCampus({ identificador, token }) {
   const [campus, mudarCampus] = useState([])
   const [cursos, mudarCursos] = useState(null)
+  const [carregandoCursos, mudarCarregandoCursos] = useState(false)
   const [busca, mudarBusca] = useState('')
   const [cidadeFiltro, mudarCidadeFiltro] = useState('todas')
   const [estado, mudarEstado] = useState('carregando')
@@ -115,26 +115,29 @@ export default function GestaoCampus({ identificador, token }) {
   const [exclusao, mudarExclusao] = useState(null)
   const [salvando, mudarSalvando] = useState(false)
 
-  const carregar = useCallback(async (sinal) => {
-    mudarEstado('carregando')
-    mudarErro('')
-    try {
-      const [itensCampus, itensCursos] = await Promise.all([
-        listarCampus(sinal),
-        listarCursos(sinal).catch(() => null),
-      ])
-      if (sinal?.aborted) return
-      if (!Array.isArray(itensCampus)) throw new Error('A lista de campus recebida é inválida.')
-      mudarCampus(itensCampus)
-      mudarCursos(itensCursos)
-      mudarEstado('pronto')
-    } catch (falha) {
-      if (!sinal?.aborted) {
-        mudarErro(falha.message || 'Não foi possível carregar os campus.')
-        mudarEstado('erro')
+  const carregar = useCallback(
+    async (sinal) => {
+      mudarEstado('carregando')
+      mudarErro('')
+      try {
+        const [itensCampus, itensCursos] = await Promise.all([
+          listarCampus(sinal, token),
+          listarCursos(sinal).catch(() => null),
+        ])
+        if (sinal?.aborted) return
+        if (!Array.isArray(itensCampus)) throw new Error('A lista de campus recebida é inválida.')
+        mudarCampus(itensCampus)
+        mudarCursos(itensCursos)
+        mudarEstado('pronto')
+      } catch (falha) {
+        if (!sinal?.aborted) {
+          mudarErro(falha.message || 'Não foi possível carregar os campus.')
+          mudarEstado('erro')
+        }
       }
-    }
-  }, [])
+    },
+    [token],
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -158,6 +161,17 @@ export default function GestaoCampus({ identificador, token }) {
       ),
     [busca, campus, cidadeFiltro],
   )
+
+  async function tentarCursos() {
+    mudarCarregandoCursos(true)
+    try {
+      mudarCursos(await listarCursos(undefined, token))
+    } catch {
+      mudarCursos(null)
+    } finally {
+      mudarCarregandoCursos(false)
+    }
+  }
 
   async function salvar(dados) {
     mudarSalvando(true)
@@ -241,41 +255,55 @@ export default function GestaoCampus({ identificador, token }) {
           <span aria-hidden="true">›</span>
           <span aria-current="page">{selecionado.nome}</span>
         </nav>
-        <a className="campus-voltar" href={enderecoPrivado('administracao/campus')}>
-          <span aria-hidden="true">←</span> Voltar para Campus
-        </a>
         <header className="painel-titulo campus-detalhe-titulo">
           <div>
-            <span className="administracao-boas-vindas__rotulo">
-              Campus{selecionado.id != null ? ` · #${selecionado.id}` : ''}
-            </span>
-            <h1>{selecionado.nome}</h1>
+            <div className="campus-detalhe-nome">
+              <h1>{selecionado.nome}</h1>
+              {selecionado.acronimo && <span className="campus-sigla">{selecionado.acronimo}</span>}
+            </div>
             {selecionado.cidade && <p>{selecionado.cidade}</p>}
           </div>
-          {selecionado.acronimo && <span className="campus-sigla">{selecionado.acronimo}</span>}
+          <div className="painel-titulo__acoes campus-detalhe-acoes">
+            <a className="botao-secundario" href={enderecoPrivado('administracao/campus')}>
+              Voltar à lista
+            </a>
+            <button
+              className="botao-primario"
+              type="button"
+              aria-expanded={Boolean(editor?.id)}
+              aria-controls="campus-editor-detalhe"
+              disabled={salvando}
+              onClick={() => {
+                mudarEditor(editor?.id ? null : selecionado)
+                mudarMensagem('')
+              }}
+            >
+              {editor?.id ? 'Fechar edição' : 'Editar campus'}
+            </button>
+          </div>
         </header>
-        <div className="campus-detalhe-grade">
-          <section className="campus-detalhe-cartao">
-            <header>
-              <span className="campus-detalhe-icone">
-                <Icone nome="formacao-cursos" />
-              </span>
-              <div>
-                <h2>Cursos vinculados</h2>
-                <p>Formações associadas a esta unidade.</p>
-              </div>
-            </header>
-            <strong className="campus-detalhe-valor">{cursosVinculados.length}</strong>
+        {mensagem && (
+          <p className="gestao-aviso" role="status">
+            {mensagem}
+          </p>
+        )}
+        {editor?.id === selecionado.id && (
+          <section id="campus-editor-detalhe">
+            <FormularioCampus
+              inicial={selecionado}
+              salvando={salvando}
+              aoSalvar={salvar}
+              aoCancelar={() => mudarEditor(null)}
+            />
           </section>
-          <section className="campus-detalhe-cartao">
+        )}
+        <div className="campus-detalhe-grade">
+          <section
+            className="campus-detalhe-cartao campus-detalhe-dados"
+            aria-labelledby="campus-dados-titulo"
+          >
             <header>
-              <span className="campus-detalhe-icone">
-                <Icone nome="localizacao" />
-              </span>
-              <div>
-                <h2>Localização e identificação</h2>
-                <p>Dados cadastrados para esta unidade.</p>
-              </div>
+              <h2 id="campus-dados-titulo">Localização e identificação</h2>
             </header>
             <dl>
               <div>
@@ -284,54 +312,62 @@ export default function GestaoCampus({ identificador, token }) {
               </div>
               <div>
                 <dt>Acrônimo</dt>
-                <dd>{selecionado.acronimo || '—'}</dd>
+                <dd>{selecionado.acronimo || 'Não informado'}</dd>
               </div>
               <div>
                 <dt>Cidade</dt>
-                <dd>{selecionado.cidade || '—'}</dd>
+                <dd>{selecionado.cidade || 'Não informada'}</dd>
               </div>
               <div>
                 <dt>Endereço</dt>
-                <dd>{selecionado.endereco || '—'}</dd>
+                <dd>{selecionado.endereco || 'Não informado'}</dd>
               </div>
             </dl>
           </section>
-        </div>
-        {cursosVinculados.length > 0 && (
-          <section className="painel-secao">
-            <header>
-              <div>
-                <h2>Cursos ofertados neste campus</h2>
-                <p>{cursosVinculados.length} curso(s) vinculado(s) à unidade.</p>
-              </div>
+          <section className="campus-detalhe-cartao" aria-labelledby="campus-cursos-titulo">
+            <header className="campus-cursos-cabecalho">
+              <h2 id="campus-cursos-titulo">Cursos vinculados</h2>
+              {cursos !== null && !carregandoCursos && (
+                <span className="campus-cursos-contagem">
+                  {cursosVinculados.length} {cursosVinculados.length === 1 ? 'curso' : 'cursos'}
+                </span>
+              )}
             </header>
-            <div className="tabela-submissoes" role="region" aria-label="Cursos do campus">
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Curso</th>
-                    <th scope="col">Grau</th>
-                    <th scope="col">Turno</th>
-                    <th scope="col">Modalidade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cursosVinculados.map((curso) => (
-                    <tr key={curso.id}>
-                      <th scope="row">
-                        {curso.nome}
-                        <span>{curso.sigla || curso.acronimo}</span>
-                      </th>
-                      <td>{curso.grau || '—'}</td>
-                      <td>{curso.turno || '—'}</td>
-                      <td>{curso.modalidade || '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {carregandoCursos ? (
+              <p role="status">Carregando cursos…</p>
+            ) : cursos === null ? (
+              <div role="alert">
+                <p>Não foi possível consultar os cursos deste campus.</p>
+                <button className="botao-secundario" type="button" onClick={tentarCursos}>
+                  Tentar novamente
+                </button>
+              </div>
+            ) : cursosVinculados.length ? (
+              <ul className="campus-cursos-lista">
+                {cursosVinculados.map((curso) => (
+                  <li key={curso.id}>
+                    <strong>{curso.nome}</strong>
+                    <span>
+                      {[curso.sigla || curso.acronimo, curso.grau, curso.turno, curso.modalidade]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="campus-cursos-vazio">
+                <p>Nenhum curso vinculado a este campus.</p>
+              </div>
+            )}
+            <a
+              className="botao-secundario campus-cursos-acao"
+              href={enderecoPrivado('administracao/cursos')}
+            >
+              Gerenciar cursos
+            </a>
           </section>
-        )}
+        </div>
       </>
     )
   }

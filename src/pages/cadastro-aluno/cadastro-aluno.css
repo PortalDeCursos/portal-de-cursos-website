@@ -491,3 +491,158 @@
   background: transparent;
   color: var(--azul);
 }
+
+
+/* ==========================================================================
+   Unificação com Login — campos, select, botão primário e rodapé
+   ========================================================================== */
+
+.cadastro-aluno .layout-autenticacao.cadastro-aluno__cartao {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--raio-superficie);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+.cadastro-aluno .layout-autenticacao > .painel-institucional {
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+.cadastro-aluno__cabecalho h1 {
+  text-wrap: balance;
+}
+
+.cadastro-aluno__conteudo .acesso-campo {
+  display: grid;
+  gap: 6px;
+}
+
+.cadastro-aluno__conteudo .acesso-campo label {
+  color: var(--titulo);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+}
+
+.cadastro-aluno__conteudo .acesso-entrada,
+.cadastro-aluno__conteudo .acesso-senha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.cadastro-aluno__conteudo .acesso-campo input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-campo);
+  background: var(--superficie);
+  color: var(--titulo);
+  font: inherit;
+  font-size: var(--texto-sm);
+  transition: border-color 160ms ease;
+}
+
+.cadastro-aluno__conteudo .acesso-senha input {
+  padding-right: 46px;
+}
+
+.cadastro-aluno__conteudo .acesso-campo input:hover:not(:disabled) {
+  border-color: var(--texto-suave);
+}
+
+.cadastro-aluno__conteudo .acesso-campo input:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+  border-color: var(--azul);
+}
+
+.cadastro-aluno__conteudo .acesso-campo input[aria-invalid='true'] {
+  border-color: var(--erro);
+}
+
+.cadastro-aluno__conteudo .acesso-senha button {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-controle);
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.cadastro-aluno__conteudo .acesso-senha button:hover {
+  background: var(--suave);
+  color: var(--titulo);
+}
+
+.cadastro-aluno__conteudo .acesso-senha button .icone {
+  width: 18px;
+  height: 18px;
+}
+
+.cadastro-aluno .acesso-select select {
+  height: 46px;
+  padding: 10px 40px 10px 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-campo);
+  background: var(--superficie);
+  color: var(--titulo);
+  font-size: var(--texto-sm);
+}
+
+.cadastro-aluno .acesso-select::after {
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--texto-suave);
+  border-bottom: 2px solid var(--texto-suave);
+}
+
+.cadastro-aluno .acesso-select select:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+  border-color: var(--azul);
+}
+
+.cadastro-aluno .acesso-entrar {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: var(--texto-sobre-azul);
+}
+
+.cadastro-aluno .acesso-entrar:hover:not(:disabled) {
+  background: var(--azul-hover);
+  border-color: var(--azul-hover);
+}
+
+.cadastro-aluno__links {
+  margin-top: var(--espaco-4);
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--borda-suave);
+  text-align: left;
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+.cadastro-aluno__links a {
+  color: var(--azul);
+  font-weight: 700;
+}

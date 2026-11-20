@@ -1,9 +1,8 @@
 import PainelInstitucional from '@/shared/componentes/PainelInstitucional.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { entrarNaConta } from './servicos/entrarNaConta.js'
-import { basePortal, enderecoPrivado } from '@/app/rotas.js'
+import { enderecoPrivado } from '@/app/rotas.js'
 import Icone from '@/shared/componentes/Icone.jsx'
-import logoPortal from '@/assets/marca/logo-portal.png'
 import './acesso.css'
 
 const TEMPO_LIMITE_MS = 15000
@@ -110,7 +109,7 @@ export default function PaginaAcesso({
 
       mudarErroGeral(
         controle.signal.reason === MOTIVO_TEMPO_ESGOTADO
-          ? 'O serviço demorou para responder. Tente novamente.'
+          ? 'O acesso demorou mais que o esperado. Tente novamente.'
           : falha.message,
       )
       mudarSenha('')
@@ -135,14 +134,6 @@ export default function PaginaAcesso({
         >
           <div className="acesso-login__conteudo">
             <div className="acesso-login__cabecalho">
-              <div className="acesso-login__marca" aria-label="Portal de Cursos">
-                <span className="acesso-login__logo">
-                  <img src={logoPortal} alt="" width="30" height="30" />
-                </span>
-                <span className="acesso-login__marca-textos">
-                  <strong>Portal de Cursos</strong>
-                </span>
-              </div>
               <h1 id="titulo-entrar">
                 {perfil === 'aluno'
                   ? 'Acesse sua conta de aluno'
@@ -265,7 +256,7 @@ export default function PaginaAcesso({
 
             <p className="acesso-login__ajuda">
               Professores, coordenadores e administradores acessam com as credenciais fornecidas
-              pela coordenação. <a href={basePortal}>Voltar ao portal</a>
+              pela coordenação.
             </p>
           </div>
 

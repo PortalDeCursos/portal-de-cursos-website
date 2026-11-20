@@ -92,7 +92,7 @@
 
 .curso-gestao__metricas dt {
   color: var(--texto-suave);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -603,7 +603,7 @@
   border-radius: var(--raio-botao);
   background: var(--azul);
   color: var(--branco) !important;
-  font-size: 11px !important;
+  font-size: var(--texto-xs) !important;
   font-weight: 800 !important;
 }
 .gestao-tipo-disciplina {
@@ -688,7 +688,7 @@
 }
 .gestao-formulario__grupo > header h3 {
   font-size: var(--texto-sm);
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
 }
 .gestao-formulario__grupo > header p,
 .gestao-formulario__orientacao {

@@ -162,8 +162,8 @@ export async function excluirCurso(token, id, sinal) {
   })
 }
 
-export async function listarCampus(sinal) {
-  return chamarApi(enderecoCampus, { metodo: 'GET', sinal })
+export async function listarCampus(sinal, token = null) {
+  return chamarApi(enderecoCampus, { metodo: 'GET', sinal, token })
 }
 
 export async function cadastrarCampus(token, dados, sinal) {
@@ -187,8 +187,8 @@ export async function excluirCampus(token, id, sinal) {
   })
 }
 
-export async function listarAreasConhecimento(sinal) {
-  return chamarApi(enderecoAreas, { metodo: 'GET', sinal })
+export async function listarAreasConhecimento(sinal, token = null) {
+  return chamarApi(enderecoAreas, { metodo: 'GET', sinal, token })
 }
 
 export async function cadastrarAreaConhecimento(token, dados, sinal) {

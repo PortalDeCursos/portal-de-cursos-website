@@ -73,18 +73,21 @@ export default function GestaoAreas({ token }) {
   const [exclusao, mudarExclusao] = useState(null)
   const [salvando, mudarSalvando] = useState(false)
 
-  const carregar = useCallback(async (sinal) => {
-    mudarCarregando(true)
-    try {
-      const lista = await listarAreasConhecimento(sinal)
-      if (!sinal?.aborted) mudarAreas(Array.isArray(lista) ? lista : [])
-    } catch (falha) {
-      if (!sinal?.aborted)
-        mudarMensagem(falha.message || 'Não foi possível carregar as áreas do conhecimento.')
-    } finally {
-      if (!sinal?.aborted) mudarCarregando(false)
-    }
-  }, [])
+  const carregar = useCallback(
+    async (sinal) => {
+      mudarCarregando(true)
+      try {
+        const lista = await listarAreasConhecimento(sinal, token)
+        if (!sinal?.aborted) mudarAreas(Array.isArray(lista) ? lista : [])
+      } catch (falha) {
+        if (!sinal?.aborted)
+          mudarMensagem(falha.message || 'Não foi possível carregar as áreas do conhecimento.')
+      } finally {
+        if (!sinal?.aborted) mudarCarregando(false)
+      }
+    },
+    [token],
+  )
 
   useEffect(() => {
     const controller = new AbortController()

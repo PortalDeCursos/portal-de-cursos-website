@@ -10,6 +10,9 @@ export default function EtapaSubmissaoEquipe({
   adicionarDisciplina,
   disciplinasDisponiveis = [],
   carregandoDisciplinas = false,
+  erroDisciplinas = '',
+  tentarDisciplinas,
+  campoDisciplinas,
   sessao,
 }) {
   const ehDocente = sessao?.tipoUsuario === 'PROFESSOR' || sessao?.tipoUsuario === 'COORDENADOR'
@@ -160,6 +163,9 @@ export default function EtapaSubmissaoEquipe({
           Adicionar disciplina curricular associada
           <select
             data-testid="disciplina-submissao"
+            ref={campoDisciplinas}
+            aria-invalid={Boolean(erros.disciplinas)}
+            aria-describedby={erroDoCampo('disciplinas')}
             disabled={!formulario.curso || carregandoDisciplinas}
             value=""
             onChange={(e) => {
@@ -180,6 +186,9 @@ export default function EtapaSubmissaoEquipe({
             {disciplinasDisponiveis
               .filter(
                 (disciplina) =>
+                  Number.isSafeInteger(disciplina.id) &&
+                  disciplina.id > 0 &&
+                  String(disciplina.cursoId) === String(formulario.curso) &&
                   !formulario.disciplinas.includes(disciplina.nome || disciplina.identificador),
               )
               .map((disciplina) => (
@@ -192,20 +201,26 @@ export default function EtapaSubmissaoEquipe({
                 </option>
               ))}
           </select>
-          <input
-            style={{ marginTop: '8px' }}
-            placeholder="Ou digite o nome de outra disciplina e pressione Enter"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                if (e.currentTarget.value.trim()) {
-                  adicionarDisciplina(e.currentTarget.value)
-                  e.currentTarget.value = ''
-                }
-              }
-            }}
-          />
+          {erros.disciplinas && (
+            <span id="erro-disciplinas" className="formulario-submissao__erro-campo">
+              {erros.disciplinas}
+            </span>
+          )}
         </label>
+
+        {formulario.curso &&
+          !carregandoDisciplinas &&
+          (erroDisciplinas || disciplinasDisponiveis.length === 0) && (
+            <div className="formulario-submissao__campo-largo" role="alert">
+              <p>
+                {erroDisciplinas ||
+                  'Este curso não tem disciplinas disponíveis. Peça à coordenação para conferir o cadastro.'}
+              </p>
+              <button type="button" className="botao-secundario" onClick={tentarDisciplinas}>
+                Tentar novamente
+              </button>
+            </div>
+          )}
 
         <div
           data-testid="disciplinas-selecionadas"

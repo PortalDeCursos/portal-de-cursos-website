@@ -84,6 +84,12 @@ export default function PaginaPerfilAluno({ idAluno }) {
     }
   }, [idAluno])
 
+  useEffect(() => {
+    if (aluno?.nome) {
+      document.title = `${aluno.nome} — Portal de Cursos`
+    }
+  }, [aluno?.nome])
+
   if (carregando) {
     return (
       <main id="conteudo" className="limite pagina-perfil-discente">
@@ -113,14 +119,10 @@ export default function PaginaPerfilAluno({ idAluno }) {
       <header className="perfil-publico__cabecalho perfil-publico__cabecalho--discente">
         <div className="perfil-publico__avatar-discente">{inicial}</div>
         <div className="perfil-publico__identidade">
-          <div className="perfil-publico__tags">
-            <span className="perfil-publico__badge-discente">Discente / autor</span>
-            {cursoInfo && (
-              <span className="perfil-publico__badge-curso">
-                {cursoInfo.sigla || cursoInfo.acronimo || 'TADS'}
-              </span>
-            )}
-          </div>
+          <span className="perfil-publico__eyebrow">
+            Discente / autor
+            {cursoInfo ? ` · ${cursoInfo.sigla || cursoInfo.acronimo || 'TADS'}` : ''}
+          </span>
           <h1 className="perfil-publico__nome">{aluno.nome}</h1>
           <p className="perfil-publico__email">{aluno.email}</p>
         </div>

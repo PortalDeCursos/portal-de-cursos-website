@@ -37,6 +37,8 @@ export default function EstruturaProfessor({
       {usuario ? (
         <Cabecalho
           areaProfessor
+          contaNaBarraLateral={administrador || coordenador}
+          nomeArea={administrador ? 'Administração' : coordenador ? 'Coordenação' : undefined}
           autenticado
           pagina={
             perfilAtivo
@@ -69,9 +71,9 @@ export default function EstruturaProfessor({
           }
         >
           {administrador ? (
-            <NavegacaoAdministracao rota={rota} usuario={usuario} />
+            <NavegacaoAdministracao rota={rota} usuario={usuario} aoSair={aoSair} />
           ) : (
-            <NavegacaoCoordenacao rota={rota} usuario={usuario} />
+            <NavegacaoCoordenacao rota={rota} usuario={usuario} aoSair={aoSair} />
           )}
           <div className="painel-estrutura__conteudo">{children}</div>
         </div>

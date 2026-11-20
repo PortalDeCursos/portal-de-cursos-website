@@ -252,7 +252,7 @@
 }
 .submissao-feed__capa-marca {
   color: var(--texto-suave);
-  font-size: 10px;
+  font-size: var(--texto-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
 }
