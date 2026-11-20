@@ -1217,6 +1217,28 @@
   max-width: 640px;
   margin-inline: auto;
 }
+
+.situacao-envio {
+  width: 100%;
+  text-align: left;
+}
+
+.situacao-envio__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.situacao-envio__lista > li {
+  padding-block: var(--espaco-3);
+  border-bottom: 1px solid var(--borda-suave);
+  overflow-wrap: anywhere;
+}
+
+.situacao-envio__lista p {
+  margin: var(--espaco-1) 0;
+  color: var(--texto-suave);
+}
 .etapas-submissao {
   margin-top: var(--espaco-6);
 }

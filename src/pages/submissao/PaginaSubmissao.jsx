@@ -2,13 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { listarCursos } from '@/api/cursos.js'
 import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { listarProfessores } from '@/api/professores.js'
-import { listarCoordenadores } from '@/api/coordenadores.js'
-import { enviarNotificacaoProjeto } from '@/api/notificacoes.js'
-import {
-  cadastrarProjeto,
-  encaminharProjetoParaCoordenacao,
-  enviarDocumentoProjeto,
-} from '@/api/projetos.js'
+import useEnvioProjeto from './useEnvioProjeto.js'
+import SituacaoEnvio from './componentes/SituacaoEnvio.jsx'
 import { enderecoPrivado } from '../../app/rotas.js'
 import {
   TAMANHO_MAXIMO_DOCUMENTO,
@@ -50,8 +45,10 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [erros, mudarErros] = useState({})
   const [enviado, mudarEnviado] = useState(false)
   const [enviando, mudarEnviando] = useState(false)
-  const [falhaDocumentos, mudarFalhaDocumentos] = useState(false)
-  const [falhaEncaminhamento, mudarFalhaEncaminhamento] = useState(false)
+  const { envio, enviarProjeto, liberarNovoCadastro, limparEnvio } = useEnvioProjeto({
+    sessao,
+    aoSubmeter,
+  })
   const resumoErros = useRef(null)
   const campoDisciplinas = useRef(null)
 
@@ -445,79 +442,19 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     }
 
     mudarEnviando(true)
-    mudarFalhaDocumentos(false)
     try {
-      const projetoCriado = await cadastrarProjeto(dto, sessao.token)
-      if (!projetoCriado?.id) {
-        mudarErro('O servidor não confirmou o registro do projeto. Tente novamente.')
-        return
-      }
-
-      const destinatariosNotificacao = []
-      if (sessao.tipoUsuario === 'ALUNO') {
-        const emailOrientador = orientadorObj?.email || orientadorObj?.usuario?.email
-        if (emailOrientador) destinatariosNotificacao.push(emailOrientador)
-      } else if (sessao.tipoUsuario === 'COORDENADOR') {
-        if (sessao.usuario?.email) destinatariosNotificacao.push(sessao.usuario.email)
-      } else {
-        try {
-          const coordenadores = await listarCoordenadores(sessao.token, { cursoId: dto.cursoId })
-          destinatariosNotificacao.push(
-            ...(Array.isArray(coordenadores)
-              ? coordenadores
-                  .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
-                  .filter(Boolean)
-              : []),
-          )
-        } catch {
-          // A falha de e-mail não desfaz uma submissão já salva.
-        }
-      }
-      let encaminhamentoFalhou = false
-      if (sessao.tipoUsuario !== 'ALUNO') {
-        try {
-          await encaminharProjetoParaCoordenacao(projetoCriado.id, sessao.token)
-        } catch {
-          encaminhamentoFalhou = true
-        }
-      }
-
-      if (!encaminhamentoFalhou) {
-        enviarNotificacaoProjeto(
-          {
-            statusProjeto: sessao.tipoUsuario === 'ALUNO' ? 'EM_ANALISE' : 'ANALISE_PUBLICACAO',
-            nomeProjeto: dto.nome,
-            tipoProjeto: dto.tipoProjeto,
-            destinatarios: destinatariosNotificacao,
-          },
-          sessao.token,
-        ).catch((falha) => console.warn('Falha ao enviar aviso da submissão:', falha.message))
-      }
-
-      const arquivosReais =
-        formulario.tipo === 'TCC' ? [] : Object.values(formulario.documentos).flat().filter(Boolean)
-
-      for (const arq of arquivosReais) {
-        if (arq instanceof File) {
-          try {
-            await enviarDocumentoProjeto(projetoCriado.id, arq, sessao.token)
-          } catch {
-            mudarFalhaDocumentos(true)
-          }
-        }
-      }
-      aoSubmeter?.({
-        ...submissaoLocal,
-        id: projetoCriado.id,
-        identificador: String(projetoCriado.id),
+      const confirmou = await enviarProjeto({
+        dto,
+        submissaoLocal,
+        orientador: orientadorObj,
+        arquivos:
+          formulario.tipo === 'TCC'
+            ? []
+            : Object.values(formulario.documentos).flat().filter(Boolean),
       })
-      mudarFalhaEncaminhamento(encaminhamentoFalhou)
-      mudarEnviado(true)
+      if (confirmou) mudarEnviado(true)
     } catch (falha) {
-      mudarErro(
-        falha?.message ||
-          'Não foi possível salvar o projeto. Seus dados continuam nesta tela; tente novamente.',
-      )
+      mudarErro(falha.message)
     } finally {
       mudarEnviando(false)
     }
@@ -597,26 +534,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           <span className="submissao-confirmacao__selo" aria-hidden="true">
             ✓
           </span>
-          <h1 id="titulo-confirmacao">Projeto enviado.</h1>
-          <p>
-            {sessao?.tipoUsuario === 'COORDENADOR'
-              ? 'O projeto foi registrado e encaminhado diretamente à coordenação do curso para avaliação e possível publicação.'
-              : sessao?.tipoUsuario === 'PROFESSOR'
-                ? 'O projeto foi registrado e encaminhado diretamente à coordenação do curso para avaliação e possível publicação.'
-                : 'O orientador indicado vai analisar seu projeto primeiro. Se aceitar acompanhar o trabalho, a submissão seguirá para a coordenação do curso, que decidirá sobre a publicação no portal.'}
-          </p>
-          {falhaDocumentos && (
-            <p role="alert">
-              O projeto foi salvo, mas um ou mais documentos não foram enviados. Abra a submissão
-              para anexá-los novamente.
-            </p>
-          )}
-          {falhaEncaminhamento && (
-            <p role="alert">
-              O projeto foi salvo, mas ainda não foi encaminhado à coordenação. Não envie outra
-              cópia; abra o painel para conferir o status ou tente novamente mais tarde.
-            </p>
-          )}
+          <h1 id="titulo-confirmacao">Projeto cadastrado.</h1>
+          <p>Confira abaixo o resultado de cada etapa antes de acompanhar o projeto no painel.</p>
+          <SituacaoEnvio envio={envio} />
           <div className="submissao-confirmacao__resumo">
             <strong>{formulario.titulo}</strong>
             <span>
@@ -645,9 +565,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                 })
                 mudarEtapa(0)
                 mudarEnviado(false)
-                mudarFalhaDocumentos(false)
-                mudarFalhaEncaminhamento(false)
+                limparEnvio()
               }}
+              disabled={enviando}
             >
               Enviar outro projeto
             </button>
@@ -781,6 +701,24 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
       <form className="formulario-submissao" onSubmit={submeter} noValidate>
         {avisoDisciplinas && <p role="status">{avisoDisciplinas}</p>}
+        {envio.cadastro.estado !== 'pendente' && <SituacaoEnvio envio={envio} />}
+        {envio.cadastro.estado === 'incerto' && (
+          <div>
+            <a
+              className="botao-secundario"
+              href={enderecoPrivado(
+                sessao.tipoUsuario === 'ALUNO' ? 'aluno/painel' : 'professor/feed',
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Conferir meu painel em outra aba
+            </a>
+            <button type="button" className="botao-secundario" onClick={liberarNovoCadastro}>
+              Conferi o painel e quero tentar novamente
+            </button>
+          </div>
+        )}
         {etapa === 0 && (
           <EtapaSubmissaoIdentificacao
             cursos={cursos}
@@ -859,7 +797,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
                 data-testid="submissao-enviar"
                 className="botao-primario"
                 type="submit"
-                disabled={enviando}
+                disabled={enviando || envio.cadastro.estado === 'incerto'}
               >
                 {enviando ? 'Salvando projeto…' : 'Enviar projeto'}
               </button>
