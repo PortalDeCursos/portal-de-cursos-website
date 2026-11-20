@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import ItemProjeto from '@/shared/componentes/ItemProjeto.jsx'
+import EstadoErro from '@/shared/componentes/EstadoErro.jsx'
+import { formatarTitulacao } from '@/shared/utils/formatarTitulacao.js'
 import { listarProfessores } from '@/api/professores.js'
 import { listarCursos } from '@/api/cursos.js'
 import { listarCoordenadores } from '@/api/coordenadores.js'
@@ -11,6 +13,8 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
   const [cursosAtuacao, mudarCursosAtuacao] = useState([])
   const [projetosOrientados, mudarProjetosOrientados] = useState([])
   const [carregando, mudarCarregando] = useState(true)
+  const [erro, mudarErro] = useState('')
+  const [tentativa, mudarTentativa] = useState(0)
   const [ehCoordenador, mudarEhCoordenador] = useState(false)
 
   useEffect(() => {
@@ -19,9 +23,10 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
 
     async function carregar() {
       mudarCarregando(true)
+      mudarErro('')
       try {
         const [professores, cursos, projetos, coordenadores] = await Promise.all([
-          listarProfessores(null, {}, controle.signal).catch(() => []),
+          listarProfessores(null, {}, controle.signal),
           listarCursos(controle.signal).catch(() => []),
           buscarProjetosPublicados(controle.signal).catch(() => []),
           listarCoordenadores(null, {}, controle.signal).catch(() => []),
@@ -67,6 +72,9 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
           })
           mudarProjetosOrientados(projetosDoProf)
         }
+      } catch (falha) {
+        if (!ativo || falha?.name === 'AbortError' || controle.signal.aborted) return
+        mudarErro(falha?.message || 'Não foi possível carregar o perfil docente agora.')
       } finally {
         if (ativo) mudarCarregando(false)
       }
@@ -77,7 +85,13 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
       ativo = false
       controle.abort()
     }
-  }, [idProfessor])
+  }, [idProfessor, tentativa])
+
+  useEffect(() => {
+    if (professor?.nome) {
+      document.title = `${professor.nome} — Portal de Cursos`
+    }
+  }, [professor?.nome])
 
   if (carregando) {
     return (
@@ -85,6 +99,18 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
         <div className="perfil-publico__status-box" role="status">
           <p>Carregando perfil docente…</p>
         </div>
+      </main>
+    )
+  }
+
+  if (erro) {
+    return (
+      <main id="conteudo" className="limite pagina-perfil-docente">
+        <EstadoErro
+          titulo="Não foi possível carregar o perfil docente"
+          mensagem={erro}
+          aoTentarNovamente={() => mudarTentativa((v) => v + 1)}
+        />
       </main>
     )
   }
@@ -125,11 +151,11 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
           {inicial}
         </div>
         <div className="perfil-publico__identidade">
+          <span className="perfil-publico__eyebrow">
+            {ehCoordenador ? 'Coordenação de curso' : 'Corpo docente IFRN'}
+            {professor.titulacao ? ` · ${formatarTitulacao(professor.titulacao)}` : ''}
+          </span>
           <h1 className="perfil-publico__nome">{professor.nome}</h1>
-          <ul className="perfil-publico__meta">
-            <li>{ehCoordenador ? 'Coordenação de curso' : 'Corpo docente IFRN'}</li>
-            {professor.titulacao && <li>{professor.titulacao}</li>}
-          </ul>
           {professor.email && (
             <a className="perfil-publico__email" href={`mailto:${professor.email}`}>
               {professor.email}

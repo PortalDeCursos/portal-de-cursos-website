@@ -65,6 +65,7 @@ export default function EtapaSubmissaoDocumentos({
             const arquivos = prepararListaArquivos(arquivo)
             const temErro = Boolean(erros[documento.id])
             const idDaZona = `arquivo-${documento.id}`
+            const ocultarZonaUpload = !documento.multiplo && arquivos.length > 0
             return (
               <div
                 className={`campo-arquivo-wrapper ${temErro ? 'campo-arquivo-wrapper--erro' : ''} ${
@@ -86,41 +87,50 @@ export default function EtapaSubmissaoDocumentos({
                   alterarDocumentos(documento, evento.dataTransfer.files)
                 }}
               >
-                <label className="campo-arquivo" htmlFor={idDaZona}>
-                  <span className="campo-arquivo__icone" aria-hidden="true">
-                    <Upload size={21} strokeWidth={1.9} />
-                  </span>
-                  <div className="campo-arquivo__conteudo">
+                {ocultarZonaUpload ? (
+                  <div className="campo-arquivo__cabecalho-anexado">
                     <strong>{documento.nome}</strong>
                     <small>
-                      {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} ·{' '}
-                      {documento.multiplo ? 'vários arquivos' : 'um PDF'}
+                      {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} · um PDF
                     </small>
-                    <span className="campo-arquivo__acao">
-                      {documentoArrastado === documento.id
-                        ? 'Solte o PDF para anexar'
-                        : 'Arraste o PDF para cá ou clique para escolher'}
-                    </span>
                   </div>
-                  <span className="campo-arquivo__selecionar">
-                    <Upload size={16} aria-hidden="true" />
-                    Escolher arquivo
-                  </span>
-                  <input
-                    data-testid={`arquivo-${documento.id}`}
-                    id={idDaZona}
-                    required={documento.obrigatorio}
-                    type="file"
-                    multiple={documento.multiplo}
-                    accept="application/pdf,.pdf"
-                    aria-invalid={temErro}
-                    aria-describedby={erroDoCampo(documento.id)}
-                    onChange={(evento) => {
-                      alterarDocumentos(documento, evento.currentTarget.files)
-                      evento.currentTarget.value = ''
-                    }}
-                  />
-                </label>
+                ) : (
+                  <label className="campo-arquivo" htmlFor={idDaZona}>
+                    <span className="campo-arquivo__icone" aria-hidden="true">
+                      <Upload size={20} strokeWidth={1.8} />
+                    </span>
+                    <div className="campo-arquivo__conteudo">
+                      <strong>{documento.nome}</strong>
+                      <small>
+                        {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} ·{' '}
+                        {documento.multiplo ? 'vários arquivos' : 'um PDF'}
+                      </small>
+                      <span className="campo-arquivo__acao">
+                        {documentoArrastado === documento.id
+                          ? 'Solte o PDF para anexar'
+                          : 'Arraste o PDF para cá ou clique para escolher'}
+                      </span>
+                    </div>
+                    <span className="campo-arquivo__selecionar">
+                      <Upload size={15} aria-hidden="true" />
+                      Escolher arquivo
+                    </span>
+                    <input
+                      data-testid={`arquivo-${documento.id}`}
+                      id={idDaZona}
+                      required={documento.obrigatorio}
+                      type="file"
+                      multiple={documento.multiplo}
+                      accept="application/pdf,.pdf"
+                      aria-invalid={temErro}
+                      aria-describedby={erroDoCampo(documento.id)}
+                      onChange={(evento) => {
+                        alterarDocumentos(documento, evento.currentTarget.files)
+                        evento.currentTarget.value = ''
+                      }}
+                    />
+                  </label>
+                )}
                 {arquivos.length > 0 && (
                   <ul className="campo-arquivo__lista" aria-label={`Arquivos de ${documento.nome}`}>
                     {arquivos.map((arquivoSelecionado, indice) => (

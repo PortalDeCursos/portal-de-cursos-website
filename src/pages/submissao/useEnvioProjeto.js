@@ -97,7 +97,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         incerto ? 'incerto' : 'falhou',
         incerto
           ? 'Não conseguimos confirmar o envio deste arquivo. Confira os anexos do projeto no painel antes de reenviar.'
-          : 'O serviço recusou este arquivo. Tente novamente. Se continuar, informe a coordenação.',
+          : 'Não foi possível enviar este arquivo. Verifique o formato e tente novamente.',
       )
     } finally {
       arquivosEmAndamento.current.delete(indice)
@@ -119,7 +119,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     try {
       projetoCriado = await cadastrarProjeto(dto, sessao.token)
       if (!projetoCriado?.id) {
-        throw new Error('O servidor não retornou a identificação do projeto.')
+        throw new Error('Não foi possível registrar o projeto. Tente novamente.')
       }
     } catch (falha) {
       const incerto = resultadoIncerto(falha)

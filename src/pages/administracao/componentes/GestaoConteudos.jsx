@@ -29,8 +29,7 @@ import '../estilos/geral.css'
 
 export default function GestaoConteudos({
   dominio,
-  itens,
-  aoAlterar,
+  itens = [],
   cursoId,
   restritoAoCurso = false,
   curso,
@@ -144,7 +143,7 @@ export default function GestaoConteudos({
         }
       } catch (falha) {
         if (!sinal?.aborted)
-          mudarMensagem(falha.message || 'Não foi possível carregar os registros da API.')
+          mudarMensagem(falha.message || 'Não foi possível carregar os dados agora. Tente novamente.')
       } finally {
         if (!sinal?.aborted) mudarCarregando(false)
       }
@@ -281,73 +280,6 @@ export default function GestaoConteudos({
       }
       return
     }
-    const alunoPorId = new Map(alunos.map((aluno) => [String(aluno.id), aluno]))
-    const professorPorId = new Map(
-      professores.map((professor) => [String(professor.id), professor]),
-    )
-    const orientador = professorPorId.get(String(dados.professorIds?.[0]))
-    const coordenador = professorPorId.get(String(dados.coordenadorId))
-    const cursoSelecionado = cursos.find(
-      (itemCurso) =>
-        String(
-          ['disciplinas', 'projetos'].includes(dominio)
-            ? itemCurso.id
-            : itemCurso.identificador || itemCurso.id,
-        ) === String(dados.cursoId),
-    )
-    const autores = (dados.alunoIds || [])
-      .map((id) => alunoPorId.get(String(id))?.nome)
-      .filter(Boolean)
-      .join(', ')
-    const registro = {
-      ...dados,
-      ...(dados.alunoIds?.length ? { autores } : {}),
-      ...(orientador ? { orientador: orientador.nome } : {}),
-      ...(coordenador ? { coordenador: coordenador.nome } : {}),
-      ...(cursoSelecionado
-        ? {
-            cursoId: cursoSelecionado.id,
-            identificadorCurso: cursoSelecionado.identificador || cursoSelecionado.id,
-            curso: cursoSelecionado.sigla || cursoSelecionado.nome,
-          }
-        : {}),
-      ...(dados.disciplinaIds
-        ? {
-            disciplinas: dados.disciplinaIds
-              .map(
-                (id) =>
-                  disciplinas.find(
-                    (disciplina) =>
-                      String(disciplina.id || disciplina.identificador) === String(id),
-                  )?.nome,
-              )
-              .filter(Boolean),
-          }
-        : {}),
-      ...(dados.professorIds
-        ? {
-            professores: dados.professorIds
-              .map((id) => professorPorId.get(String(id))?.nome)
-              .filter(Boolean),
-          }
-        : {}),
-      identificador: dados.identificador || crypto.randomUUID(),
-    }
-    aoAlterar(
-      dados.identificador
-        ? itens.map((atual) => (atual.identificador === dados.identificador ? registro : atual))
-        : [
-            ...itens,
-            {
-              ...registro,
-              ...(curso ? { identificadorCurso: curso.identificador } : cursoId ? { cursoId } : {}),
-            },
-          ],
-    )
-    mudarEditor(null)
-    mudarMensagem(
-      'Projeto salvo nesta sessão. Para guardar depois ou publicar, ainda falta ligar a página ao serviço de projetos.',
-    )
   }
   function renderizarEditor(registro) {
     const itemEditor = registro?.novo
@@ -415,9 +347,6 @@ export default function GestaoConteudos({
       }
       return
     }
-    aoAlterar(itens.filter((item) => item.identificador !== exclusao.identificador))
-    mudarMensagem('Item removido do rascunho.')
-    mudarExclusao(null)
   }
   return (
     <>

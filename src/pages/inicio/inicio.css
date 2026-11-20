@@ -381,27 +381,35 @@
   }
 }
 
-.pagina-inicial :is(.item-projeto, .curso-resumo),
-.pagina-inicial :is(.item-projeto, .curso-resumo):hover {
+.pagina-inicial :is(.item-projeto, .curso-resumo, .curso-catalogo) {
   background: var(--superficie);
-  border-color: var(--borda-suave);
+  border: 1px solid var(--borda-suave);
   box-shadow: none;
-  transform: none;
-  transition: scale 500ms ease-in-out;
+  transition:
+    border-color 160ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 160ms cubic-bezier(0.2, 0, 0, 1),
+    transform 160ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .pagina-inicial :is(.item-projeto, .curso-resumo)::before {
   display: none;
 }
 
-.pagina-inicial .item-projeto:hover .item-projeto__titulo {
-  color: var(--titulo);
+.pagina-inicial :is(.item-projeto, .curso-resumo, .curso-catalogo):hover {
+  border-color: var(--azul);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--azul) 20%, transparent),
+    var(--sombra-elevada);
+  transform: translateY(-2px);
 }
 
-.pagina-inicial :is(.item-projeto, .curso-resumo):hover {
-  position: relative;
-  z-index: 1;
-  scale: 1.05;
+.pagina-inicial :is(.item-projeto, .curso-resumo, .curso-catalogo):active {
+  transform: translateY(0);
+}
+
+.pagina-inicial .item-projeto:hover .item-projeto__titulo,
+.pagina-inicial .item-projeto:hover .item-projeto__link {
+  color: var(--azul);
 }
 
 @media (prefers-reduced-motion: no-preference) {

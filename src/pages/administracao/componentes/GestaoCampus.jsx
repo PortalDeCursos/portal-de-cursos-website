@@ -298,7 +298,10 @@ export default function GestaoCampus({ identificador, token }) {
           </section>
         )}
         <div className="campus-detalhe-grade">
-          <section className="campus-detalhe-cartao" aria-labelledby="campus-dados-titulo">
+          <section
+            className="campus-detalhe-cartao campus-detalhe-dados"
+            aria-labelledby="campus-dados-titulo"
+          >
             <header>
               <h2 id="campus-dados-titulo">Localização e identificação</h2>
             </header>
@@ -355,7 +358,6 @@ export default function GestaoCampus({ identificador, token }) {
             ) : (
               <div className="campus-cursos-vazio">
                 <p>Nenhum curso vinculado a este campus.</p>
-                <p>Ao cadastrar um curso, selecione esta unidade.</p>
               </div>
             )}
             <a

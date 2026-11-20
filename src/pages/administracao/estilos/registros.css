@@ -85,7 +85,7 @@
   border-radius: var(--raio-cartao);
 }
 :root[data-tema='escuro'] .administracao-categoria {
-  background: var(--preto);
+  background: var(--superficie);
   border-color: var(--borda-suave);
 }
 .administracao-categoria h3 {
@@ -237,7 +237,7 @@
 :root[data-tema='escuro'] .administracao-indicador,
 :root[data-tema='escuro'] .curso-gestao {
   border-color: var(--borda-suave);
-  background: var(--preto);
+  background: var(--superficie);
 }
 :root[data-tema='escuro'] .administracao-boas-vindas {
   border-left: 2px solid var(--azul-vivo);

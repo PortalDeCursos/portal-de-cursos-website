@@ -1,7 +1,7 @@
 :root {
   /* Escalas compartilhadas do design system */
-  --raio-controle: 10px;
-  --raio-superficie: 16px;
+  --raio-controle: 6px;
+  --raio-superficie: 8px;
   --raio-pilula: 9999px;
   --raio-botao: var(--raio-controle);
   --raio-campo: var(--raio-controle);
@@ -34,7 +34,7 @@
   --esp-8: var(--espaco-8);
 
   /* Aliases de texto */
-  --texto-s: var(--texto-xs);
+  --texto-s: var(--texto-sm);
   --texto-m: var(--texto-md);
   --texto-l: var(--texto-lg);
   --texto-xs: 12px;
@@ -65,29 +65,32 @@
   --chip-extensao: #a8510b;
   --chip-pesquisa: #067647;
   --chip-integrador: #5b2db8;
-  --chip-tcc-texto: var(--branco);
-  --chip-extensao-texto: var(--branco);
-  --chip-pesquisa-texto: var(--branco);
-  --chip-integrador-texto: var(--branco);
+  --chip-tcc-fundo: #dce7ff;
+  --chip-extensao-fundo: #fff3c4;
+  --chip-pesquisa-fundo: #dff3e7;
+  --chip-integrador-fundo: #e6ddff;
+  --chip-tcc-texto: #003da8;
+  --chip-extensao-texto: #a8510b;
+  --chip-pesquisa-texto: #067647;
+  --chip-integrador-texto: #5b2db8;
   --selo-coordenador-fundo: #ffc400;
   --selo-coordenador-texto: #003da8;
 
   /* Superfícies e neutros */
-  --fundo: #e9edf3;
+  --fundo: #f4f6f9;
   --superficie: #ffffff;
-  --suave: #e4e8ee;
+  --suave: #e8edf4;
   --etiqueta: #d8dee8;
   --titulo: #101722;
   --texto: #263241;
   --texto-suave: #3f4b5b;
-  --borda: #aeb8c7;
-  --borda-suave: #d2d9e3;
+  --borda: #cbd5e1;
+  --borda-suave: #e2e8f0;
   --cabecalho: rgba(255, 255, 255, 0.95);
   --altura-cabecalho: 64px;
   --cabecalho-altura: var(--altura-cabecalho);
-  --sombra: 0 1px 2px rgb(11 31 54 / 6%), 0 8px 24px -10px rgb(11 31 54 / 14%);
-  --sombra-elevada:
-    0 2px 4px rgb(11 31 54 / 6%), 0 22px 40px -14px color-mix(in srgb, var(--azul) 30%, transparent);
+  --sombra: 0 1px 2px rgb(11 31 54 / 5%);
+  --sombra-elevada: 0 4px 12px rgb(11 31 54 / 10%);
   --fundo-alt: color-mix(in srgb, var(--azul-suave) 45%, var(--fundo));
   --cor: var(--azul);
   --texto-sobre-cor: var(--branco);
@@ -111,10 +114,10 @@
 }
 
 :root[data-tema='escuro'] {
-  --fundo: #000000;
-  --superficie: #050505;
-  --suave: #101010;
-  --etiqueta: #171717;
+  --fundo: #0b0f14;
+  --superficie: #121821;
+  --suave: #1a2230;
+  --etiqueta: #1a2230;
   --titulo: #f5f5f5;
   --texto: #dedfe2;
   --texto-suave: #bcc2cc;
@@ -124,13 +127,11 @@
   --azul-suave: #182238;
   --marinho: #0b1f36;
   --verde: #7ed9aa;
-  --borda: #343434;
-  --borda-suave: #242424;
-  --cabecalho: rgba(0, 0, 0, 0.95);
+  --borda: #354254;
+  --borda-suave: #242f3d;
+  --cabecalho: rgba(18, 24, 33, 0.95);
   --sombra: none;
-  --sombra-elevada:
-    0 0 0 1px color-mix(in srgb, var(--cor) 45%, transparent),
-    0 18px 40px -18px color-mix(in srgb, var(--cor) 45%, transparent);
+  --sombra-elevada: 0 2px 8px rgb(0 0 0 / 20%);
   --fundo-alt: #0a0e16;
 
   --chip-tcc: #8fb1ff;

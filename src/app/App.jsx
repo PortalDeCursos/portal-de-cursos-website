@@ -94,7 +94,6 @@ export default function App() {
   })
   const [decisoes, mudarDecisoes] = useState({})
   const [listaSubmissoes, mudarListaSubmissoes] = useState([])
-  const [rascunhos, mudarRascunhos] = useState({ cursos: [], projetos: [], disciplinas: [] })
   const [sessaoExpirada, mudarSessaoExpirada] = useState(false)
   const [tema, mudarTema] = useState(lerTema)
   const [rota, mudarRota] = useState(lerRota)
@@ -374,32 +373,8 @@ export default function App() {
             }
           })
           mudarListaSubmissoes(mapeadas)
-          try {
-            const publicadosCache = dados
-              .filter((p) => p.statusProjeto === 'PUBLICADO')
-              .map((p) => {
-                const orientadorObj = p.professores?.find((prof) => prof.papel === 'ORIENTADOR')
-                const nomeOrientador = orientadorObj?.professorId
-                  ? mapaProfessores.get(String(orientadorObj.professorId)) ||
-                    orientadorObj?.nome ||
-                    ''
-                  : ''
-                return {
-                  ...p,
-                  orientador: nomeOrientador || p.orientador || '',
-                }
-              })
-            localStorage.setItem('portal-cursos-publicados-cache', JSON.stringify(publicadosCache))
-          } catch {
-            /* Cache público opcional. */
-          }
         } else if (Array.isArray(dados)) {
           mudarListaSubmissoes([])
-          try {
-            localStorage.setItem('portal-cursos-publicados-cache', '[]')
-          } catch {
-            /* Cache público opcional. */
-          }
         }
       } catch (falha) {
         if (falha?.status === 401) {
@@ -428,7 +403,6 @@ export default function App() {
     mudarSessaoExpirada(false)
     mudarDecisoes({})
     mudarListaSubmissoes([])
-    mudarRascunhos({ cursos: [], projetos: [], disciplinas: [] })
     limparLocal()
     navegar(enderecoPrivado('login'), true)
   }
@@ -594,10 +568,6 @@ export default function App() {
               secao={rota.split('/')[1] || 'painel'}
               identificador={rota.split('/')[2]}
               sessao={sessao}
-              rascunhos={rascunhos}
-              aoAlterar={(dominio, itens) =>
-                mudarRascunhos((atual) => ({ ...atual, [dominio]: itens }))
-              }
               submissoes={listaSubmissoes.map((item) => ({
                 ...item,
                 status:
@@ -621,10 +591,6 @@ export default function App() {
             <PaginaCoordenacao
               secao={rota.split('/')[1] || 'painel'}
               sessao={sessao}
-              rascunhos={rascunhos}
-              aoAlterar={(dominio, itens) =>
-                mudarRascunhos((atual) => ({ ...atual, [dominio]: itens }))
-              }
               submissoes={listaSubmissoes.map((item) => ({
                 ...item,
                 status:
@@ -695,12 +661,14 @@ export default function App() {
                           console.warn('Não foi possível localizar a coordenação:', falha.message)
                           return []
                         })
-                        enviarAviso(
-                          'ANALISE_PUBLICACAO',
-                          (Array.isArray(coordenadores) ? coordenadores : [])
-                            .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
-                            .filter(Boolean),
+                        const emailsCoordenadores = (
+                          Array.isArray(coordenadores) ? coordenadores : []
                         )
+                          .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
+                          .filter(Boolean)
+                        if (emailsCoordenadores.length > 0) {
+                          enviarAviso('ANALISE_PUBLICACAO', emailsCoordenadores)
+                        }
                       } else if (status === 'Recusado') {
                         await atualizarStatusProjeto(submissao.id, 'RECUSADO', sessao.token)
                         proximoStatusBackend = 'RECUSADO'

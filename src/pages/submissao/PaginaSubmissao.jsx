@@ -648,11 +648,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           <aside className="submissao-acesso__guia" aria-label="Como funciona a submissão">
             <header className="submissao-acesso__guia-cabecalho">
               <span className="submissao-acesso__guia-etiqueta">Roteiro de submissão</span>
-              <strong>03 etapas</strong>
             </header>
             <div className="submissao-acesso__guia-introducao">
               <h2>Do rascunho à avaliação.</h2>
-              <p>Você mantém clareza sobre o que precisa preparar em cada momento.</p>
             </div>
             <ol>
               <li>
@@ -678,7 +676,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
               </li>
             </ol>
             <p className="submissao-acesso__perfis">
-              Acesso exclusivo para alunos e coordenação de curso.
+              Submissões disponíveis para contas institucionais.
             </p>
           </aside>
         </section>
