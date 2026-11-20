@@ -1,7 +1,4 @@
-
-
 :root {
-  --cabecalho-altura: 64px;
   --cabecalho-item: 36px;
   --cabecalho-transicao: var(--transicao);
 }
@@ -10,6 +7,7 @@
 
 .cabecalho {
   position: fixed;
+  height: var(--altura-cabecalho);
   top: 0;
   left: 0;
   right: 0;
@@ -115,7 +113,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 24px;
-  height: var(--cabecalho-altura);
+  height: 100%;
 }
 
 .cabecalho--professor .cabecalho__conteudo {

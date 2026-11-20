@@ -2,7 +2,7 @@
 
 .pagina-painel-aluno {
   max-width: 1200px;
-  padding-top: calc(var(--cabecalho-altura, 64px) + 24px);
+  padding-top: var(--espaco-5);
   padding-bottom: 72px;
   padding-inline: clamp(20px, 3vw, 44px);
   margin: 0 auto;
@@ -48,7 +48,7 @@
 
 @media (max-width: 760px) {
   .pagina-painel-aluno {
-    padding-top: calc(var(--cabecalho-altura, 64px) + 16px);
+    padding-top: var(--espaco-4);
     gap: var(--espaco-4);
   }
   .painel-aluno-cabecalho {

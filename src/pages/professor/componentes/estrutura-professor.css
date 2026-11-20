@@ -1,11 +1,12 @@
 .painel-estrutura {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  min-height: calc(100dvh - var(--cabecalho-altura, 64px));
+  min-height: calc(100dvh - var(--altura-cabecalho));
 }
 
 .painel-estrutura__conteudo {
   min-width: 0;
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
 }
 
 .painel-navegacao {
@@ -212,6 +213,10 @@
 .area-professor {
   min-height: 100dvh;
   background: var(--fundo);
+}
+
+.area-professor--conectada {
+  padding-top: var(--altura-cabecalho);
 }
 
 .area-professor--conectada .cabecalho__conteudo {
