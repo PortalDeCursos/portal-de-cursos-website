@@ -212,6 +212,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
             nomeProjeto: dto.nome,
             tipoProjeto: dto.tipoProjeto,
             destinatarios,
+            nomeResponsavel: sessao.usuario?.nome,
           },
           sessao.token,
         )

@@ -665,6 +665,7 @@ export default function App() {
                         submissao?.tipo ||
                         'TCC',
                       destinatarios,
+                      nomeResponsavel: sessao.usuario?.nome,
                       justificativa,
                     },
                     sessao.token,
