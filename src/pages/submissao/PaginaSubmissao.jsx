@@ -542,9 +542,14 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           <span className="submissao-confirmacao__selo" aria-hidden="true">
             ✓
           </span>
-          <h1 id="titulo-confirmacao">Projeto cadastrado.</h1>
-          <p>Confira abaixo o resultado de cada etapa antes de acompanhar o projeto no painel.</p>
+          <h1 id="titulo-confirmacao">{temPendencias ? 'Projeto salvo.' : 'Projeto enviado.'}</h1>
+          <p>
+            {temPendencias
+              ? 'Conclua as etapas abaixo para finalizar o envio.'
+              : 'Acompanhe a avaliação pelo painel.'}
+          </p>
           <SituacaoEnvio
+            compacto
             envio={envio}
             temPendencias={temPendencias}
             tentarEncaminhamento={tentarEncaminhamento}

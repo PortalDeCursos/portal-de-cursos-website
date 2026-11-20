@@ -917,9 +917,9 @@
 .submissao-confirmacao {
   display: grid;
   justify-items: start;
-  max-width: 720px;
+  max-width: 680px;
   margin: 48px auto 0;
-  padding: clamp(28px, 6vw, 64px);
+  padding: clamp(24px, 4vw, 40px);
   border: 1px solid var(--borda);
   border-radius: var(--raio-cartao);
   background: var(--superficie);
@@ -938,7 +938,7 @@
 }
 
 .submissao-confirmacao h1 {
-  margin-bottom: 18px;
+  margin-bottom: var(--espaco-2);
 }
 
 .submissao-confirmacao > p:not(.pagina-submissao__rotulo) {
@@ -951,9 +951,8 @@
   gap: 5px;
   width: 100%;
   margin: 24px 0;
-  padding: 16px;
-  border-radius: var(--raio-cartao);
-  background: var(--suave);
+  padding-block: var(--espaco-3);
+  border-block: 1px solid var(--borda-suave);
 }
 
 .submissao-confirmacao__resumo span {
@@ -1254,6 +1253,31 @@
 
 .situacao-envio button {
   min-height: 44px;
+}
+
+.situacao-envio--compacta {
+  margin-top: var(--espaco-4);
+}
+
+.situacao-envio__aviso {
+  margin: 0 0 var(--espaco-3);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+}
+
+.situacao-envio__detalhes summary {
+  display: list-item;
+  min-height: 44px;
+  padding-block: var(--espaco-2);
+  color: var(--titulo);
+  cursor: pointer;
+  font-size: var(--texto-sm);
+}
+
+.situacao-envio__detalhes summary:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 4px;
 }
 .etapas-submissao {
   margin-top: var(--espaco-6);
