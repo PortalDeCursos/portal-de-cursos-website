@@ -1,5 +1,4 @@
-import { enderecoPrivado } from '../../../app/rotas.js'
-import Icone from '@/shared/componentes/Icone.jsx'
+import NavegacaoPainel from '@/shared/componentes/NavegacaoPainel.jsx'
 
 const grupos = [
   {
@@ -33,60 +32,16 @@ const grupos = [
   },
 ]
 
-function iniciais(nome = '') {
-  return nome
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((parte) => parte[0])
-    .join('')
-    .toLocaleUpperCase('pt-BR')
-}
-
-export default function NavegacaoAdministracao({ rota, usuario }) {
-  const papel = usuario?.tipoUsuario === 'ADMIN' ? 'Administrador' : 'Coordenação'
+export default function NavegacaoAdministracao({ rota, usuario, aoSair }) {
   return (
-    <aside className="painel-navegacao">
-      <span className="painel-navegacao__titulo">Administração do portal</span>
-      <nav aria-label="Navegação administrativa">
-        {grupos.map((grupo) => (
-          <section className="painel-navegacao__grupo" key={grupo.titulo}>
-            <h2>{grupo.titulo}</h2>
-            {grupo.itens.map(([destino, titulo, icone, descricao]) => (
-              <a
-                key={destino}
-                href={enderecoPrivado(`administracao/${destino}`)}
-                aria-current={
-                  rota === `administracao/${destino}` ||
-                  (destino === 'campus' && rota.startsWith('administracao/campus/')) ||
-                  (destino === 'painel' && rota === 'administracao')
-                    ? 'page'
-                    : undefined
-                }
-              >
-                <span className="painel-navegacao__icone" aria-hidden="true">
-                  <Icone nome={icone} />
-                </span>
-                <span className="painel-navegacao__texto">
-                  <strong>{titulo}</strong>
-                  <small>{descricao}</small>
-                </span>
-              </a>
-            ))}
-          </section>
-        ))}
-      </nav>
-      {usuario && (
-        <div className="painel-navegacao__conta">
-          <span className="painel-navegacao__avatar" aria-hidden="true">
-            {iniciais(usuario.nome)}
-          </span>
-          <span>
-            <strong>{usuario.nome}</strong>
-            <small>{papel}</small>
-          </span>
-        </div>
-      )}
-    </aside>
+    <NavegacaoPainel
+      area="administracao"
+      titulo="Administração"
+      papel="Administrador"
+      grupos={grupos}
+      rota={rota}
+      usuario={usuario}
+      aoSair={aoSair}
+    />
   )
 }

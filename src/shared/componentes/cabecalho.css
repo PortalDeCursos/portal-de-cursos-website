@@ -1,10 +1,4 @@
-/* ==========================================================================
-   Cabeçalho global — versão 2
-   Compatível com Cabecalho.jsx (nova versão). Substitui cabecalho.css.
-   Cores vêm de styles/tokens.css e mudam com o tema. Nenhum valor fixo aqui.
-   Tokens usados: --fundo, --superficie, --suave, --borda, --borda-campo,
-   --titulo, --texto, --texto-secundario, --etiqueta, --foco, --azul-marca.
-   ========================================================================== */
+
 
 :root {
   --cabecalho-altura: 64px;
@@ -141,6 +135,20 @@
   gap: 10px;
   color: var(--titulo);
   text-decoration: none;
+}
+
+.marca--com-area {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0 10px;
+}
+
+.marca__area {
+  grid-column: 1 / -1;
+  color: var(--texto-suave);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .marca__simbolo {
