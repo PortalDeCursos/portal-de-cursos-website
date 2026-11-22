@@ -31,6 +31,13 @@ public final class ConfiguracaoTeste {
         throw new IllegalStateException("Não foi possível ler selenium.local.properties.", falha);
       }
     }
+
+    String email = obrigatorio("aluno.email");
+    if (!email.matches("[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+")) {
+      throw new IllegalStateException(
+          "Informe um e-mail válido de aluno em selenium.local.properties antes de executar os testes.");
+    }
+    obrigatorio("aluno.senha");
   }
 
   public String obter(String chave) {

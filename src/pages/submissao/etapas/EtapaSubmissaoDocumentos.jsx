@@ -29,8 +29,8 @@ export default function EtapaSubmissaoDocumentos({
           <h2 id="dados-documentos">Documentos e revisão</h2>
           <p>
             {formulario.tipo === 'TCC'
-              ? 'Informe o link do repositório e confirme a publicação.'
-              : 'Anexe o material e confirme as condições de publicação.'}
+              ? 'Informe o link público do trabalho no repositório Memória.'
+              : 'Anexe o documento do projeto em PDF, com até 10 MB.'}
           </p>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function EtapaSubmissaoDocumentos({
               type="url"
               aria-invalid={Boolean(erros.linkMemoria)}
               aria-describedby={erroDoCampo('linkMemoria')}
-              placeholder="https://memoria.ifsc.edu.br/..."
+              placeholder="Cole o endereço público do trabalho"
               value={formulario.linkMemoria}
               onChange={(e) => alterar('linkMemoria', e.target.value)}
             />
@@ -90,9 +90,7 @@ export default function EtapaSubmissaoDocumentos({
                 {ocultarZonaUpload ? (
                   <div className="campo-arquivo__cabecalho-anexado">
                     <strong>{documento.nome}</strong>
-                    <small>
-                      {documento.obrigatorio ? 'Obrigatório' : 'Opcional'} · um PDF
-                    </small>
+                    <small>{documento.obrigatorio ? 'Obrigatório' : 'Opcional'} · um PDF</small>
                   </div>
                 ) : (
                   <label className="campo-arquivo" htmlFor={idDaZona}>
@@ -188,31 +186,6 @@ export default function EtapaSubmissaoDocumentos({
             )
           })}
         </div>
-      )}
-      <label
-        className={`consentimento-submissao ${
-          formulario.aceitaPublicacao ? 'consentimento-submissao--ativo' : ''
-        }`}
-      >
-        <input
-          data-testid="autorizacao-publicacao-submissao"
-          type="checkbox"
-          checked={formulario.aceitaPublicacao}
-          aria-describedby={erroDoCampo('aceitaPublicacao')}
-          onChange={(e) => alterar('aceitaPublicacao', e.target.checked)}
-        />
-        <span className="consentimento-submissao__texto">
-          <strong>Autorizar publicação</strong>
-          <span>
-            O projeto será avaliado pelo professor orientador e pela coordenação do curso antes de
-            ser publicado no portal.
-          </span>
-        </span>
-      </label>
-      {erros.aceitaPublicacao && (
-        <small id="erro-aceitaPublicacao" className="formulario-submissao__erro-campo">
-          {erros.aceitaPublicacao}
-        </small>
       )}
     </section>
   )

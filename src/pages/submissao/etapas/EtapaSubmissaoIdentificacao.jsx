@@ -78,7 +78,7 @@ export default function EtapaSubmissaoIdentificacao({
           </select>
           {!carregandoCadastros && !cursos.length && (
             <small className="formulario-submissao__erro-campo" role="status">
-              Os cursos não puderam ser carregados agora.
+              Nenhum curso está disponível. Peça à coordenação para conferir o cadastro.
             </small>
           )}
           {erros.curso && (

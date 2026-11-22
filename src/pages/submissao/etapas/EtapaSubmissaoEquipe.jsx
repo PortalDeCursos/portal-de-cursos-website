@@ -4,6 +4,8 @@ export default function EtapaSubmissaoEquipe({
   alterar,
   erroDoCampo,
   listaOrientadores,
+  carregandoOrientadores = false,
+  erroOrientadores = '',
   adicionarAutor,
   removerAutor,
   alterarAutor,
@@ -75,7 +77,7 @@ export default function EtapaSubmissaoEquipe({
           <select
             data-testid="orientador-submissao"
             required
-            disabled={!formulario.curso}
+            disabled={!formulario.curso || carregandoOrientadores || Boolean(erroOrientadores)}
             aria-invalid={Boolean(erros.orientador)}
             aria-describedby={erroDoCampo('orientador')}
             value={formulario.orientador}
@@ -92,17 +94,20 @@ export default function EtapaSubmissaoEquipe({
               {formulario.curso ? 'Selecione o professor orientador' : 'Selecione o curso primeiro'}
             </option>
             {orientadoresCurso.map((orientador) => (
-              <option key={orientador.id} value={orientador.nome}>
+              <option key={orientador.id} value={String(orientador.id)}>
                 {orientador.nome}
                 {orientador.titulacao ? ` (${orientador.titulacao})` : ''}
               </option>
             ))}
           </select>
-          {formulario.curso && !orientadoresCurso.length && (
-            <small className="formulario-submissao__erro-campo">
-              Não há professor disponível para este curso no momento.
-            </small>
-          )}
+          {formulario.curso &&
+            !carregandoOrientadores &&
+            !erroOrientadores &&
+            !orientadoresCurso.length && (
+              <small className="formulario-submissao__erro-campo">
+                Não há professor disponível para este curso no momento.
+              </small>
+            )}
           {erros.orientador && (
             <small id="erro-orientador" className="formulario-submissao__erro-campo">
               {erros.orientador}
@@ -116,7 +121,7 @@ export default function EtapaSubmissaoEquipe({
             Outros professores participantes / colaboradores
             <select
               data-testid="professor-participante-submissao"
-              disabled={!formulario.curso}
+              disabled={!formulario.curso || carregandoOrientadores || Boolean(erroOrientadores)}
               value=""
               onChange={(e) => adicionarProfessorParticipante(e.target.value)}
             >
@@ -128,11 +133,11 @@ export default function EtapaSubmissaoEquipe({
               {orientadoresCurso
                 .filter(
                   (orientador) =>
-                    orientador.nome !== formulario.orientador &&
-                    !formulario.professoresParticipantes?.includes(orientador.nome),
+                    String(orientador.id) !== String(formulario.orientador) &&
+                    !formulario.professoresParticipantes?.includes(String(orientador.id)),
                 )
                 .map((orientador) => (
-                  <option key={orientador.id} value={orientador.nome}>
+                  <option key={orientador.id} value={String(orientador.id)}>
                     {orientador.nome}
                     {orientador.titulacao ? ` (${orientador.titulacao})` : ''}
                   </option>
@@ -150,7 +155,12 @@ export default function EtapaSubmissaoEquipe({
                     title={`Remover ${profNome}`}
                     onClick={() => removerProfessorParticipante(profNome)}
                   >
-                    <span>Prof. {profNome}</span>
+                    <span>
+                      Prof.{' '}
+                      {orientadoresCurso.find(
+                        (professor) => String(professor.id) === String(profNome),
+                      )?.nome || 'Professor selecionado'}
+                    </span>
                     <span aria-hidden="true"> ×</span>
                   </button>
                 ))}

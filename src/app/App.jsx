@@ -1,3 +1,5 @@
+import { montarEdicaoProjeto, pegarIdsDisciplinas } from '@/shared/utils/contratoProjetos.js'
+import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } from './rotas.js'
 import EstruturaProfessor from '@/pages/professor/componentes/EstruturaProfessor.jsx'
@@ -35,7 +37,14 @@ function CarregamentoPagina() {
 }
 import { listarCursos } from '@/api/cursos.js'
 import { listarProfessores } from '@/api/professores.js'
-import { atualizarStatusProjeto, excluirProjeto, listarProjetos } from '@/api/projetos.js'
+import {
+  atualizarProjeto,
+  atualizarStatusProjeto,
+  buscarProjetoPorId,
+  encaminharProjetoParaCoordenacao,
+  excluirProjeto,
+  listarProjetos,
+} from '@/api/projetos.js'
 import { listarCoordenadores } from '@/api/coordenadores.js'
 import { enviarNotificacaoProjeto } from '@/api/notificacoes.js'
 import { limparLocal } from './limparLocal.js'
@@ -94,6 +103,8 @@ export default function App() {
   })
   const [decisoes, mudarDecisoes] = useState({})
   const [listaSubmissoes, mudarListaSubmissoes] = useState([])
+  const [erroSubmissoes, mudarErroSubmissoes] = useState('')
+  const [tentativaSubmissoes, mudarTentativaSubmissoes] = useState(0)
   const [sessaoExpirada, mudarSessaoExpirada] = useState(false)
   const [tema, mudarTema] = useState(lerTema)
   const [rota, mudarRota] = useState(lerRota)
@@ -268,11 +279,24 @@ export default function App() {
     const controller = new AbortController()
 
     async function sincronizarSubmissoes() {
+      mudarErroSubmissoes('')
       try {
         const [dados, cursosCadastrados, professoresCadastrados] = await Promise.all([
           listarProjetos(sessao.token, controller.signal),
-          listarCursos(controller.signal).catch(() => []),
-          listarProfessores(sessao.token, {}, controller.signal).catch(() => []),
+          listarCursos(controller.signal).catch(() => {
+            if (!controller.signal.aborted)
+              mudarErroSubmissoes(
+                'Não foi possível completar os nomes dos cursos e da equipe. Tente atualizar os dados novamente.',
+              )
+            return []
+          }),
+          listarProfessores(sessao.token, {}, controller.signal).catch(() => {
+            if (!controller.signal.aborted)
+              mudarErroSubmissoes(
+                'Não foi possível completar os nomes dos cursos e da equipe. Tente atualizar os dados novamente.',
+              )
+            return []
+          }),
         ])
 
         if (Array.isArray(dados) && dados.length > 0) {
@@ -289,6 +313,24 @@ export default function App() {
             ]),
           )
 
+          const cursosDosProjetos = [...new Set(dados.map((p) => p.cursoId).filter(Boolean))]
+          const resultadosDisciplinas = await Promise.allSettled(
+            cursosDosProjetos.map((id) =>
+              listarDisciplinasPorCurso(id, sessao.token, controller.signal),
+            ),
+          )
+          if (controller.signal.aborted) return
+          if (resultadosDisciplinas.some((resultado) => resultado.status === 'rejected'))
+            mudarErroSubmissoes(
+              'Não foi possível completar os nomes das disciplinas. Confira os identificadores exibidos e tente atualizar os dados novamente.',
+            )
+          const mapaDisciplinas = new Map(
+            resultadosDisciplinas.flatMap((resultado) =>
+              resultado.status === 'fulfilled'
+                ? resultado.value.map((d) => [String(d.id), d.nome])
+                : [],
+            ),
+          )
           const mapeadas = dados.map((p) => {
             const orientadorObj = p.professores?.find((prof) => prof.papel === 'ORIENTADOR')
             const participantesObjs =
@@ -347,9 +389,11 @@ export default function App() {
               dataInicio: p.dataInicio,
               dataFim: p.dataFim,
               documentos: Array.isArray(p.documentos) ? p.documentos : [],
-              disciplinas: Array.isArray(p.disciplinas)
-                ? p.disciplinas.map((d) => d.nome || d)
-                : [],
+              originalApi: p,
+              disciplinaIds: pegarIdsDisciplinas(p),
+              disciplinas: pegarIdsDisciplinas(p).map(
+                (id) => mapaDisciplinas.get(String(id)) || `Disciplina #${id}`,
+              ),
               statusBackend: p.statusProjeto,
               status:
                 p.statusProjeto === 'EM_ANALISE'
@@ -369,7 +413,7 @@ export default function App() {
                               : p.statusProjeto,
               resumo: p.resumo,
               objetivo: p.descricao,
-              tipoAutor: 'ALUNO',
+              tipoAutor: p.tipoAutor || p.submissor?.tipoUsuario || null,
             }
           })
           mudarListaSubmissoes(mapeadas)
@@ -377,6 +421,10 @@ export default function App() {
           mudarListaSubmissoes([])
         }
       } catch (falha) {
+        if (controller.signal.aborted) return
+        mudarErroSubmissoes(
+          'Não foi possível atualizar os projetos. Tente novamente antes de conferir a lista.',
+        )
         if (falha?.status === 401) {
           mudarSessao(null)
           mudarSessaoExpirada(true)
@@ -387,7 +435,7 @@ export default function App() {
 
     sincronizarSubmissoes()
     return () => controller.abort()
-  }, [sessao?.token])
+  }, [sessao?.token, tentativaSubmissoes])
 
   function entrar(novaSessao) {
     mudarSessao(novaSessao)
@@ -539,6 +587,18 @@ export default function App() {
         <a className="pular-conteudo" href="#conteudo">
           Pular para o conteúdo
         </a>
+        {sessao && erroSubmissoes && (
+          <section className="limite" role="alert">
+            <p>{erroSubmissoes}</p>
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => mudarTentativaSubmissoes((atual) => atual + 1)}
+            >
+              Tentar novamente
+            </button>
+          </section>
+        )}
         <Suspense fallback={<CarregamentoPagina />}>
           {!sessao ? (
             <PaginaDeLogin aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
@@ -616,28 +676,42 @@ export default function App() {
                 // Sincroniza com o backend via PATCH /api/projetos/{id}/status
                 let proximoStatusBackend = submissao?.statusBackend
                 let statusAtualizado = status
-                const enviarAviso = (statusProjeto, destinatarios) =>
-                  enviarNotificacaoProjeto(
-                    {
-                      statusProjeto,
-                      nomeProjeto: submissao?.titulo || submissao?.nome || 'Projeto',
-                      tipoProjeto:
-                        {
-                          TCC: 'TCC',
-                          'Projeto Integrador': 'PROJETO_INTEGRADOR',
-                          Pesquisa: 'PROJETO_PESQUISA',
-                          Extensão: 'PROJETO_EXTENSAO',
-                        }[submissao?.tipo] ||
-                        submissao?.tipo ||
-                        'TCC',
-                      destinatarios,
-                      nomeResponsavel: sessao.usuario?.nome,
-                      justificativa,
-                    },
-                    sessao.token,
-                  ).catch((falha) =>
-                    console.warn('Falha ao enviar aviso do projeto:', falha.message),
+                const falhasAviso = []
+                const avisosPendentes = []
+                const enviarAviso = (statusProjeto, destinatarios) => {
+                  if (!destinatarios.length) {
+                    falhasAviso.push(
+                      'Não foi possível localizar os destinatários do aviso por e-mail.',
+                    )
+                    return
+                  }
+                  avisosPendentes.push(
+                    // TODO: confirmar com Notificações se o evento do RabbitMQ já envia o e-mail
+                    enviarNotificacaoProjeto(
+                      {
+                        statusProjeto,
+                        nomeProjeto: submissao?.titulo || submissao?.nome || 'Projeto',
+                        tipoProjeto:
+                          {
+                            TCC: 'TCC',
+                            'Projeto Integrador': 'PROJETO_INTEGRADOR',
+                            Pesquisa: 'PROJETO_PESQUISA',
+                            Extensão: 'PROJETO_EXTENSAO',
+                          }[submissao?.tipo] ||
+                          submissao?.tipo ||
+                          'TCC',
+                        destinatarios,
+                        nomeResponsavel: sessao.usuario?.nome,
+                        justificativa,
+                      },
+                      sessao.token,
+                    ).catch(() => {
+                      falhasAviso.push(
+                        'Não foi possível confirmar o aviso por e-mail. Avise o responsável.',
+                      )
+                    }),
                   )
+                }
                 const emailsAutores = (submissao?.autores || [])
                   .map((autor) => (typeof autor === 'string' ? '' : autor?.email))
                   .filter(Boolean)
@@ -646,12 +720,7 @@ export default function App() {
                   try {
                     if (sessao.tipoUsuario === 'PROFESSOR') {
                       if (status === 'Em análise' || status === 'Aceito') {
-                        await atualizarStatusProjeto(submissao.id, 'APROVADO', sessao.token)
-                        await atualizarStatusProjeto(
-                          submissao.id,
-                          'ANALISE_PUBLICACAO',
-                          sessao.token,
-                        )
+                        await encaminharProjetoParaCoordenacao(submissao.id, sessao.token)
                         proximoStatusBackend = 'ANALISE_PUBLICACAO'
                         statusAtualizado = 'Aguardando Coordenação'
                         enviarAviso('APROVADO', emailsAutores)
@@ -659,6 +728,9 @@ export default function App() {
                           cursoId: submissao?.cursoId,
                         }).catch((falha) => {
                           console.warn('Não foi possível localizar a coordenação:', falha.message)
+                          falhasAviso.push(
+                            'Não foi possível localizar a coordenação para enviar o aviso. Avise o responsável.',
+                          )
                           return []
                         })
                         const emailsCoordenadores = (
@@ -668,6 +740,10 @@ export default function App() {
                           .filter(Boolean)
                         if (emailsCoordenadores.length > 0) {
                           enviarAviso('ANALISE_PUBLICACAO', emailsCoordenadores)
+                        } else {
+                          falhasAviso.push(
+                            'Não foi encontrado um e-mail da coordenação. Avise o responsável pelo curso.',
+                          )
                         }
                       } else if (status === 'Recusado') {
                         await atualizarStatusProjeto(submissao.id, 'RECUSADO', sessao.token)
@@ -719,26 +795,43 @@ export default function App() {
                   )
                   return atualizadas
                 })
+                await Promise.all(avisosPendentes)
+                return {
+                  aviso: falhasAviso.length
+                    ? `A decisão foi salva. ${[...new Set(falhasAviso)].join(' ')}`
+                    : '',
+                }
               }}
-              aoEditar={(alteracoes) => {
+              aoEditar={async (alteracoes) => {
+                const submissao = listaSubmissoes.find(
+                  (item) => item.identificador === identificadorSubmissao,
+                )
+                const atual = await buscarProjetoPorId(submissao.id, sessao.token)
+                const resposta = await atualizarProjeto(
+                  submissao.id,
+                  montarEdicaoProjeto(atual, alteracoes),
+                  sessao.token,
+                )
                 mudarListaSubmissoes((itens) =>
                   itens.map((item) =>
-                    item.identificador === identificadorSubmissao
-                      ? { ...item, ...alteracoes }
+                    item.id === resposta.id
+                      ? {
+                          ...item,
+                          titulo: resposta.nome,
+                          resumo: resposta.resumo,
+                          objetivo: resposta.descricao,
+                          originalApi: resposta,
+                        }
                       : item,
                   ),
                 )
               }}
-              aoRemover={() => {
+              aoRemover={async () => {
                 const submissao = listaSubmissoes.find(
                   (item) => item.identificador === identificadorSubmissao,
                 )
-                if (submissao?.id && sessao?.token) {
-                  excluirProjeto(submissao.id, sessao.token).catch(() => {})
-                }
-                mudarListaSubmissoes((itens) =>
-                  itens.filter((item) => item.identificador !== identificadorSubmissao),
-                )
+                await excluirProjeto(submissao.id, sessao.token)
+                mudarListaSubmissoes((itens) => itens.filter((item) => item.id !== submissao.id))
                 mudarDecisoes((atuais) => {
                   const proxima = { ...atuais }
                   delete proxima[identificadorSubmissao]

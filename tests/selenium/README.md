@@ -26,7 +26,7 @@ Com os serviços locais ativos, entre em `tests/selenium` e execute:
 .\mvnw.cmd test
 ```
 
-O arquivo versionado `src/test/resources/selenium.defaults.properties` já define URL, conta do seeder e rotas. Não é necessário copiar arquivos nem configurar variáveis de ambiente.
+O arquivo versionado `src/test/resources/selenium.defaults.properties` define URL e rotas. Configure `aluno.email` e `aluno.senha` em `selenium.local.properties` com uma conta de aluno cadastrada. Esse arquivo é ignorado pelo Git. O teste exige um e-mail com formato válido; isso não comprova que a caixa existe ou recebe mensagens.
 
 ## Regras cobertas
 

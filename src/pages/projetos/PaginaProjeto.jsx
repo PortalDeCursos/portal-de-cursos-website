@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { projetoEstaPublicado, linkDoDocumentoValido } from '@/shared/utils/contratoProjetos.js'
+import { useEffect, useRef, useState } from 'react'
 import Icone from '@/shared/componentes/Icone.jsx'
 import { formatarTitulacao } from '@/shared/utils/formatarTitulacao.js'
 import { buscarProjetoPorId, listarDocumentosProjeto, pegarUrlDownload } from '@/api/projetos.js'
@@ -54,6 +55,7 @@ function formatarData(isoStr) {
 }
 
 export default function PaginaProjeto({ identificador }) {
+  const consultas = useRef({ identificador, dados: {} })
   const [estado, mudarEstado] = useState('carregando')
   const [projeto, mudarProjeto] = useState(null)
   const [documentos, mudarDocumentos] = useState([])
@@ -62,22 +64,50 @@ export default function PaginaProjeto({ identificador }) {
   const [disciplinasProjeto, mudarDisciplinasProjeto] = useState([])
   const [citacaoCopiada, mudarCitacaoCopiada] = useState(false)
   const [erro, mudarErro] = useState('')
+  const [tentativa, mudarTentativa] = useState(0)
+  const [avisos, mudarAvisos] = useState({})
 
   useEffect(() => {
+    if (consultas.current.identificador !== identificador)
+      consultas.current = { identificador, dados: {} }
+    const dadosConsultados = consultas.current.dados
+    async function consultar(chave, carregar) {
+      if (Object.hasOwn(dadosConsultados, chave)) return dadosConsultados[chave]
+      const dados = await carregar()
+      controle.signal.throwIfAborted()
+      dadosConsultados[chave] = dados
+      return dados
+    }
     let ativo = true
     const controle = new AbortController()
 
     async function carregar() {
       mudarEstado('carregando')
+      mudarProjeto(null)
+      mudarDocumentos([])
+      mudarCursoInfo(null)
+      mudarOrientadorInfo(null)
+      mudarDisciplinasProjeto([])
+      mudarAvisos({})
+      const avisar = (consulta, mensagem) => {
+        if (ativo) mudarAvisos((atuais) => ({ ...atuais, [consulta]: mensagem }))
+      }
       try {
         const [dadosProjeto, listaCursos, listaProfessores] = await Promise.all([
-          buscarProjetoPorId(identificador, null, controle.signal),
-          listarCursos(controle.signal).catch(() => []),
-          listarProfessores(null, {}, controle.signal).catch(() => []),
+          consultar('projeto', () => buscarProjetoPorId(identificador, null, controle.signal)),
+          consultar('cursos', () => listarCursos(controle.signal)).catch(() => {
+            avisar('cursos', 'Não foi possível consultar o curso.')
+            return []
+          }),
+          consultar('professores', () => listarProfessores(null, {}, controle.signal)).catch(() => {
+            avisar('professores', 'Não foi possível consultar o orientador.')
+            return []
+          }),
         ])
 
         if (!ativo) return
-        if (!dadosProjeto) {
+        if (!projetoEstaPublicado(dadosProjeto)) {
+          delete dadosConsultados.projeto
           mudarEstado('erro')
           mudarErro('Projeto acadêmico não encontrado ou não está disponível.')
           return
@@ -86,13 +116,17 @@ export default function PaginaProjeto({ identificador }) {
         mudarProjeto(dadosProjeto)
 
         // Busca documentos anexos
-        listarDocumentosProjeto(identificador, null, controle.signal)
+        consultar('documentos', () => listarDocumentosProjeto(identificador, null, controle.signal))
           .then((docs) => {
             if (ativo && Array.isArray(docs)) {
               mudarDocumentos(docs.length > 0 ? docs : dadosProjeto.documentos || [])
             }
           })
           .catch(() => {
+            avisar(
+              'documentos',
+              'Não foi possível atualizar os documentos. A lista pode estar incompleta.',
+            )
             if (ativo && dadosProjeto.documentos) {
               mudarDocumentos(dadosProjeto.documentos)
             }
@@ -108,7 +142,9 @@ export default function PaginaProjeto({ identificador }) {
             Array.isArray(dadosProjeto.disciplinasIds) &&
             dadosProjeto.disciplinasIds.length > 0
           ) {
-            listarDisciplinasPorCurso(dadosProjeto.cursoId, null, controle.signal)
+            consultar('disciplinas', () =>
+              listarDisciplinasPorCurso(dadosProjeto.cursoId, null, controle.signal),
+            )
               .then((todasDisc) => {
                 if (!ativo || !Array.isArray(todasDisc)) return
                 const selecionadas = todasDisc.filter((d) =>
@@ -116,7 +152,7 @@ export default function PaginaProjeto({ identificador }) {
                 )
                 mudarDisciplinasProjeto(selecionadas)
               })
-              .catch(() => {})
+              .catch(() => avisar('disciplinas', 'Não foi possível consultar as disciplinas.'))
           }
         }
 
@@ -145,7 +181,7 @@ export default function PaginaProjeto({ identificador }) {
       ativo = false
       controle.abort()
     }
-  }, [identificador])
+  }, [identificador, tentativa])
 
   if (estado === 'carregando') {
     return (
@@ -163,6 +199,13 @@ export default function PaginaProjeto({ identificador }) {
         <section className="detalhe-projeto__painel-erro" role="alert">
           <h2>Projeto não encontrado</h2>
           <p>{erro || 'O projeto solicitado não foi localizado no acervo acadêmico.'}</p>
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => mudarTentativa((atual) => atual + 1)}
+          >
+            Tentar novamente
+          </button>
           <a className="botao-secundario" href="#projetos">
             Voltar ao acervo de projetos
           </a>
@@ -172,15 +215,13 @@ export default function PaginaProjeto({ identificador }) {
   }
 
   const autores =
-    Array.isArray(projeto.autores) && projeto.autores.length > 0
-      ? projeto.autores
-      : [{ id: 1, nome: projeto.autor || 'Discente do Curso' }]
+    Array.isArray(projeto.autores) && projeto.autores.length > 0 ? projeto.autores : []
 
   const nomeCurso =
     cursoInfo?.sigla ||
     cursoInfo?.acronimo ||
     cursoInfo?.nome ||
-    (projeto.cursoId ? `Curso ${projeto.cursoId}` : 'Curso Superior')
+    (projeto.cursoId ? `Curso ${projeto.cursoId}` : 'Curso não informado')
   const nomeCursoCompleto = cursoInfo?.nome || nomeCurso
   const linkCurso = cursoInfo?.identificador ? `#curso/${cursoInfo.identificador}` : '#cursos'
 
@@ -193,9 +234,7 @@ export default function PaginaProjeto({ identificador }) {
   const classeTipo = MODIFICADOR_TIPO[projeto.tipoProjeto] || 'tcc'
 
   // Monta citação ABNT
-  const anoProjeto = projeto.dataInicio
-    ? projeto.dataInicio.substring(0, 4)
-    : new Date().getFullYear()
+  const anoProjeto = projeto.dataInicio ? projeto.dataInicio.substring(0, 4) : 'Data não informada'
   const primeiroAutor = autores[0]?.nome || 'AUTOR'
   const partesNome = primeiroAutor.trim().split(' ')
   const ultimoSobrenome =
@@ -203,14 +242,22 @@ export default function PaginaProjeto({ identificador }) {
       ? partesNome[partesNome.length - 1].toUpperCase()
       : primeiroAutor.toUpperCase()
   const prenomes = partesNome.slice(0, -1).join(' ')
-  const citacaoABNT = `${ultimoSobrenome}, ${prenomes}. ${projeto.nome}. ${anoProjeto}. Trabalho de Conclusão / Produção Acadêmica (${nomeCursoCompleto}) - Instituto Federal do Rio Grande do Norte (IFRN).`
+  const citacaoABNT = `${ultimoSobrenome}${prenomes ? `, ${prenomes}` : ''}. ${projeto.nome}. ${anoProjeto}. ${nomeCursoCompleto}.`
 
   const copiarCitacao = () => {
     if (navigator?.clipboard) {
-      navigator.clipboard.writeText(citacaoABNT).then(() => {
-        mudarCitacaoCopiada(true)
-        setTimeout(() => mudarCitacaoCopiada(false), 3000)
-      })
+      navigator.clipboard
+        .writeText(citacaoABNT)
+        .then(() => {
+          mudarCitacaoCopiada(true)
+          setTimeout(() => mudarCitacaoCopiada(false), 3000)
+        })
+        .catch(() =>
+          mudarAvisos((atuais) => ({
+            ...atuais,
+            copia: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
+          })),
+        )
     }
   }
 
@@ -221,6 +268,20 @@ export default function PaginaProjeto({ identificador }) {
 
   return (
     <main id="conteudo" className="limite pagina-detalhe-projeto">
+      {Object.keys(avisos).length > 0 && (
+        <section role="status">
+          {Object.entries(avisos).map(([consulta, mensagem]) => (
+            <p key={consulta}>{mensagem}</p>
+          ))}
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => mudarTentativa((atual) => atual + 1)}
+          >
+            Tentar novamente
+          </button>
+        </section>
+      )}
       {/* Navegação de Trilha (Breadcrumb) */}
       <nav className="detalhe-projeto__trilha" aria-label="Você está aqui">
         <a href="#inicio">Início</a>
@@ -279,7 +340,7 @@ export default function PaginaProjeto({ identificador }) {
           <div className="detalhe-projeto__meta-item">
             <span className="detalhe-projeto__meta-rotulo">Campus</span>
             <span className="detalhe-projeto__meta-dado">
-              {cursoInfo?.campus || 'IFRN Campus Nova Cruz'}
+              {cursoInfo?.campusNome || cursoInfo?.campus || 'Campus não informado'}
             </span>
           </div>
         </div>
@@ -345,10 +406,9 @@ export default function PaginaProjeto({ identificador }) {
                     doc.nomeOriginal ||
                     doc.nome ||
                     `Documento Técnico #${idx + 1}`
-                  const urlDownload =
-                    doc.localizacao && doc.localizacao.startsWith('http')
-                      ? doc.localizacao
-                      : pegarUrlDownload(projeto.id, doc.id)
+                  const urlDownload = linkDoDocumentoValido(doc.localizacao)
+                    ? doc.localizacao
+                    : pegarUrlDownload(projeto.id, doc.id)
                   const ehLinkExterno =
                     doc.tipoDocumento === 'LINK_MEMORIA' ||
                     (doc.localizacao && doc.localizacao.startsWith('http'))
@@ -389,7 +449,7 @@ export default function PaginaProjeto({ identificador }) {
           <section className="detalhe-projeto__secao-bloco detalhe-projeto__secao-citacao">
             <div className="detalhe-projeto__bloco-header">
               <Icone nome="docentes-detalhe" />
-              <h2>Como citar esta produção (ABNT)</h2>
+              <h2>Referência da produção</h2>
             </div>
             <div className="detalhe-projeto__caixa-citacao">
               <code>{citacaoABNT}</code>
@@ -397,9 +457,9 @@ export default function PaginaProjeto({ identificador }) {
                 type="button"
                 className="botao-secundario botao--pequeno detalhe-projeto__btn-copiar"
                 onClick={copiarCitacao}
-                title="Copiar referência ABNT para a área de transferência"
+                title="Copiar referência para a área de transferência"
               >
-                {citacaoCopiada ? 'Copiado!' : 'Copiar citação ABNT'}
+                {citacaoCopiada ? 'Copiado!' : 'Copiar referência'}
               </button>
             </div>
           </section>
@@ -438,8 +498,10 @@ export default function PaginaProjeto({ identificador }) {
                   P
                 </div>
                 <div className="detalhe-projeto__membro-dados">
-                  <strong>Prof. Dr. Marcelo Carvalho</strong>
-                  <span className="detalhe-projeto__membro-papel">Docente Orientador</span>
+                  <strong>Orientador não informado</strong>
+                  <span className="detalhe-projeto__membro-papel">
+                    Consulte a equipe responsável pelo projeto.
+                  </span>
                 </div>
               </div>
             )}
@@ -447,32 +509,25 @@ export default function PaginaProjeto({ identificador }) {
 
           {/* Card: Autores Discentes */}
           <div className="detalhe-projeto__card-sidebar">
-            <h3 className="detalhe-projeto__sidebar-titulo">Equipe discente ({autores.length})</h3>
+            <h3 className="detalhe-projeto__sidebar-titulo">Autoria ({autores.length})</h3>
             <div className="detalhe-projeto__autores-lista">
               {autores.map((autor, idx) => {
                 const nomeAutor = typeof autor === 'string' ? autor : autor.nome
                 const emailAutor = typeof autor === 'object' ? autor.email : ''
-                const idAutor = autor.id || autor.alunoId || idx + 1
 
                 return (
-                  <a
-                    key={idx}
-                    className="detalhe-projeto__membro-card"
-                    href={`#aluno/${idAutor}`}
-                    title={`Ver produções de ${nomeAutor}`}
-                  >
+                  <div key={idx} className="detalhe-projeto__membro-card">
                     <div className="detalhe-projeto__membro-avatar detalhe-projeto__membro-avatar--aluno">
                       {nomeAutor ? nomeAutor.charAt(0).toUpperCase() : 'A'}
                     </div>
                     <div className="detalhe-projeto__membro-dados">
                       <strong>{nomeAutor}</strong>
-                      <span className="detalhe-projeto__membro-papel">Discente Autor</span>
+                      <span className="detalhe-projeto__membro-papel">Autor</span>
                       {emailAutor && (
                         <small className="detalhe-projeto__membro-email">{emailAutor}</small>
                       )}
-                      <span className="detalhe-projeto__membro-link-acao">Ver produções →</span>
                     </div>
-                  </a>
+                  </div>
                 )
               })}
             </div>

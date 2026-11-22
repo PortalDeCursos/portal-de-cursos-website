@@ -1,3 +1,5 @@
+import { repetirConsulta } from './repetirConsulta.js'
+
 export const VERSAO_PADRAO_API = ''
 
 let versaoAtiva = import.meta.env.VITE_API_VERSAO || VERSAO_PADRAO_API
@@ -32,7 +34,11 @@ export function pegarBaseApi(modulo = 'usuarios', versao = versaoAtiva) {
   return `${window.location.origin}${baseLimpa}api/${segmentoVersao}${modulo}`
 }
 
-export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
+export function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
+  return repetirConsulta(() => chamarUmaVez(caminhoCompletoOuRelativo, opcoes), opcoes)
+}
+
+async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
   const {
     metodo = 'GET',
     corpo = null,
@@ -76,10 +82,9 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
         causa: falha,
       })
     }
-    throw new ErroApi(
-      'Sem conexão no momento. Verifique sua internet e tente novamente.',
-      { causa: falha },
-    )
+    throw new ErroApi('Sem conexão no momento. Verifique sua internet e tente novamente.', {
+      causa: falha,
+    })
   }
 
   if (resposta.status === 204) {
@@ -128,7 +133,9 @@ export async function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
     if (resposta.status === 401) {
       mensagem = token
         ? 'Sua sessão expirou. Entre novamente.'
-        : 'E-mail ou senha incorretos.'
+        : metodo.toUpperCase() === 'POST' && /\/auth\/login(?:\?|$)/.test(caminhoCompletoOuRelativo)
+          ? 'E-mail ou senha incorretos.'
+          : 'Entre na sua conta e tente consultar estes dados novamente.'
     } else if (resposta.status === 403) {
       mensagem = 'Sua conta não tem permissão para realizar esta operação.'
     } else if (resposta.status === 404 && !dados?.detail) {

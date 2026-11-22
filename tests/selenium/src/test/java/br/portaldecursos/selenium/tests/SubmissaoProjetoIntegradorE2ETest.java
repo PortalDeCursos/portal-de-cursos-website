@@ -92,7 +92,6 @@ class SubmissaoProjetoIntegradorE2ETest extends BaseE2ETest {
   void bloqueiaEnvioSemDocumentos() {
     submissao.abrir();
     preencherFluxoAteDocumentos("Teste de obrigatoriedade de documentos " + Instant.now().toEpochMilli());
-    submissao.autorizarPublicacao();
     submissao.enviar();
     assertFalse(submissao.confirmacaoVisivel());
     assertTrue(submissao.mensagemErro().contains("Anexe os documentos obrigatórios"));
@@ -139,6 +138,5 @@ class SubmissaoProjetoIntegradorE2ETest extends BaseE2ETest {
 
   private void anexarEAutorizar(Path diretorioTemporario) {
     submissao.anexarDocumentos(diretorioTemporario);
-    submissao.autorizarPublicacao();
   }
 }

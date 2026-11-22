@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icone from '@/shared/componentes/Icone.jsx'
 import ItemProjeto from '@/shared/componentes/ItemProjeto.jsx'
 import FiltrosProjetos from './componentes/FiltrosProjetos.jsx'
@@ -6,6 +6,10 @@ import { buscarProjetosPublicados } from './servicos/buscarProjetosPublicados.js
 import './projetos.css'
 
 export default function PaginaProjetos() {
+  const consultas = useRef({})
+  const [tentativa, mudarTentativa] = useState(0)
+  const [avisos, mudarAvisos] = useState([])
+  const [carregando, mudarCarregando] = useState(true)
   const [erroCarregamento, mudarErroCarregamento] = useState(false)
   const [publicados, mudarPublicados] = useState([])
   const [filtrosAbertos, mudarFiltrosAbertos] = useState(false)
@@ -16,7 +20,16 @@ export default function PaginaProjetos() {
 
   useEffect(() => {
     const controle = new AbortController()
-    buscarProjetosPublicados(controle.signal)
+    mudarErroCarregamento(false)
+    mudarCarregando(true)
+    mudarAvisos([])
+    buscarProjetosPublicados(
+      controle.signal,
+      (aviso) => {
+        if (!controle.signal.aborted) mudarAvisos((anteriores) => [...anteriores, aviso])
+      },
+      consultas.current,
+    )
       .then((registros) => {
         if (!controle.signal.aborted) mudarPublicados(registros)
       })
@@ -27,8 +40,11 @@ export default function PaginaProjetos() {
         }
       })
 
+      .finally(() => {
+        if (!controle.signal.aborted) mudarCarregando(false)
+      })
     return () => controle.abort()
-  }, [])
+  }, [tentativa])
 
   const normalizar = (texto) =>
     (texto || '')
@@ -60,12 +76,6 @@ export default function PaginaProjetos() {
 
   return (
     <main id="conteudo" className="limite pagina-projetos">
-      {erroCarregamento && (
-        <p role="alert">
-          Não foi possível carregar os projetos. Verifique se o serviço está disponível e recarregue
-          a página.
-        </p>
-      )}
       <nav aria-label="Você está aqui">
         <a href="#inicio">Início</a>
         <span aria-hidden="true"> / </span>
@@ -120,7 +130,26 @@ export default function PaginaProjetos() {
               </select>
             </label>
           </div>
-          {resultados.length ? (
+          {avisos.length > 0 && (
+            <div role="status">
+              {avisos.map((aviso) => (
+                <p key={aviso}>{aviso}</p>
+              ))}
+              <button className="botao-secundario" onClick={() => mudarTentativa((t) => t + 1)}>
+                Tentar novamente
+              </button>
+            </div>
+          )}
+          {carregando ? (
+            <p role="status">Carregando publicações…</p>
+          ) : erroCarregamento ? (
+            <div role="alert">
+              <p>Não foi possível carregar as publicações.</p>
+              <button className="botao-secundario" onClick={() => mudarTentativa((t) => t + 1)}>
+                Tentar novamente
+              </button>
+            </div>
+          ) : resultados.length ? (
             <ul className="lista-projetos">
               {resultados.map((item) => (
                 <li key={item.identificador}>

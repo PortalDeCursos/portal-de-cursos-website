@@ -1,3 +1,4 @@
+import { linkDoDocumentoValido, validarDatasProjeto } from '@/shared/utils/contratoProjetos.js'
 import { useEffect, useRef, useState } from 'react'
 import { listarCursos } from '@/api/cursos.js'
 import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
@@ -23,7 +24,12 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   const [cursos, mudarCursos] = useState([])
   const [orientadores, mudarOrientadores] = useState([])
   const [disciplinasCurso, mudarDisciplinasCurso] = useState([])
-  const [carregandoCadastros, mudarCarregandoCadastros] = useState(true)
+  const [carregandoCursos, mudarCarregandoCursos] = useState(true)
+  const [carregandoOrientadores, mudarCarregandoOrientadores] = useState(true)
+  const [erroCursos, mudarErroCursos] = useState('')
+  const [erroOrientadores, mudarErroOrientadores] = useState('')
+  const [tentativaCursos, mudarTentativaCursos] = useState(0)
+  const [tentativaOrientadores, mudarTentativaOrientadores] = useState(0)
   const [carregandoDisciplinas, mudarCarregandoDisciplinas] = useState(false)
   const [erroDisciplinas, mudarErroDisciplinas] = useState('')
   const [tentativaDisciplinas, mudarTentativaDisciplinas] = useState(0)
@@ -37,7 +43,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       : '',
     orientador:
       sessao?.tipoUsuario === 'PROFESSOR' || sessao?.tipoUsuario === 'COORDENADOR'
-        ? sessao?.usuario?.nome || ''
+        ? String(sessao?.usuario?.professorId || '')
         : '',
   }))
   const [etapa, mudarEtapa] = useState(0)
@@ -62,22 +68,38 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    Promise.allSettled([
-      listarCursos(controller.signal, sessao?.token),
-      listarProfessores(sessao?.token, {}, controller.signal),
-    ])
-      .then(([resultadoCursos, resultadoOrientadores]) => {
-        if (controller.signal.aborted) return
-        mudarCursos(resultadoCursos.status === 'fulfilled' ? resultadoCursos.value : [])
-        mudarOrientadores(
-          resultadoOrientadores.status === 'fulfilled' ? resultadoOrientadores.value : [],
-        )
+    mudarCarregandoCursos(true)
+    mudarErroCursos('')
+    listarCursos(controller.signal, sessao?.token)
+      .then((dados) => {
+        if (!controller.signal.aborted) mudarCursos(dados)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) mudarErroCursos('Não foi possível carregar os cursos.')
       })
       .finally(() => {
-        if (!controller.signal.aborted) mudarCarregandoCadastros(false)
+        if (!controller.signal.aborted) mudarCarregandoCursos(false)
       })
     return () => controller.abort()
-  }, [sessao?.token])
+  }, [sessao?.token, tentativaCursos])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    mudarCarregandoOrientadores(true)
+    mudarErroOrientadores('')
+    listarProfessores(sessao?.token, {}, controller.signal)
+      .then((dados) => {
+        if (!controller.signal.aborted) mudarOrientadores(dados)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          mudarErroOrientadores('Não foi possível carregar os professores orientadores.')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) mudarCarregandoOrientadores(false)
+      })
+    return () => controller.abort()
+  }, [sessao?.token, tentativaOrientadores])
 
   useEffect(() => {
     if (!formulario.curso) return
@@ -129,7 +151,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     mudarFormulario((anterior) => ({
       ...anterior,
       [campo]: valor,
-      ...(trocouCurso ? { disciplinas: [] } : {}),
+      ...(trocouCurso ? { disciplinas: [], orientador: '', professoresParticipantes: [] } : {}),
     }))
     mudarErro('')
     mudarErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
@@ -159,17 +181,14 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
   function listaOrientadores(cursoId) {
     const curso = cursos.find((item) => String(item.id) === String(cursoId))
     return orientadores.filter(
-      (orientador) =>
-        !curso?.id || !orientador.cursoId || String(orientador.cursoId) === String(curso.id),
+      (orientador) => curso?.id && String(orientador.cursoId) === String(curso.id),
     )
   }
 
   function validarEtapa() {
     const ehTCC = formulario.tipo === 'TCC'
     const ehDocente = ['PROFESSOR', 'COORDENADOR'].includes(sessao?.tipoUsuario)
-    const camposEtapa1 = ehTCC
-      ? ['tipo', 'titulo', 'resumo', 'objetivos']
-      : ['tipo', 'titulo', 'resumo', 'objetivos', 'informacoesEspecificas']
+    const camposEtapa1 = ['tipo', 'titulo', 'resumo', 'objetivos', 'dataInicio', 'dataFim']
     const obrigatorios = [
       etapa === 0 && ['nome', 'email', 'curso'],
       etapa === 1 && camposEtapa1,
@@ -190,6 +209,8 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         objetivos: 'objetivos e resultados',
         informacoesEspecificas: 'informações específicas do projeto',
         orientador: 'professor orientador',
+        dataInicio: 'data de início',
+        dataFim: 'data de término',
       }
       registrarErros(
         Object.fromEntries(
@@ -198,7 +219,31 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       )
       return false
     }
+    if (etapa === 1) {
+      const mensagem = validarDatasProjeto(formulario.dataInicio, formulario.dataFim)
+      if (mensagem) {
+        registrarErros({ dataFim: mensagem })
+        return false
+      }
+    }
     if (etapa === 2) {
+      if (erroOrientadores || carregandoOrientadores) {
+        registrarErros({ orientador: 'Aguarde ou tente carregar os orientadores novamente.' })
+        return false
+      }
+      const emails = [
+        ...(!ehDocente ? [sessao.usuario?.email] : []),
+        ...(!formulario.projetoSemAlunos ? formulario.autores.map((autor) => autor.email) : []),
+      ]
+        .filter(Boolean)
+        .map((email) => email.trim().toLowerCase())
+      if (new Set(emails).size !== emails.length) {
+        registrarErros(
+          {},
+          'Cada integrante deve ter um e-mail diferente. Remova o integrante repetido.',
+        )
+        return false
+      }
       if (!formulario.projetoSemAlunos) {
         if (!ehDocente && formulario.autores.length > 0) {
           const autoresInvalidos = formulario.autores.some(
@@ -234,11 +279,9 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         )
         return false
       }
-      try {
-        new URL(link)
-      } catch {
+      if (!linkDoDocumentoValido(link)) {
         registrarErros(
-          { linkMemoria: 'Informe uma URL válida (ex.: https://memoria.ifsc.edu.br/...).' },
+          { linkMemoria: 'Informe um endereço público começando com https:// ou http://.' },
           'A URL informada é inválida.',
         )
         return false
@@ -261,13 +304,6 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             .map((documento) => [documento.id, `Anexe ${documento.nome}.`]),
         ),
         'Anexe os documentos obrigatórios para continuar.',
-      )
-      return false
-    }
-    if (etapa === 3 && !formulario.aceitaPublicacao) {
-      registrarErros(
-        { aceitaPublicacao: 'Confirme a autorização de publicação para continuar.' },
-        'Confirme a autorização de publicação para continuar.',
       )
       return false
     }
@@ -333,7 +369,13 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
 
     const autoresParaSubmissao =
       sessao?.tipoUsuario === 'ALUNO'
-        ? [{ nome: formulario.nome.trim(), email: formulario.email.trim() }, ...autoresLista]
+        ? [
+            {
+              nome: sessao.usuario?.nome?.trim() || '',
+              email: sessao.usuario?.email?.trim() || '',
+            },
+            ...autoresLista,
+          ]
         : autoresLista
 
     const submissaoLocal = {
@@ -346,11 +388,10 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       cursoCompleto: cursoProjeto?.nome || formulario.curso,
       autor: formulario.nome.trim(),
       autores: autoresParaSubmissao,
-      orientador: formulario.orientador,
+      orientador:
+        orientadores.find((o) => String(o.id) === String(formulario.orientador))?.nome || '',
       orientadorId:
-        orientadores.find((o) => o.nome === formulario.orientador)?.id ||
-        orientadores.find((o) => o.nome === formulario.orientador)?.professorId ||
-        null,
+        orientadores.find((o) => String(o.id) === String(formulario.orientador))?.id || null,
       enviadoEm: new Intl.DateTimeFormat('pt-BR', {
         dateStyle: 'short',
         timeStyle: 'short',
@@ -371,17 +412,33 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       tipoAutor: sessao?.tipoUsuario || 'ALUNO',
     }
 
-    const orientadorObj = orientadores.find((o) => o.nome === formulario.orientador)
+    const orientadorObj = listaOrientadores(formulario.curso).find(
+      (o) => String(o.id) === String(formulario.orientador),
+    )
     const orientadorId =
       orientadorObj?.id || orientadorObj?.professorId || orientadorObj?.identificador || null
+
+    if (
+      !orientadorId ||
+      formulario.professoresParticipantes?.some(
+        (id) =>
+          !listaOrientadores(formulario.curso).some(
+            (professor) => String(professor.id) === String(id),
+          ),
+      )
+    ) {
+      mudarEtapa(2)
+      registrarErros({ orientador: 'Selecione professores cadastrados no curso escolhido.' })
+      return
+    }
 
     const listaProfessoresDto = []
     if (orientadorId) {
       listaProfessoresDto.push({ professorId: Number(orientadorId), papel: 'ORIENTADOR' })
     }
     if (Array.isArray(formulario.professoresParticipantes)) {
-      formulario.professoresParticipantes.forEach((nomeProf) => {
-        const pObj = orientadores.find((o) => o.nome === nomeProf)
+      formulario.professoresParticipantes.forEach((idProf) => {
+        const pObj = orientadores.find((o) => String(o.id) === String(idProf))
         const pId = pObj?.id || pObj?.professorId || pObj?.identificador || null
         if (pId && Number(pId) !== Number(orientadorId)) {
           listaProfessoresDto.push({ professorId: Number(pId), papel: 'PARTICIPANTE' })
@@ -390,11 +447,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     }
 
     const disciplinaIds = disciplinasSelecionadas.map((disciplina) => disciplina.id)
-    const hoje = new Date()
-    const dataInicio = hoje.toISOString().split('T')[0]
-    const dataFim = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate())
-      .toISOString()
-      .split('T')[0]
+    const { dataInicio, dataFim } = formulario
     const documentosDto = ehTCC
       ? [
           {
@@ -411,12 +464,16 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     if (formulario.projetoSemAlunos || autoresParaDto.length === 0) {
       autoresParaDto = [
         {
-          nome: formulario.nome.trim() || formulario.orientador || 'Docente Responsável',
-          email: formulario.email.trim() || 'docente@escolar.ifrn.edu.br',
+          nome: sessao.usuario?.nome?.trim() || '',
+          email: sessao.usuario?.email?.trim() || '',
         },
       ]
     }
 
+    if (autoresParaDto.some((autor) => !autor.nome || !autor.email)) {
+      mudarErro('Não foi possível identificar o autor. Confira seu perfil e entre novamente.')
+      return
+    }
     const dto = {
       cursoId: cursoProjeto?.id ? Number(cursoProjeto.id) : null,
       campusId: cursoProjeto?.campusId ? Number(cursoProjeto.campusId) : null,
@@ -684,7 +741,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     )
   }
 
-  const autorSessao = sessao.tipoUsuario === 'ALUNO'
+  const autorSessao = true
 
   return (
     <main className="limite pagina-submissao" id="conteudo">
@@ -722,6 +779,32 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
       </nav>
 
       <form className="formulario-submissao" onSubmit={submeter} noValidate>
+        {erroCursos && (
+          <div role="alert">
+            <p>{erroCursos} Tente novamente para escolher o curso.</p>
+            <button
+              className="botao-secundario"
+              type="button"
+              disabled={carregandoCursos}
+              onClick={() => mudarTentativaCursos((t) => t + 1)}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+        {erroOrientadores && (
+          <div role="alert">
+            <p>{erroOrientadores} Tente novamente para escolher a orientação.</p>
+            <button
+              className="botao-secundario"
+              type="button"
+              disabled={carregandoOrientadores}
+              onClick={() => mudarTentativaOrientadores((t) => t + 1)}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
         {avisoDisciplinas && <p role="status">{avisoDisciplinas}</p>}
         {envio.cadastro.estado !== 'pendente' && (
           <SituacaoEnvio envio={envio} temPendencias={temPendencias} />
@@ -753,7 +836,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
         {etapa === 0 && (
           <EtapaSubmissaoIdentificacao
             cursos={cursos}
-            carregandoCadastros={carregandoCadastros}
+            carregandoCadastros={carregandoCursos}
             formulario={formulario}
             erros={erros}
             autorSessao={autorSessao}
@@ -778,6 +861,8 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             alterar={alterar}
             erroDoCampo={erroDoCampo}
             listaOrientadores={listaOrientadores}
+            carregandoOrientadores={carregandoOrientadores}
+            erroOrientadores={erroOrientadores}
             adicionarAutor={adicionarAutor}
             removerAutor={removerAutor}
             alterarAutor={alterarAutor}

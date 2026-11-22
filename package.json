@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
+    "test:contratos": "node --test tests/contratos/*.test.mjs",
     "preview": "vite preview"
   },
   "prettier": {
