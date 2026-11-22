@@ -12,11 +12,11 @@ export default function SituacaoEnvio({
 
   const listaEtapas = (
     <ul className="situacao-envio__lista">
-      <li>
+      <li data-estado={envio.cadastro.estado}>
         <strong>Cadastro</strong>
         <p role="status">{envio.cadastro.mensagem}</p>
       </li>
-      <li>
+      <li data-estado={envio.encaminhamento.estado}>
         <strong>Encaminhamento</strong>
         <p role="status">{envio.encaminhamento.mensagem}</p>
         {['falhou', 'enviando'].includes(envio.encaminhamento.estado) && tentarEncaminhamento && (
@@ -34,7 +34,7 @@ export default function SituacaoEnvio({
         )}
       </li>
       {envio.arquivos.map((item, indice) => (
-        <li key={indice}>
+        <li key={indice} data-estado={item.estado}>
           <strong>{item.arquivo.name}</strong>
           <p role="status">{item.mensagem}</p>
           {item.estado === 'incerto' && tentarArquivo && (
@@ -76,7 +76,7 @@ export default function SituacaoEnvio({
           )}
         </li>
       ))}
-      <li>
+      <li data-estado={envio.notificacao.estado}>
         <strong>Notificação</strong>
         <p role="status">{envio.notificacao.mensagem}</p>
       </li>
@@ -91,7 +91,9 @@ export default function SituacaoEnvio({
       <h2 id="titulo-situacao-envio" className={compacto ? 'somente-leitores' : undefined}>
         Situação do envio
       </h2>
-      {!compacto && envio.projetoId && <p>Projeto cadastrado com o número {envio.projetoId}.</p>}
+      {!compacto && envio.projetoId && (
+        <p className="situacao-envio__projeto">Projeto nº {envio.projetoId}</p>
+      )}
       {compacto && envio.notificacao.estado === 'falhou' && (
         <p className="situacao-envio__aviso" role="status">
           Seu projeto está salvo. O aviso por e-mail não foi confirmado. Acompanhe pelo painel.
@@ -106,7 +108,7 @@ export default function SituacaoEnvio({
       {compacto ? (
         <details className="situacao-envio__detalhes" open={Boolean(temPendencias)}>
           <summary>Detalhes do envio</summary>
-          <p>Projeto nº {envio.projetoId}</p>
+          <p className="situacao-envio__projeto">Projeto nº {envio.projetoId}</p>
           {listaEtapas}
         </details>
       ) : (

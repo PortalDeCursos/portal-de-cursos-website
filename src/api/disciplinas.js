@@ -1,5 +1,5 @@
 import { pegarEnderecoRecurso } from './enderecos.js'
-import { chamarApi } from './cliente.js'
+import { chamarApi, ErroApi } from './cliente.js'
 
 export const VERSAO = ''
 const enderecoDisciplinas = pegarEnderecoRecurso('disciplinas')
@@ -11,7 +11,10 @@ export async function listarDisciplinasPorCurso(cursoId, token, sinal) {
     token,
     sinal,
   })
-  if (!Array.isArray(dados)) return []
+  if (!Array.isArray(dados))
+    throw new ErroApi('Não foi possível ler a lista de disciplinas. Tente novamente.', {
+      status: 502,
+    })
   const semestres = [
     'PRIMEIRO',
     'SEGUNDO',
@@ -45,7 +48,10 @@ export async function filtrarDisciplinas(filtros = {}, token, sinal) {
     token,
     sinal,
   })
-  if (!Array.isArray(dados)) return []
+  if (!Array.isArray(dados))
+    throw new ErroApi('Não foi possível ler a lista de disciplinas. Tente novamente.', {
+      status: 502,
+    })
   return dados
 }
 
