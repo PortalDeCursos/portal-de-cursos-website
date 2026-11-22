@@ -17,6 +17,7 @@ export default function EditorRico({
   idErro,
   limite,
   alturaMinima = 120,
+  obrigatorio = true,
 }) {
   const idAjuda = `${id}-ajuda`
   const idContador = limite ? `${id}-contador` : null
@@ -65,7 +66,7 @@ export default function EditorRico({
   return (
     <div className="editor-rico formulario-submissao__campo-largo">
       <label className="editor-texto__rotulo" htmlFor={id}>
-        {titulo} <span aria-hidden="true">*</span>
+        {titulo} {obrigatorio && <span aria-hidden="true">*</span>}
       </label>
       {ajuda && (
         <p className="editor-texto__ajuda" id={idAjuda}>
@@ -76,11 +77,7 @@ export default function EditorRico({
       <div
         className={`editor-rico__caixa${erro || excedeuLimite ? ' editor-rico__caixa--erro' : ''}`}
       >
-        <div
-          className="editor-rico__barra"
-          role="toolbar"
-          aria-label={`Formatação de ${titulo}`}
-        >
+        <div className="editor-rico__barra" role="toolbar" aria-label={`Formatação de ${titulo}`}>
           <button
             type="button"
             className="editor-rico__botao"

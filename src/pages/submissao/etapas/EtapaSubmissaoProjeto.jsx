@@ -39,6 +39,7 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
           Título <span aria-hidden="true">*</span>
           <input
             data-testid="titulo-projeto-submissao"
+            maxLength={255}
             required
             aria-invalid={Boolean(erros.titulo)}
             aria-describedby={erroDoCampo('titulo')}
@@ -52,6 +53,27 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
             </small>
           )}
         </label>
+        {['dataInicio', 'dataFim'].map((campo) => (
+          <label key={campo}>
+            {campo === 'dataInicio' ? 'Data de início' : 'Data de término'}{' '}
+            <span aria-hidden="true">*</span>
+            <input
+              type="date"
+              required
+              data-testid={campo === 'dataInicio' ? 'data-inicio-submissao' : 'data-fim-submissao'}
+              value={formulario[campo]}
+              onChange={(evento) => alterar(campo, evento.target.value)}
+              min={campo === 'dataFim' ? formulario.dataInicio || undefined : undefined}
+              aria-invalid={Boolean(erros[campo])}
+              aria-describedby={erroDoCampo(campo)}
+            />
+            {erros[campo] && (
+              <small id={`erro-${campo}`} className="formulario-submissao__erro-campo">
+                {erros[campo]}
+              </small>
+            )}
+          </label>
+        ))}
         <EditorRico
           id="campo-resumo"
           titulo="Resumo"
@@ -78,6 +100,7 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
         {formulario.tipo && (
           <EditorRico
             id="campo-informacoes-especificas"
+            obrigatorio={false}
             titulo={tiposProjeto[formulario.tipo].campoEspecifico}
             ajuda={
               formulario.tipo === 'Extensão'

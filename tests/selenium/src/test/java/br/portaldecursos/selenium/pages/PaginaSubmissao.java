@@ -3,6 +3,7 @@ package br.portaldecursos.selenium.pages;
 import br.portaldecursos.selenium.config.ConfiguracaoTeste;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -56,6 +57,8 @@ public final class PaginaSubmissao {
     WebElement campoTitulo = espera.until(ExpectedConditions.visibilityOfElementLocated(Seletores.TITULO));
     campoTitulo.clear();
     campoTitulo.sendKeys(titulo);
+    preencherData("data-inicio-submissao", LocalDate.now().toString());
+    preencherData("data-fim-submissao", LocalDate.now().plusMonths(6).toString());
     preencher(Seletores.RESUMO,
         "Aplicação web para organizar dados acadêmicos e apoiar a consulta de informações do curso.");
     preencher(Seletores.OBJETIVOS,
@@ -129,11 +132,6 @@ public final class PaginaSubmissao {
     }
   }
 
-  public void autorizarPublicacao() {
-    WebElement autorizacao = navegador.findElement(Seletores.AUTORIZACAO_PUBLICACAO);
-    if (!autorizacao.isSelected()) autorizacao.click();
-  }
-
   public void continuar() {
     clicar(Seletores.CONTINUAR);
   }
@@ -172,5 +170,14 @@ public final class PaginaSubmissao {
     WebElement campo = espera.until(ExpectedConditions.visibilityOfElementLocated(seletor));
     campo.clear();
     campo.sendKeys(valor);
+  }
+
+  private void preencherData(String identificador, String valor) {
+    WebElement campo = navegador.findElement(By.cssSelector("[data-testid='" + identificador + "']"));
+    ((JavascriptExecutor) navegador).executeScript(
+        "const definir = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;"
+            + "definir.call(arguments[0], arguments[1]);"
+            + "arguments[0].dispatchEvent(new Event('input', {bubbles: true}));"
+            + "arguments[0].dispatchEvent(new Event('change', {bubbles: true}));", campo, valor);
   }
 }

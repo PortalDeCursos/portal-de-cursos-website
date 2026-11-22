@@ -7,8 +7,6 @@ import ConfirmacaoGestao from '@/pages/administracao/componentes/ConfirmacaoGest
 import { baixarDocumentoBlob, pegarUrlDownload } from '@/api/projetos.js'
 import TextoFormatado from '@/shared/componentes/TextoFormatado.jsx'
 
-const tiposDeProjeto = ['TCC', 'Projeto Integrador', 'Pesquisa', 'Extensão']
-
 function submissaoDoCurso(item, cursoId) {
   if (!item) return false
   if (!cursoId) return true
@@ -59,23 +57,6 @@ function textoAutores(autores) {
     .join(' · ')
 }
 
-function linhasParaLista(texto) {
-  return texto
-    .split('\n')
-    .map((linha) => linha.trim())
-    .filter(Boolean)
-}
-
-function linhasParaAutores(texto) {
-  return texto
-    .split('\n')
-    .map((linha) => {
-      const [, nome = '', email = ''] = linha.match(/^(.*?)(?:\s*<([^<>]*)>)?\s*$/) || []
-      return { nome: nome.trim(), email: email.trim() }
-    })
-    .filter((autor) => autor.nome)
-}
-
 export default function PaginaVerSubmissao({
   item,
   tipoUsuario,
@@ -89,6 +70,8 @@ export default function PaginaVerSubmissao({
 }) {
   const [justificativa, mudarJustificativa] = useState('')
   const [erro, mudarErro] = useState('')
+  const [aviso, mudarAviso] = useState('')
+  const [salvando, mudarSalvando] = useState(false)
   const [editando, mudarEditando] = useState(false)
   const [confirmandoRemocao, mudarConfirmandoRemocao] = useState(false)
   const [abrindoDocumento, mudarAbrindoDocumento] = useState(false)
@@ -143,34 +126,53 @@ export default function PaginaVerSubmissao({
   }
 
   async function registrarDecisao(proximoStatus) {
+    if (salvando) return
     if (proximoStatus === 'Recusado' && !justificativa.trim()) {
       mudarErro('Explique o motivo antes de recusar o projeto.')
       return
     }
     try {
-      await aoDecidir(proximoStatus, justificativa.trim())
+      mudarSalvando(true)
+      const resultado = await aoDecidir(proximoStatus, justificativa.trim())
+      mudarAviso(resultado?.aviso || '')
     } catch {
       mudarErro('Não foi possível salvar a decisão. Tente novamente.')
       return
+    } finally {
+      mudarSalvando(false)
     }
     mudarJustificativa('')
     mudarErro('')
   }
 
-  function salvarEdicao(evento) {
+  async function salvarEdicao(evento) {
     evento.preventDefault()
-    if (!edicao.titulo.trim() || !edicao.resumo.trim() || !edicao.objetivo.trim()) return
-    aoEditar({
-      titulo: edicao.titulo.trim(),
-      resumo: edicao.resumo.trim(),
-      objetivo: edicao.objetivo.trim(),
-      tipo: edicao.tipo,
-      orientador: edicao.orientador.trim(),
-      autores: edicao.autores.map((autor) => ({ ...autor, email: autor.email || '' })),
-      disciplinas: edicao.disciplinas.filter(Boolean),
-      documentos: edicao.documentos.filter(Boolean),
-    })
-    mudarEditando(false)
+    if (salvando || !edicao.titulo.trim() || !edicao.resumo.trim() || !edicao.objetivo.trim())
+      return
+    mudarSalvando(true)
+    mudarErro('')
+    try {
+      await aoEditar({ titulo: edicao.titulo, resumo: edicao.resumo, objetivo: edicao.objetivo })
+      mudarEditando(false)
+    } catch (falha) {
+      mudarErro(falha.message || 'Não foi possível salvar. Confira os dados e tente novamente.')
+    } finally {
+      mudarSalvando(false)
+    }
+  }
+
+  async function remover() {
+    if (salvando) return
+    mudarSalvando(true)
+    mudarErro('')
+    try {
+      await aoRemover()
+      navegar(enderecoPrivado(volta), true)
+    } catch (falha) {
+      mudarErro(falha.message || 'Não foi possível remover. Tente novamente.')
+    } finally {
+      mudarSalvando(false)
+    }
   }
 
   const mensagemStatus =
@@ -186,6 +188,8 @@ export default function PaginaVerSubmissao({
 
   return (
     <main id="conteudo" className="limite pagina-detalhes-submissao">
+      {aviso && <p role="status">{aviso}</p>}
+      {erro && !editando && !confirmandoRemocao && <p role="alert">{erro}</p>}
       <a className="pagina-detalhes-submissao__voltar" href={enderecoPrivado(volta)}>
         Voltar para submissões
       </a>
@@ -218,6 +222,7 @@ export default function PaginaVerSubmissao({
             <form
               className="avaliacao-submissao avaliacao-submissao--formulario"
               onSubmit={salvarEdicao}
+              aria-busy={salvando}
             >
               <h2>Editar submissão</h2>
               <label>
@@ -225,26 +230,15 @@ export default function PaginaVerSubmissao({
                 <input
                   className="campo"
                   required
-                  maxLength={200}
+                  maxLength={255}
                   value={edicao.titulo}
                   onChange={(evento) => atualizar('titulo', evento.target.value)}
                 />
               </label>
               <label>
-                Tipo de projeto
-                <select
-                  className="campo"
-                  value={edicao.tipo}
-                  onChange={(evento) => atualizar('tipo', evento.target.value)}
-                >
-                  {tiposDeProjeto.map((tipo) => (
-                    <option key={tipo}>{tipo}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
                 Resumo
                 <textarea
+                  maxLength={500}
                   className="campo"
                   required
                   rows="4"
@@ -262,70 +256,20 @@ export default function PaginaVerSubmissao({
                   onChange={(evento) => atualizar('objetivo', evento.target.value)}
                 />
               </label>
-              <label>
-                Professor orientador
-                <input
-                  className="campo"
-                  required
-                  maxLength={200}
-                  value={edicao.orientador}
-                  onChange={(evento) => atualizar('orientador', evento.target.value)}
-                />
-              </label>
-              <label>
-                Integrantes da equipe
-                <textarea
-                  className="campo"
-                  required
-                  rows="3"
-                  placeholder="Nome completo <email@instituicao.edu.br> (um por linha)"
-                  defaultValue={edicao.autores
-                    .map((autor) => `${autor.nome || ''}${autor.email ? ` <${autor.email}>` : ''}`)
-                    .join('\n')}
-                  onChange={(evento) =>
-                    atualizar('autores', linhasParaAutores(evento.target.value))
-                  }
-                />
-              </label>
-              <label>
-                Disciplinas relacionadas
-                <textarea
-                  className="campo"
-                  rows="3"
-                  placeholder="Nome da disciplina (uma por linha)"
-                  defaultValue={(edicao.disciplinas || []).join('\n')}
-                  onChange={(evento) =>
-                    atualizar('disciplinas', linhasParaLista(evento.target.value))
-                  }
-                />
-              </label>
-              <div className="formulario-submissao__documentos-edicao">
-                <label className="campo-rotulo">Documentos anexados (somente PDF)</label>
-                <ul className="documentos-submissao-professor">
-                  {(edicao.documentos || []).map((doc, idx) => {
-                    const nome =
-                      typeof doc === 'string'
-                        ? doc
-                        : doc?.nomeArquivo || doc?.nome || `Documento ${idx + 1}`
-                    return (
-                      <li key={idx} className="item-documento-estatico">
-                        <span className="documento-tipo" aria-hidden="true">
-                          PDF
-                        </span>
-                        <span className="item-documento-nome">{nome}</span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+              <p>
+                Você pode atualizar o título, o resumo e a descrição. Os demais dados permanecem
+                vinculados ao projeto.
+              </p>
+              {erro && <p role="alert">{erro}</p>}
               <div className="avaliacao-submissao__acoes">
-                <button className="botao-primario" type="submit">
-                  Salvar edição
+                <button className="botao-primario" type="submit" disabled={salvando}>
+                  {salvando ? 'Salvando…' : 'Salvar edição'}
                 </button>
                 <button
                   className="botao-secundario"
                   type="button"
                   onClick={() => mudarEditando(false)}
+                  disabled={salvando}
                 >
                   Cancelar
                 </button>
@@ -372,7 +316,7 @@ export default function PaginaVerSubmissao({
                         const blobUrl = await baixarDocumentoBlob(item.id, documento.id, token)
                         window.open(blobUrl, '_blank', 'noopener,noreferrer')
                       } catch {
-                        window.open(urlDestino, '_blank', 'noopener,noreferrer')
+                        mudarErro('Não foi possível abrir o documento. Tente novamente.')
                       } finally {
                         mudarAbrindoDocumento(false)
                       }
@@ -482,6 +426,7 @@ export default function PaginaVerSubmissao({
                 <button
                   type="button"
                   className="botao-primario"
+                  disabled={salvando}
                   onClick={() => registrarDecisao(avaliacaoCoordenador ? 'Aprovado' : 'Em análise')}
                 >
                   {avaliacaoCoordenador ? 'Aprovar e publicar' : 'Aceitar como orientador'}
@@ -489,6 +434,7 @@ export default function PaginaVerSubmissao({
                 <button
                   type="button"
                   className="botao-secundario"
+                  disabled={salvando}
                   onClick={() => registrarDecisao('Recusado')}
                 >
                   Recusar submissão
@@ -537,22 +483,17 @@ export default function PaginaVerSubmissao({
         <ConfirmacaoGestao rotulo="titulo-remover-submissao">
           <h2 id="titulo-remover-submissao">Remover esta submissão?</h2>
           <p>Este registro será removido permanentemente do sistema.</p>
+          {erro && <p role="alert">{erro}</p>}
           <div className="gestao-acoes">
             <button
               className="botao-secundario"
               type="button"
               onClick={() => mudarConfirmandoRemocao(false)}
+              disabled={salvando}
             >
               Manter submissão
             </button>
-            <button
-              className="gestao-excluir"
-              type="button"
-              onClick={() => {
-                aoRemover()
-                navegar(enderecoPrivado(volta), true)
-              }}
-            >
+            <button className="gestao-excluir" type="button" onClick={remover} disabled={salvando}>
               Confirmar remoção
             </button>
           </div>

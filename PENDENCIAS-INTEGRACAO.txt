@@ -1,0 +1,119 @@
+Alinhamento do frontend — 22/11/2026
+
+Escopo: React, JavaScript e CSS existentes. Nenhum microsserviço, credencial,
+arquivo de ambiente ou documento de requisito foi alterado nesta entrega.
+As alterações anteriores em três arquivos de configuração/documentação Selenium
+foram preservadas. Os ajustes desta entrega nos testes estão no Page Object e
+nas chamadas que dependiam da autorização de publicação retirada do formulário.
+
+CORREÇÕES NO FRONTEND
+
+- Painéis leem disciplinasIds, como devolvido por ProjetoResponseDTO; os nomes
+  vêm do cadastro acadêmico e os IDs são preservados na edição.
+- Edição consulta o registro atual, envia PUT e só atualiza a tela após sucesso.
+  Apenas título, resumo e descrição são editáveis, porque o mapper atual ignora
+  alterações nos relacionamentos. Exclusão aguarda a resposta do servidor.
+- Orientador e participantes são selecionados por ID, pertencentes ao curso.
+  A troca de curso limpa os vínculos anteriores. A autoria usa os dados da sessão.
+- Datas de início e término são informadas no formulário, com validação de datas
+  reais e ordem. Não são mais inventadas como hoje mais um ano.
+- Não TCC: um PDF obrigatório de até 10 MB; demais documentos opcionais.
+  TCC: link HTTP(S) sem credenciais na URL. Retirada a exigência adicional de
+  consentimento sem campo correspondente no contrato atual.
+- Catálogo e detalhe público exibem somente PUBLICADO. APROVADO é intermediário
+  no backend atual. Removidos nome fixo de orientador, campus fixo e links de
+  autores com IDs inventados. A referência não promete conformidade ABNT sem
+  metadados bibliográficos suficientes.
+- Falhas de cursos, orientadores, disciplinas, detalhes e projetos passam a ter
+  avisos e nova tentativa. Falha no aviso da decisão não é tratada como falha
+  da decisão já salva. Encaminhamento consulta o status antes das transições.
+- Consultas GET recuperáveis têm até três tentativas com espera progressiva.
+  POST, PUT, PATCH e DELETE nunca recebem repetição automática.
+
+PENDÊNCIAS QUE O FRONTEND NÃO PODE RESOLVER
+
+Projetos e requisitos:
+1. Aprovação: há documentos com quatro estados e documentos com sete. Definir
+   oficialmente o fluxo vigente e o significado de aprovado/publicado. A tela
+   segue o enum/transições existentes; não foi criado novo estado no servidor.
+2. Recusa/histórico: o PATCH aceita apenas statusProjeto; não recebe nem persiste
+   justificativa, ator ou data da decisão. A memória local não é histórico durável.
+3. Autoria/submissor: falta identidade do submissor autenticado no contrato.
+   Não é possível garantir rastreabilidade após novo login só com o frontend.
+   Projetos docentes exigem autores não vazios; usa-se o próprio usuário logado,
+   sem nomes ou e-mails de reserva. Formalizar como representar docentes autores.
+4. Edição: o mapper de PUT ignora autores, disciplinas, professores e documentos.
+   Não oferecer edição desses vínculos até existir persistência contratada.
+5. Cadastro: publicação no RabbitMQ dentro da transação pode derrubar o POST.
+   Definir publicação confiável após commit/outbox e erro específico do broker.
+6. Cadastro incerto: implementar consulta por chave ou idempotência; confirmar
+   status/corpo do erro de nome duplicado. Não detectar duplicidade por suposição.
+7. Documento obrigatório também precisa de validação no servidor, sem inviabilizar
+   o cadastro seguido da recuperação de anexos. Confirmar o domínio institucional
+   aceito para Memória; não foi bloqueado domínio por adivinhação.
+8. Consultas repetidas na listagem de projetos precisam de revisão no serviço.
+
+Gateway e autorização:
+9. Conferir matchers contra caminhos externos, não caminhos após reescrita.
+   GET de campus/áreas e consulta de coordenadores pelo professor precisam de
+   regra compatível com as telas. Não contornar 403 pelo navegador.
+10. Proteger lista, detalhe e download por estado, curso e dono no servidor.
+    Ocultar item no frontend não constitui controle de acesso da API.
+
+Notificações:
+11. Front chama POST /api/notificacoes; Gateway reescreve para
+    /api/notificacao/notificacoes, que corresponde ao controller/contexto atual.
+    Confirmar versão do serviço realmente executada se a rota responder 404.
+12. Consumidor RabbitMQ existe na develop local, não na main local auditada.
+    Confirmar integração, destinatários, eventos de decisão e risco de e-mail
+    duplicado com a chamada REST. A chamada direta foi mantida.
+13. Confirmar entrega efetiva e política de retentativa/DLQ; resposta REST aceita
+    não comprova recebimento na caixa de e-mail.
+
+Usuários e acadêmico:
+14. API autentica por e-mail; username documentado não está no contrato atual.
+    Interesses do professor por disciplinas também não estão persistidos.
+    Refresh de token exige contrato do serviço de Usuários; o frontend continua
+    solicitando novo login quando a sessão expira, sem inventar endpoint de refresh.
+15. Backend de cursos ignora combinações de filtros; nome de disciplina é único
+    globalmente e designação de coordenador não valida todo vínculo de curso.
+    Exigem correção pelos responsáveis e reteste integrado.
+
+Documentação/entrega:
+16. Atualizar documentos divergentes, diagramas, EAPs históricas, contagens de
+    testes e rastreabilidade de cenários. Não mudar o código para cumprir duas
+    versões incompatíveis. Auditoria detalhada e evidências estão em
+    ../auditoria-documentos/Divergencias e pendencias de alinhamento.txt.
+17. O Gateway local não respondeu na porta 8765 durante esta validação. Não foi
+    comprovado envio real, recebimento de e-mail ou persistência após novo login.
+18. Não foram criados commits nesta entrega. TADS-188 está concluído conforme a
+    consulta anterior; confirmar ticket aberto para submissão/catálogo antes de
+    associar novos commits. Não inventar chave Jira nem usar códigos da auditoria.
+
+COMO VALIDAR
+
+- npm run lint
+- npm run format:check (verificar separadamente alterações anteriores do usuário)
+- npm run test:contratos
+- npm run build
+- Com todos os serviços disponíveis, executar Selenium e confirmar persistência,
+  arquivos, permissões, decisões e e-mails separadamente. Testes simulados de
+  frontend não comprovam integração real nem entrega de e-mail.
+
+RESULTADO DA VALIDAÇÃO LOCAL DESTA ENTREGA
+
+- ESLint do repositório: passou, sem erros nem avisos.
+- Prettier dos arquivos alterados nesta entrega: passou.
+- Prettier global: ainda acusa arquivos preexistentes fora desta alteração;
+  não foi feita reformatação em massa sem relação com os contratos.
+- Testes de contrato: 11 passaram, sem falhas.
+- Build: passou; permanece aviso de bundle da submissão acima de 500 kB.
+- Selenium: test-compile com Java 21 passou; a suíte contra os serviços reais
+  não foi executada porque o Gateway não estava disponível.
+- Navegador com respostas simuladas, sem gravação real nem e-mails: passou a
+  recuperação da consulta de disciplinas, envio com um PDF, IDs/autoria/datas no
+  payload, POST 500 sem repetição e campos preservados, filtragem pública de
+  estados intermediários, edição 403 sem perder dados, PUT confirmado ao
+  recarregar e exclusão 500 sem remover o item nem repetir a operação.
+- Nenhuma exceção JavaScript foi observada nesses cenários simulados.
+- Não houve commit nem push; as alterações continuam locais para revisão.
