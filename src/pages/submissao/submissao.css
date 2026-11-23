@@ -925,6 +925,14 @@
   background: var(--superficie);
 }
 
+.submissao-confirmacao__numero {
+  margin-bottom: var(--espaco-2);
+  color: var(--texto);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .submissao-confirmacao__selo {
   display: grid;
   place-items: center;
@@ -1360,7 +1368,8 @@
 }
 
 .situacao-envio--compacta {
-  margin-top: var(--espaco-4);
+  width: 100%;
+  margin: 0 0 var(--espaco-4);
 }
 
 .situacao-envio__aviso {

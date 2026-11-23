@@ -596,15 +596,19 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     return (
       <main className="limite pagina-submissao pagina-submissao--confirmacao" id="conteudo">
         <section className="submissao-confirmacao" aria-labelledby="titulo-confirmacao">
-          <span className="submissao-confirmacao__selo" aria-hidden="true">
-            ✓
-          </span>
+          <span className="submissao-confirmacao__numero">Projeto nº {envio.projetoId}</span>
           <h1 id="titulo-confirmacao">{temPendencias ? 'Projeto salvo.' : 'Projeto enviado.'}</h1>
           <p>
             {temPendencias
               ? 'Conclua as etapas abaixo para finalizar o envio.'
               : 'Acompanhe a avaliação pelo painel.'}
           </p>
+          <div className="submissao-confirmacao__resumo">
+            <strong>{formulario.titulo}</strong>
+            <span>
+              {nomesTiposProjeto[formulario.tipo]} · {formulario.nome}
+            </span>
+          </div>
           <SituacaoEnvio
             compacto
             envio={envio}
@@ -613,12 +617,6 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
             tentarArquivo={tentarArquivo}
             destinoPainel={destinoPainel}
           />
-          <div className="submissao-confirmacao__resumo">
-            <strong>{formulario.titulo}</strong>
-            <span>
-              {nomesTiposProjeto[formulario.tipo]} · {formulario.nome}
-            </span>
-          </div>
           <div className="submissao-confirmacao__acoes">
             <a
               className="botao-primario"

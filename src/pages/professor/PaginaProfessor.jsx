@@ -1,3 +1,4 @@
+import { Retrato } from '@/shared/componentes/FotoDaConta.jsx'
 import { ordenarSubmissoes } from '@/shared/utils/ordenarSubmissoes.js'
 import EstadoVazio from '@/shared/componentes/EstadoVazio.jsx'
 import Indicadores from '@/shared/componentes/Indicadores.jsx'
@@ -256,7 +257,9 @@ export default function PaginaProfessor({ submissoes, usuario }) {
                     aria-label={`${status === 'Aguardando Orientador' ? 'Avaliar' : 'Ver detalhes'}: ${item.titulo}`}
                   >
                     <span className="submissao-feed__avatar" aria-hidden="true">
-                      {iniciaisDoAutor(nomeAutor)}
+                      <Retrato email={item.autores?.[0]?.email}>
+                        {iniciaisDoAutor(nomeAutor)}
+                      </Retrato>
                     </span>
                     <span className="submissao-feed__conteudo">
                       <span className="submissao-feed__meta">

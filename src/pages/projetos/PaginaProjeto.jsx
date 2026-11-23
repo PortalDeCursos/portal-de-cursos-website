@@ -1,3 +1,4 @@
+import { Retrato } from '@/shared/componentes/FotoDaConta.jsx'
 import { projetoEstaPublicado, linkDoDocumentoValido } from '@/shared/utils/contratoProjetos.js'
 import { useEffect, useRef, useState } from 'react'
 import Icone from '@/shared/componentes/Icone.jsx'
@@ -54,8 +55,8 @@ function formatarData(isoStr) {
   return isoStr
 }
 
-export default function PaginaProjeto({ identificador }) {
-  const consultas = useRef({ identificador, dados: {} })
+export default function PaginaProjeto({ identificador, token = null }) {
+  const consultas = useRef({ identificador, token, dados: {} })
   const [estado, mudarEstado] = useState('carregando')
   const [projeto, mudarProjeto] = useState(null)
   const [documentos, mudarDocumentos] = useState([])
@@ -68,8 +69,8 @@ export default function PaginaProjeto({ identificador }) {
   const [avisos, mudarAvisos] = useState({})
 
   useEffect(() => {
-    if (consultas.current.identificador !== identificador)
-      consultas.current = { identificador, dados: {} }
+    if (consultas.current.identificador !== identificador || consultas.current.token !== token)
+      consultas.current = { identificador, token, dados: {} }
     const dadosConsultados = consultas.current.dados
     async function consultar(chave, carregar) {
       if (Object.hasOwn(dadosConsultados, chave)) return dadosConsultados[chave]
@@ -94,7 +95,7 @@ export default function PaginaProjeto({ identificador }) {
       }
       try {
         const [dadosProjeto, listaCursos, listaProfessores] = await Promise.all([
-          consultar('projeto', () => buscarProjetoPorId(identificador, null, controle.signal)),
+          consultar('projeto', () => buscarProjetoPorId(identificador, token, controle.signal)),
           consultar('cursos', () => listarCursos(controle.signal)).catch(() => {
             avisar('cursos', 'Não foi possível consultar o curso.')
             return []
@@ -116,7 +117,9 @@ export default function PaginaProjeto({ identificador }) {
         mudarProjeto(dadosProjeto)
 
         // Busca documentos anexos
-        consultar('documentos', () => listarDocumentosProjeto(identificador, null, controle.signal))
+        consultar('documentos', () =>
+          listarDocumentosProjeto(identificador, token, controle.signal),
+        )
           .then((docs) => {
             if (ativo && Array.isArray(docs)) {
               mudarDocumentos(docs.length > 0 ? docs : dadosProjeto.documentos || [])
@@ -181,7 +184,7 @@ export default function PaginaProjeto({ identificador }) {
       ativo = false
       controle.abort()
     }
-  }, [identificador, tentativa])
+  }, [identificador, tentativa, token])
 
   if (estado === 'carregando') {
     return (
@@ -480,7 +483,9 @@ export default function PaginaProjeto({ identificador }) {
                 title={`Ver perfil docente de ${orientadorInfo.nome}`}
               >
                 <div className="detalhe-projeto__membro-avatar detalhe-projeto__membro-avatar--prof">
-                  {orientadorInfo.nome ? orientadorInfo.nome.charAt(0).toUpperCase() : 'P'}
+                  <Retrato usuarioId={orientadorInfo.usuarioId} email={orientadorInfo.email}>
+                    {orientadorInfo.nome ? orientadorInfo.nome.charAt(0).toUpperCase() : 'P'}
+                  </Retrato>
                 </div>
                 <div className="detalhe-projeto__membro-dados">
                   <strong>{orientadorInfo.nome}</strong>
@@ -518,7 +523,9 @@ export default function PaginaProjeto({ identificador }) {
                 return (
                   <div key={idx} className="detalhe-projeto__membro-card">
                     <div className="detalhe-projeto__membro-avatar detalhe-projeto__membro-avatar--aluno">
-                      {nomeAutor ? nomeAutor.charAt(0).toUpperCase() : 'A'}
+                      <Retrato email={emailAutor}>
+                        {nomeAutor ? nomeAutor.charAt(0).toUpperCase() : 'A'}
+                      </Retrato>
                     </div>
                     <div className="detalhe-projeto__membro-dados">
                       <strong>{nomeAutor}</strong>

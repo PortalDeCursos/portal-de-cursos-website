@@ -1,3 +1,4 @@
+import { Retrato } from '@/shared/componentes/FotoDaConta.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { basePortal, enderecoPrivado } from '@/app/rotas.js'
 import Icone from './Icone.jsx'
@@ -80,14 +81,20 @@ function IconeMenu({ aberto }) {
 
 export function Avatar({ usuario }) {
   if (usuario?.foto) {
-    return <img src={usuario.foto} alt="" />
+    return (
+      <Retrato usuarioId={usuario.id}>
+        <img src={usuario.foto} alt="" />
+      </Retrato>
+    )
   }
 
   if (usuario?.nome) {
     return (
-      <span className="cabecalho__iniciais" aria-hidden="true">
-        {pegarIniciais(usuario.nome)}
-      </span>
+      <Retrato usuarioId={usuario.id}>
+        <span className="cabecalho__iniciais" aria-hidden="true">
+          {pegarIniciais(usuario.nome)}
+        </span>
+      </Retrato>
     )
   }
 
