@@ -1,5 +1,5 @@
 /* Progressive enhancement: os blocos só são ocultados depois que o observer os prepara. */
-main .revelacao-rolagem:not(.revelacao-rolagem--visivel) {
+main .revelacao-rolagem:not(.revelacao-rolagem--visivel, [data-sem-revelacao]) {
   opacity: 0;
   transform: translateY(24px);
   will-change: opacity, transform;

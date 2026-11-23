@@ -5,6 +5,7 @@ import { atualizarMeuPerfilProfessor } from '@/api/professores.js'
 import { atualizarMeuPerfilCoordenador } from '@/api/coordenadores.js'
 import { atualizarMeuUsuario } from '@/api/usuarios.js'
 import { enderecoPrivado } from '../../app/rotas.js'
+import FotoPerfil from './FotoPerfil.jsx'
 import './perfil.css'
 
 const titulacoes = {
@@ -98,105 +99,109 @@ export default function PaginaPerfil({ usuario, tipoUsuario, token, aoSalvar, de
       <header className="perfil-titulo">
         <h1>Meu perfil</h1>
       </header>
-      <form className="perfil-formulario" onSubmit={salvar}>
-        <fieldset className="perfil-campos" disabled={salvando}>
-          <label>
-            Nome
-            <input
-              autoComplete="name"
-              maxLength={100}
-              value={nome}
-              readOnly={coordenador}
-              onChange={(evento) => mudarNome(evento.target.value)}
-              required
-            />
-          </label>
-          <label>
-            E-mail
-            <input type="email" value={usuario.email || ''} readOnly />
-          </label>
-          {coordenador ? (
+      <div className="perfil-layout">
+        <FotoPerfil key={usuario.id} usuario={usuario} token={token} />
+        <form className="perfil-formulario" onSubmit={salvar} aria-labelledby="titulo-dados-perfil">
+          <h2 id="titulo-dados-perfil">Dados da conta</h2>
+          <fieldset className="perfil-campos" disabled={salvando}>
             <label>
-              Curso da coordenação
-              <select
-                value={cursoId}
-                onChange={(evento) => mudarCursoId(evento.target.value)}
-                required
-              >
-                <option value="">Selecione o curso</option>
-                {cursos.map((curso) => (
-                  <option key={curso.id} value={curso.id}>
-                    {curso.nome}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : (
-            <label>
-              Senha para salvar
+              Nome
               <input
-                type="password"
-                autoComplete="new-password"
-                minLength={8}
+                autoComplete="name"
                 maxLength={100}
-                value={senha}
-                onChange={(evento) => mudarSenha(evento.target.value)}
+                value={nome}
+                readOnly={coordenador}
+                onChange={(evento) => mudarNome(evento.target.value)}
                 required
               />
-              <small>
-                Digite a senha atual para mantê-la ou digite a nova senha que deseja usar.
-              </small>
             </label>
-          )}
-          {professor && (
-            <>
+            <label>
+              E-mail
+              <input type="email" value={usuario.email || ''} readOnly />
+            </label>
+            {coordenador ? (
               <label>
-                Titulação
+                Curso da coordenação
                 <select
-                  value={titulacao}
-                  onChange={(evento) => mudarTitulacao(evento.target.value)}
+                  value={cursoId}
+                  onChange={(evento) => mudarCursoId(evento.target.value)}
                   required
                 >
-                  <option value="">Selecione a titulação</option>
-                  {Object.entries(titulacoes).map(([valor, rotulo]) => (
-                    <option key={valor} value={valor}>
-                      {rotulo}
+                  <option value="">Selecione o curso</option>
+                  {cursos.map((curso) => (
+                    <option key={curso.id} value={curso.id}>
+                      {curso.nome}
                     </option>
                   ))}
                 </select>
               </label>
+            ) : (
               <label>
-                Apresentação
-                <textarea
-                  maxLength={500}
-                  rows={4}
-                  value={descricao}
-                  onChange={(evento) => mudarDescricao(evento.target.value)}
+                Senha para salvar
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={100}
+                  value={senha}
+                  onChange={(evento) => mudarSenha(evento.target.value)}
                   required
                 />
+                <small>
+                  Digite a senha atual para mantê-la ou digite a nova senha que deseja usar.
+                </small>
               </label>
-            </>
+            )}
+            {professor && (
+              <>
+                <label>
+                  Titulação
+                  <select
+                    value={titulacao}
+                    onChange={(evento) => mudarTitulacao(evento.target.value)}
+                    required
+                  >
+                    <option value="">Selecione a titulação</option>
+                    {Object.entries(titulacoes).map(([valor, rotulo]) => (
+                      <option key={valor} value={valor}>
+                        {rotulo}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Apresentação
+                  <textarea
+                    maxLength={500}
+                    rows={4}
+                    value={descricao}
+                    onChange={(evento) => mudarDescricao(evento.target.value)}
+                    required
+                  />
+                </label>
+              </>
+            )}
+          </fieldset>
+          {erro && (
+            <p className="perfil-aviso" role="alert">
+              {erro}
+            </p>
           )}
-        </fieldset>
-        {erro && (
-          <p className="perfil-aviso" role="alert">
-            {erro}
-          </p>
-        )}
-        {mensagem && (
-          <p className="perfil-aviso" role="status">
-            {mensagem}
-          </p>
-        )}
-        <div className="perfil-acoes">
-          <button className="botao-primario" type="submit" disabled={salvando}>
-            {salvando ? 'Salvando…' : 'Salvar alterações'}
-          </button>
-          <button type="button" onClick={cancelar} disabled={salvando}>
-            Descartar alterações
-          </button>
-        </div>
-      </form>
+          {mensagem && (
+            <p className="perfil-aviso" role="status">
+              {mensagem}
+            </p>
+          )}
+          <div className="perfil-acoes">
+            <button className="botao-primario" type="submit" disabled={salvando}>
+              {salvando ? 'Salvando…' : 'Salvar alterações'}
+            </button>
+            <button type="button" onClick={cancelar} disabled={salvando}>
+              Descartar alterações
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   )
 }

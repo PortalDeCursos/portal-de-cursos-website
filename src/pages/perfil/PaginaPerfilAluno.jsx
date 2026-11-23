@@ -1,3 +1,4 @@
+import { Retrato } from '@/shared/componentes/FotoDaConta.jsx'
 import { useEffect, useState } from 'react'
 import Icone from '@/shared/componentes/Icone.jsx'
 import ItemProjeto from '@/shared/componentes/ItemProjeto.jsx'
@@ -5,7 +6,7 @@ import { listarCursos } from '@/api/cursos.js'
 import { buscarProjetosPublicados } from '@/pages/projetos/servicos/buscarProjetosPublicados.js'
 import './perfil-publico.css'
 
-export default function PaginaPerfilAluno({ idAluno }) {
+export default function PaginaPerfilAluno({ idAluno, conta }) {
   const [aluno, mudarAluno] = useState(null)
   const [cursoInfo, mudarCursoInfo] = useState(null)
   const [projetosAutor, mudarProjetosAutor] = useState([])
@@ -100,6 +101,7 @@ export default function PaginaPerfilAluno({ idAluno }) {
     )
   }
 
+  const titular = conta?.alunoId != null && String(conta.alunoId) === String(idAluno) ? conta : null
   const inicial = aluno?.nome ? aluno.nome.charAt(0).toUpperCase() : 'A'
 
   return (
@@ -111,20 +113,22 @@ export default function PaginaPerfilAluno({ idAluno }) {
         <a href="#projetos">Acervo de Projetos</a>
         <span aria-hidden="true">/</span>
         <span aria-current="page" className="detalhe-projeto__trilha-atual">
-          {aluno.nome}
+          {titular?.nome || aluno.nome}
         </span>
       </nav>
 
       {/* Cartão de Identidade Discente */}
       <header className="perfil-publico__cabecalho perfil-publico__cabecalho--discente">
-        <div className="perfil-publico__avatar-discente">{inicial}</div>
+        <div className="perfil-publico__avatar-discente">
+          <Retrato usuarioId={titular?.id}>{inicial}</Retrato>
+        </div>
         <div className="perfil-publico__identidade">
           <span className="perfil-publico__eyebrow">
             Discente / autor
             {cursoInfo ? ` · ${cursoInfo.sigla || cursoInfo.acronimo || 'TADS'}` : ''}
           </span>
-          <h1 className="perfil-publico__nome">{aluno.nome}</h1>
-          <p className="perfil-publico__email">{aluno.email}</p>
+          <h1 className="perfil-publico__nome">{titular?.nome || aluno.nome}</h1>
+          <p className="perfil-publico__email">{titular?.email || aluno.email}</p>
         </div>
       </header>
 

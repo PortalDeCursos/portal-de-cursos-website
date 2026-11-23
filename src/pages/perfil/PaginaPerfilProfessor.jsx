@@ -1,3 +1,4 @@
+import { Retrato } from '@/shared/componentes/FotoDaConta.jsx'
 import { useEffect, useState } from 'react'
 import ItemProjeto from '@/shared/componentes/ItemProjeto.jsx'
 import EstadoErro from '@/shared/componentes/EstadoErro.jsx'
@@ -148,7 +149,9 @@ export default function PaginaPerfilProfessor({ idProfessor }) {
         className={`perfil-publico__cabecalho ${ehCoordenador ? 'perfil-publico__cabecalho--coordenador' : 'perfil-publico__cabecalho--docente'}`}
       >
         <div className="perfil-publico__avatar-docente" aria-hidden="true">
-          {inicial}
+          <Retrato usuarioId={professor.usuarioId} email={professor.email}>
+            {inicial}
+          </Retrato>
         </div>
         <div className="perfil-publico__identidade">
           <span className="perfil-publico__eyebrow">
