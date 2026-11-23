@@ -77,7 +77,7 @@ export default function SituacaoEnvio({
         </li>
       ))}
       <li data-estado={envio.notificacao.estado}>
-        <strong>Notificação</strong>
+        <strong>Aviso por e-mail</strong>
         <p role="status">{envio.notificacao.mensagem}</p>
       </li>
     </ul>
@@ -108,7 +108,6 @@ export default function SituacaoEnvio({
       {compacto ? (
         <details className="situacao-envio__detalhes" open={Boolean(temPendencias)}>
           <summary>Detalhes do envio</summary>
-          <p className="situacao-envio__projeto">Projeto nº {envio.projetoId}</p>
           {listaEtapas}
         </details>
       ) : (

@@ -179,7 +179,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         )
       } catch {
         erroDestinatarios =
-          'O projeto foi cadastrado, mas o aviso por e-mail não foi enviado porque não conseguimos consultar os destinatários. Avise a coordenação e acompanhe o projeto pelo painel.'
+          'Projeto salvo. Não conseguimos consultar os destinatários para confirmar o aviso. Acompanhe pelo painel.'
       }
     }
 
@@ -200,7 +200,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
       atualizarEtapa(
         'notificacao',
         'falhou',
-        'O projeto foi cadastrado. O aviso por e-mail não foi enviado porque o encaminhamento ainda não foi confirmado. Tente novamente o encaminhamento e avise a coordenação.',
+        'Projeto salvo. Tente o encaminhamento novamente. O aviso por e-mail ainda não foi confirmado.',
       )
     } else {
       atualizarEtapa('notificacao', 'enviando', 'Enviando o aviso por e-mail…')
@@ -216,7 +216,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
           },
           sessao.token,
         )
-        atualizarEtapa('notificacao', 'concluido', 'Aviso enviado.')
+        atualizarEtapa('notificacao', 'concluido', 'Solicitação de aviso recebida.')
       } catch {
         atualizarEtapa(
           'notificacao',
