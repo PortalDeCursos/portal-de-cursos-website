@@ -5,6 +5,7 @@ export const VERSAO = ''
 export function formatarPerfilProfessor(item) {
   return {
     id: item.id,
+    usuarioId: item.usuario?.id,
     nome: item.usuario?.nome || 'Sem nome',
     email: item.usuario?.email || '',
     cursoId: item.cursoId,

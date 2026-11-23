@@ -3,6 +3,7 @@ import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } from './rotas.js'
 import EstruturaProfessor from '@/pages/professor/componentes/EstruturaProfessor.jsx'
+import { FotosDaSessao } from '@/shared/componentes/FotoDaConta.jsx'
 import Cabecalho from '@/shared/componentes/Cabecalho.jsx'
 import Rodape from '@/shared/componentes/Rodape.jsx'
 const PaginaInicial = lazy(() => import('@/pages/inicio/PaginaInicial.jsx'))
@@ -130,14 +131,15 @@ export default function App() {
       { threshold: 0.08, rootMargin: '0px 0px -10% 0px' },
     )
 
-    const seletor = 'main section, main article.cartao, main .item-projeto, main [data-revelacao]'
+    const seletor =
+      'main section:not([data-sem-revelacao]), main article.cartao, main .item-projeto, main [data-revelacao]'
     function observar(elemento) {
       if (!(elemento instanceof Element)) return
       const alvos = []
       if (elemento.matches(seletor)) alvos.push(elemento)
       alvos.push(...elemento.querySelectorAll(seletor))
       alvos.forEach((alvo) => {
-        if (alvo.dataset.revelacaoRolagem) return
+        if (alvo.classList.contains('revelacao-rolagem--visivel')) return
         alvo.dataset.revelacaoRolagem = 'preparada'
         alvo.classList.add('revelacao-rolagem')
         observer.observe(alvo)
@@ -568,295 +570,297 @@ export default function App() {
           : 'professor'
     if (sessao && (ePaginaLogin || pagina !== areaDaSessao)) return <CarregamentoPagina />
     return (
-      <EstruturaProfessor
-        administrador={administrador}
-        coordenador={coordenador}
-        aluno={aluno}
-        rota={rota}
-        perfilAtivo={[
-          'professor/perfil',
-          'administracao/perfil',
-          'coordenacao/perfil',
-          'aluno/perfil',
-        ].includes(rota)}
-        usuario={sessao?.usuario}
-        aoSair={sair}
-        tema={tema}
-        alternarTema={mudarTema}
-      >
-        <a className="pular-conteudo" href="#conteudo">
-          Pular para o conteúdo
-        </a>
-        {sessao && erroSubmissoes && (
-          <section className="limite" role="alert">
-            <p>{erroSubmissoes}</p>
-            <button
-              type="button"
-              className="botao-secundario"
-              onClick={() => mudarTentativaSubmissoes((atual) => atual + 1)}
-            >
-              Tentar novamente
-            </button>
-          </section>
-        )}
-        <Suspense fallback={<CarregamentoPagina />}>
-          {!sessao ? (
-            <PaginaDeLogin aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
-          ) : [
-              'professor/perfil',
-              'administracao/perfil',
-              'coordenacao/perfil',
-              'aluno/perfil',
-            ].includes(rota) ? (
-            <PaginaPerfil
-              tipoUsuario={sessao.tipoUsuario}
-              token={sessao.token}
-              destinoVoltar={
-                areaDaSessao === 'professor'
-                  ? 'professor/feed'
-                  : areaDaSessao === 'aluno-painel'
-                    ? 'aluno/painel'
-                    : `${areaDaSessao}/painel`
-              }
-              usuario={sessao.usuario}
-              aoSalvar={(perfil) =>
-                mudarSessao((atual) => ({ ...atual, usuario: { ...atual.usuario, ...perfil } }))
-              }
-            />
-          ) : administrador ? (
-            <PaginaAdministracao
-              secao={rota.split('/')[1] || 'painel'}
-              identificador={rota.split('/')[2]}
-              sessao={sessao}
-              submissoes={listaSubmissoes.map((item) => ({
-                ...item,
-                status:
-                  decisoes[item.identificador]?.status ||
-                  decisoes[item.identificador] ||
-                  item.status,
-              }))}
-            />
-          ) : aluno && pagina === 'aluno-painel' ? (
-            <PaginaPainelAluno
-              sessao={sessao}
-              submissoes={listaSubmissoes.map((item) => ({
-                ...item,
-                status: decisoes[item.identificador]?.status || item.status,
-              }))}
-              aoSubmeter={(novaSubmissao) =>
-                mudarListaSubmissoes((atuais) => [novaSubmissao, ...atuais])
-              }
-            />
-          ) : coordenador && !identificadorSubmissao ? (
-            <PaginaCoordenacao
-              secao={rota.split('/')[1] || 'painel'}
-              sessao={sessao}
-              submissoes={listaSubmissoes.map((item) => ({
-                ...item,
-                status:
-                  decisoes[item.identificador]?.status ||
-                  decisoes[item.identificador] ||
-                  item.status,
-              }))}
-            />
-          ) : identificadorSubmissao ? (
-            <PaginaVerSubmissao
-              key={identificadorSubmissao}
-              item={listaSubmissoes.find((item) => item.identificador === identificadorSubmissao)}
-              tipoUsuario={sessao.tipoUsuario}
-              usuario={sessao.usuario}
-              token={sessao.token}
-              cursoId={sessao.usuario.cursoId}
-              decisao={decisoes[identificadorSubmissao]}
-              aoDecidir={async (status, justificativa) => {
-                const submissao = listaSubmissoes.find(
-                  (item) => item.identificador === identificadorSubmissao,
-                )
-
-                // Sincroniza com o backend via PATCH /api/projetos/{id}/status
-                let proximoStatusBackend = submissao?.statusBackend
-                let statusAtualizado = status
-                const falhasAviso = []
-                const avisosPendentes = []
-                const enviarAviso = (statusProjeto, destinatarios) => {
-                  if (!destinatarios.length) {
-                    falhasAviso.push(
-                      'Não foi possível localizar os destinatários do aviso por e-mail.',
-                    )
-                    return
-                  }
-                  avisosPendentes.push(
-                    // TODO: confirmar com Notificações se o evento do RabbitMQ já envia o e-mail
-                    enviarNotificacaoProjeto(
-                      {
-                        statusProjeto,
-                        nomeProjeto: submissao?.titulo || submissao?.nome || 'Projeto',
-                        tipoProjeto:
-                          {
-                            TCC: 'TCC',
-                            'Projeto Integrador': 'PROJETO_INTEGRADOR',
-                            Pesquisa: 'PROJETO_PESQUISA',
-                            Extensão: 'PROJETO_EXTENSAO',
-                          }[submissao?.tipo] ||
-                          submissao?.tipo ||
-                          'TCC',
-                        destinatarios,
-                        nomeResponsavel: sessao.usuario?.nome,
-                        justificativa,
-                      },
-                      sessao.token,
-                    ).catch(() => {
-                      falhasAviso.push(
-                        'Não foi possível confirmar o aviso por e-mail. Avise o responsável.',
-                      )
-                    }),
-                  )
-                }
-                const emailsAutores = (submissao?.autores || [])
-                  .map((autor) => (typeof autor === 'string' ? '' : autor?.email))
-                  .filter(Boolean)
-                if (submissao?.email) emailsAutores.push(submissao.email)
-                if (submissao?.id && sessao?.token) {
-                  try {
-                    if (sessao.tipoUsuario === 'PROFESSOR') {
-                      if (status === 'Em análise' || status === 'Aceito') {
-                        await encaminharProjetoParaCoordenacao(submissao.id, sessao.token)
-                        proximoStatusBackend = 'ANALISE_PUBLICACAO'
-                        statusAtualizado = 'Aguardando Coordenação'
-                        enviarAviso('APROVADO', emailsAutores)
-                        const coordenadores = await listarCoordenadores(sessao.token, {
-                          cursoId: submissao?.cursoId,
-                        }).catch((falha) => {
-                          console.warn('Não foi possível localizar a coordenação:', falha.message)
-                          falhasAviso.push(
-                            'Não foi possível localizar a coordenação para enviar o aviso. Avise o responsável.',
-                          )
-                          return []
-                        })
-                        const emailsCoordenadores = (
-                          Array.isArray(coordenadores) ? coordenadores : []
-                        )
-                          .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
-                          .filter(Boolean)
-                        if (emailsCoordenadores.length > 0) {
-                          enviarAviso('ANALISE_PUBLICACAO', emailsCoordenadores)
-                        } else {
-                          falhasAviso.push(
-                            'Não foi encontrado um e-mail da coordenação. Avise o responsável pelo curso.',
-                          )
-                        }
-                      } else if (status === 'Recusado') {
-                        await atualizarStatusProjeto(submissao.id, 'RECUSADO', sessao.token)
-                        proximoStatusBackend = 'RECUSADO'
-                        statusAtualizado = 'Recusado pelo orientador'
-                        enviarAviso('RECUSADO', emailsAutores)
-                      }
-                    } else if (sessao.tipoUsuario === 'COORDENADOR') {
-                      if (status === 'Aprovado') {
-                        await atualizarStatusProjeto(submissao.id, 'PUBLICADO', sessao.token)
-                        proximoStatusBackend = 'PUBLICADO'
-                        statusAtualizado = 'Aprovado'
-                        enviarAviso('PUBLICADO', emailsAutores)
-                      } else if (status === 'Recusado') {
-                        await atualizarStatusProjeto(
-                          submissao.id,
-                          'RECUSADO_PUBLICACAO',
-                          sessao.token,
-                        )
-                        proximoStatusBackend = 'RECUSADO_PUBLICACAO'
-                        statusAtualizado = 'Publicação recusada'
-                        enviarAviso('RECUSADO_PUBLICACAO', emailsAutores)
-                      }
-                    }
-                  } catch (err) {
-                    console.error('Erro ao atualizar status do projeto no backend:', err)
-                    throw err
-                  }
-                }
-
-                mudarDecisoes((atuais) => ({
-                  ...atuais,
-                  [identificadorSubmissao]: {
-                    status: statusAtualizado,
-                    justificativa,
-                    papel: sessao.tipoUsuario,
-                    usuarioId: sessao.usuario.id,
-                    cursoId:
-                      submissao?.identificadorCurso || submissao?.cursoId || submissao?.curso,
-                    registradoEm: new Date().toISOString(),
-                  },
-                }))
-
-                mudarListaSubmissoes((atuais) => {
-                  const atualizadas = atuais.map((item) =>
-                    item.identificador === identificadorSubmissao
-                      ? { ...item, status: statusAtualizado, statusBackend: proximoStatusBackend }
-                      : item,
-                  )
-                  return atualizadas
-                })
-                await Promise.all(avisosPendentes)
-                return {
-                  aviso: falhasAviso.length
-                    ? `A decisão foi salva. ${[...new Set(falhasAviso)].join(' ')}`
-                    : '',
-                }
-              }}
-              aoEditar={async (alteracoes) => {
-                const submissao = listaSubmissoes.find(
-                  (item) => item.identificador === identificadorSubmissao,
-                )
-                const atual = await buscarProjetoPorId(submissao.id, sessao.token)
-                const resposta = await atualizarProjeto(
-                  submissao.id,
-                  montarEdicaoProjeto(atual, alteracoes),
-                  sessao.token,
-                )
-                mudarListaSubmissoes((itens) =>
-                  itens.map((item) =>
-                    item.id === resposta.id
-                      ? {
-                          ...item,
-                          titulo: resposta.nome,
-                          resumo: resposta.resumo,
-                          objetivo: resposta.descricao,
-                          originalApi: resposta,
-                        }
-                      : item,
-                  ),
-                )
-              }}
-              aoRemover={async () => {
-                const submissao = listaSubmissoes.find(
-                  (item) => item.identificador === identificadorSubmissao,
-                )
-                await excluirProjeto(submissao.id, sessao.token)
-                mudarListaSubmissoes((itens) => itens.filter((item) => item.id !== submissao.id))
-                mudarDecisoes((atuais) => {
-                  const proxima = { ...atuais }
-                  delete proxima[identificadorSubmissao]
-                  return proxima
-                })
-              }}
-            />
-          ) : (
-            <PaginaProfessor
-              usuario={sessao.usuario}
-              submissoes={listaSubmissoes.map((item) => ({
-                ...item,
-                status:
-                  decisoes[item.identificador]?.status ||
-                  decisoes[item.identificador] ||
-                  item.status,
-              }))}
-            />
+      <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
+        <EstruturaProfessor
+          administrador={administrador}
+          coordenador={coordenador}
+          aluno={aluno}
+          rota={rota}
+          perfilAtivo={[
+            'professor/perfil',
+            'administracao/perfil',
+            'coordenacao/perfil',
+            'aluno/perfil',
+          ].includes(rota)}
+          usuario={sessao?.usuario}
+          aoSair={sair}
+          tema={tema}
+          alternarTema={mudarTema}
+        >
+          <a className="pular-conteudo" href="#conteudo">
+            Pular para o conteúdo
+          </a>
+          {sessao && erroSubmissoes && (
+            <section className="limite" role="alert">
+              <p>{erroSubmissoes}</p>
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={() => mudarTentativaSubmissoes((atual) => atual + 1)}
+              >
+                Tentar novamente
+              </button>
+            </section>
           )}
-        </Suspense>
-      </EstruturaProfessor>
+          <Suspense fallback={<CarregamentoPagina />}>
+            {!sessao ? (
+              <PaginaDeLogin aoEntrar={entrar} sessaoExpirada={sessaoExpirada} />
+            ) : [
+                'professor/perfil',
+                'administracao/perfil',
+                'coordenacao/perfil',
+                'aluno/perfil',
+              ].includes(rota) ? (
+              <PaginaPerfil
+                tipoUsuario={sessao.tipoUsuario}
+                token={sessao.token}
+                destinoVoltar={
+                  areaDaSessao === 'professor'
+                    ? 'professor/feed'
+                    : areaDaSessao === 'aluno-painel'
+                      ? 'aluno/painel'
+                      : `${areaDaSessao}/painel`
+                }
+                usuario={sessao.usuario}
+                aoSalvar={(perfil) =>
+                  mudarSessao((atual) => ({ ...atual, usuario: { ...atual.usuario, ...perfil } }))
+                }
+              />
+            ) : administrador ? (
+              <PaginaAdministracao
+                secao={rota.split('/')[1] || 'painel'}
+                identificador={rota.split('/')[2]}
+                sessao={sessao}
+                submissoes={listaSubmissoes.map((item) => ({
+                  ...item,
+                  status:
+                    decisoes[item.identificador]?.status ||
+                    decisoes[item.identificador] ||
+                    item.status,
+                }))}
+              />
+            ) : aluno && pagina === 'aluno-painel' ? (
+              <PaginaPainelAluno
+                sessao={sessao}
+                submissoes={listaSubmissoes.map((item) => ({
+                  ...item,
+                  status: decisoes[item.identificador]?.status || item.status,
+                }))}
+                aoSubmeter={(novaSubmissao) =>
+                  mudarListaSubmissoes((atuais) => [novaSubmissao, ...atuais])
+                }
+              />
+            ) : coordenador && !identificadorSubmissao ? (
+              <PaginaCoordenacao
+                secao={rota.split('/')[1] || 'painel'}
+                sessao={sessao}
+                submissoes={listaSubmissoes.map((item) => ({
+                  ...item,
+                  status:
+                    decisoes[item.identificador]?.status ||
+                    decisoes[item.identificador] ||
+                    item.status,
+                }))}
+              />
+            ) : identificadorSubmissao ? (
+              <PaginaVerSubmissao
+                key={identificadorSubmissao}
+                item={listaSubmissoes.find((item) => item.identificador === identificadorSubmissao)}
+                tipoUsuario={sessao.tipoUsuario}
+                usuario={sessao.usuario}
+                token={sessao.token}
+                cursoId={sessao.usuario.cursoId}
+                decisao={decisoes[identificadorSubmissao]}
+                aoDecidir={async (status, justificativa) => {
+                  const submissao = listaSubmissoes.find(
+                    (item) => item.identificador === identificadorSubmissao,
+                  )
+
+                  // Sincroniza com o backend via PATCH /api/projetos/{id}/status
+                  let proximoStatusBackend = submissao?.statusBackend
+                  let statusAtualizado = status
+                  const falhasAviso = []
+                  const avisosPendentes = []
+                  const enviarAviso = (statusProjeto, destinatarios) => {
+                    if (!destinatarios.length) {
+                      falhasAviso.push(
+                        'Não foi possível localizar os destinatários do aviso por e-mail.',
+                      )
+                      return
+                    }
+                    avisosPendentes.push(
+                      // TODO: confirmar com Notificações se o evento do RabbitMQ já envia o e-mail
+                      enviarNotificacaoProjeto(
+                        {
+                          statusProjeto,
+                          nomeProjeto: submissao?.titulo || submissao?.nome || 'Projeto',
+                          tipoProjeto:
+                            {
+                              TCC: 'TCC',
+                              'Projeto Integrador': 'PROJETO_INTEGRADOR',
+                              Pesquisa: 'PROJETO_PESQUISA',
+                              Extensão: 'PROJETO_EXTENSAO',
+                            }[submissao?.tipo] ||
+                            submissao?.tipo ||
+                            'TCC',
+                          destinatarios,
+                          nomeResponsavel: sessao.usuario?.nome,
+                          justificativa,
+                        },
+                        sessao.token,
+                      ).catch(() => {
+                        falhasAviso.push(
+                          'Não foi possível confirmar o aviso por e-mail. Avise o responsável.',
+                        )
+                      }),
+                    )
+                  }
+                  const emailsAutores = (submissao?.autores || [])
+                    .map((autor) => (typeof autor === 'string' ? '' : autor?.email))
+                    .filter(Boolean)
+                  if (submissao?.email) emailsAutores.push(submissao.email)
+                  if (submissao?.id && sessao?.token) {
+                    try {
+                      if (sessao.tipoUsuario === 'PROFESSOR') {
+                        if (status === 'Em análise' || status === 'Aceito') {
+                          await encaminharProjetoParaCoordenacao(submissao.id, sessao.token)
+                          proximoStatusBackend = 'ANALISE_PUBLICACAO'
+                          statusAtualizado = 'Aguardando Coordenação'
+                          enviarAviso('APROVADO', emailsAutores)
+                          const coordenadores = await listarCoordenadores(sessao.token, {
+                            cursoId: submissao?.cursoId,
+                          }).catch((falha) => {
+                            console.warn('Não foi possível localizar a coordenação:', falha.message)
+                            falhasAviso.push(
+                              'Não foi possível localizar a coordenação para enviar o aviso. Avise o responsável.',
+                            )
+                            return []
+                          })
+                          const emailsCoordenadores = (
+                            Array.isArray(coordenadores) ? coordenadores : []
+                          )
+                            .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
+                            .filter(Boolean)
+                          if (emailsCoordenadores.length > 0) {
+                            enviarAviso('ANALISE_PUBLICACAO', emailsCoordenadores)
+                          } else {
+                            falhasAviso.push(
+                              'Não foi encontrado um e-mail da coordenação. Avise o responsável pelo curso.',
+                            )
+                          }
+                        } else if (status === 'Recusado') {
+                          await atualizarStatusProjeto(submissao.id, 'RECUSADO', sessao.token)
+                          proximoStatusBackend = 'RECUSADO'
+                          statusAtualizado = 'Recusado pelo orientador'
+                          enviarAviso('RECUSADO', emailsAutores)
+                        }
+                      } else if (sessao.tipoUsuario === 'COORDENADOR') {
+                        if (status === 'Aprovado') {
+                          await atualizarStatusProjeto(submissao.id, 'PUBLICADO', sessao.token)
+                          proximoStatusBackend = 'PUBLICADO'
+                          statusAtualizado = 'Aprovado'
+                          enviarAviso('PUBLICADO', emailsAutores)
+                        } else if (status === 'Recusado') {
+                          await atualizarStatusProjeto(
+                            submissao.id,
+                            'RECUSADO_PUBLICACAO',
+                            sessao.token,
+                          )
+                          proximoStatusBackend = 'RECUSADO_PUBLICACAO'
+                          statusAtualizado = 'Publicação recusada'
+                          enviarAviso('RECUSADO_PUBLICACAO', emailsAutores)
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Erro ao atualizar status do projeto no backend:', err)
+                      throw err
+                    }
+                  }
+
+                  mudarDecisoes((atuais) => ({
+                    ...atuais,
+                    [identificadorSubmissao]: {
+                      status: statusAtualizado,
+                      justificativa,
+                      papel: sessao.tipoUsuario,
+                      usuarioId: sessao.usuario.id,
+                      cursoId:
+                        submissao?.identificadorCurso || submissao?.cursoId || submissao?.curso,
+                      registradoEm: new Date().toISOString(),
+                    },
+                  }))
+
+                  mudarListaSubmissoes((atuais) => {
+                    const atualizadas = atuais.map((item) =>
+                      item.identificador === identificadorSubmissao
+                        ? { ...item, status: statusAtualizado, statusBackend: proximoStatusBackend }
+                        : item,
+                    )
+                    return atualizadas
+                  })
+                  await Promise.all(avisosPendentes)
+                  return {
+                    aviso: falhasAviso.length
+                      ? `A decisão foi salva. ${[...new Set(falhasAviso)].join(' ')}`
+                      : '',
+                  }
+                }}
+                aoEditar={async (alteracoes) => {
+                  const submissao = listaSubmissoes.find(
+                    (item) => item.identificador === identificadorSubmissao,
+                  )
+                  const atual = await buscarProjetoPorId(submissao.id, sessao.token)
+                  const resposta = await atualizarProjeto(
+                    submissao.id,
+                    montarEdicaoProjeto(atual, alteracoes),
+                    sessao.token,
+                  )
+                  mudarListaSubmissoes((itens) =>
+                    itens.map((item) =>
+                      item.id === resposta.id
+                        ? {
+                            ...item,
+                            titulo: resposta.nome,
+                            resumo: resposta.resumo,
+                            objetivo: resposta.descricao,
+                            originalApi: resposta,
+                          }
+                        : item,
+                    ),
+                  )
+                }}
+                aoRemover={async () => {
+                  const submissao = listaSubmissoes.find(
+                    (item) => item.identificador === identificadorSubmissao,
+                  )
+                  await excluirProjeto(submissao.id, sessao.token)
+                  mudarListaSubmissoes((itens) => itens.filter((item) => item.id !== submissao.id))
+                  mudarDecisoes((atuais) => {
+                    const proxima = { ...atuais }
+                    delete proxima[identificadorSubmissao]
+                    return proxima
+                  })
+                }}
+              />
+            ) : (
+              <PaginaProfessor
+                usuario={sessao.usuario}
+                submissoes={listaSubmissoes.map((item) => ({
+                  ...item,
+                  status:
+                    decisoes[item.identificador]?.status ||
+                    decisoes[item.identificador] ||
+                    item.status,
+                }))}
+              />
+            )}
+          </Suspense>
+        </EstruturaProfessor>
+      </FotosDaSessao>
     )
   }
   return (
-    <>
+    <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
       <a className="pular-conteudo" href="#conteudo">
         Pular para o conteúdo
       </a>
@@ -891,13 +895,21 @@ export default function App() {
         {pagina === 'cursos' && <PaginaCursos />}
         {pagina === 'projetos' && <PaginaProjetos />}
         {pagina === 'detalhes-projeto' && (
-          <PaginaProjeto key={rota.split('/')[1]} identificador={rota.split('/')[1]} />
+          <PaginaProjeto
+            key={rota.split('/')[1]}
+            identificador={rota.split('/')[1]}
+            token={sessao?.token}
+          />
         )}
         {pagina === 'perfil-professor' && (
           <PaginaPerfilProfessor key={rota.split('/')[1]} idProfessor={rota.split('/')[1]} />
         )}
         {pagina === 'perfil-aluno' && (
-          <PaginaPerfilAluno key={rota.split('/')[1]} idAluno={rota.split('/')[1]} />
+          <PaginaPerfilAluno
+            conta={sessao?.usuario}
+            key={rota.split('/')[1]}
+            idAluno={rota.split('/')[1]}
+          />
         )}
         {pagina === 'detalhes-curso' && (
           <PaginaCurso key={identificador} identificador={identificador} aba={aba} />
@@ -914,6 +926,6 @@ export default function App() {
         {pagina === 'inicio' && <PaginaInicial />}
       </Suspense>
       <Rodape pagina={pagina} />
-    </>
+    </FotosDaSessao>
   )
 }

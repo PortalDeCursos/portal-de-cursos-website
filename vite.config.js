@@ -10,6 +10,14 @@ export default defineConfig(({ mode }) => {
   return {
     base: process.env.VITE_BASE_PATH || ambiente.VITE_BASE_PATH || '/',
     plugins: [react()],
+    optimizeDeps: {
+      include: [
+        '@tiptap/react',
+        '@tiptap/starter-kit',
+        '@tiptap/extension-placeholder',
+        'tiptap-markdown',
+      ],
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
