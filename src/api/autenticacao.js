@@ -32,6 +32,7 @@ export async function fazerLogin(email, senha, sinal) {
     resposta = await chamarApi(url, {
       metodo: 'POST',
       corpo: { email, senha },
+      publico: true,
       sinal,
     })
   } catch (erro) {

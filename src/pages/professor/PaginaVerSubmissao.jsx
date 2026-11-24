@@ -441,6 +441,9 @@ export default function PaginaVerSubmissao({
                 >
                   {avaliacaoCoordenador ? 'Aprovar e publicar' : 'Aceitar como orientador'}
                 </button>
+                {avaliacaoCoordenador && (
+                  <button type="button" className="botao-secundario" disabled={salvando} onClick={() => mudarEditando(true)}>Editar projeto</button>
+                )}
                 <button
                   type="button"
                   className="botao-secundario"
@@ -465,7 +468,7 @@ export default function PaginaVerSubmissao({
                   className="botao-primario"
                   onClick={() => mudarEditando(true)}
                 >
-                  Editar submissão
+                  Editar projeto
                 </button>
                 <button
                   type="button"

@@ -8,7 +8,7 @@ export async function listarDisciplinasPorCurso(cursoId, token, sinal) {
   const query = new URLSearchParams({ cursoId: String(cursoId) })
   const dados = await chamarApi(`${enderecoDisciplinas}?${query}`, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
   if (!Array.isArray(dados))
@@ -45,7 +45,7 @@ export async function filtrarDisciplinas(filtros = {}, token, sinal) {
   }
   const dados = await chamarApi(`${enderecoDisciplinas}/filtros?${query}`, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
   if (!Array.isArray(dados))

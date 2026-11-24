@@ -13,13 +13,13 @@ export async function listarCoordenadores(token, filtros = {}, sinal) {
     parametros.set('cursoId', String(filtros.cursoId))
   }
   const query = parametros.size ? `?${parametros}` : ''
-  return chamarApi(`${urlCoordenadores()}/buscar${query}`, { metodo: 'GET', token, sinal })
+  return chamarApi(`${urlCoordenadores()}/buscar${query}`, { metodo: 'GET', token, publico: !token, sinal })
 }
 
 export async function buscarCoordenadorPorId(token, id, sinal) {
   return chamarApi(`${urlCoordenadores()}/${encodeURIComponent(id)}`, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
 }

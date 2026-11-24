@@ -16,7 +16,7 @@ export default function SobrePortal() {
         <div className="sobre-portal__linha">
           <dt>Envio de projetos</dt>
           <dd>
-            Alunos, professores e coordenadores podem enviar projetos. O orientador avalia primeiro
+            Alunos e professores podem enviar projetos. O orientador avalia primeiro
             as submissões de alunos. As demais seguem direto para a coordenação.
           </dd>
         </div>

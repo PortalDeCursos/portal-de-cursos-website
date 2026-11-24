@@ -26,7 +26,7 @@ export async function listarProfessores(token, filtros = {}, sinal) {
   const query = parametros.size ? `?${parametros}` : ''
   const dados = await chamarApi(`${base}/professores/buscar${query}`, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
 

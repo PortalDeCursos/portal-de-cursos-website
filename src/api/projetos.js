@@ -27,6 +27,7 @@ export async function listarProjetosAprovados(sinal = null) {
   const url = `${pegarUrlBaseProjetos()}/aprovados`
   const dados = await chamarApi(url, {
     metodo: 'GET',
+    publico: true,
     sinal,
   })
 
@@ -38,10 +39,11 @@ export async function listarProjetosAprovados(sinal = null) {
 }
 
 export async function listarProjetosEmAnalise(token = null, sinal = null) {
+  void token
   const url = `${pegarUrlBaseProjetos()}/em-analise`
   const dados = await chamarApi(url, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
 
@@ -57,6 +59,7 @@ export async function listarProjetos(token = null, sinal = null) {
   const dados = await chamarApi(url, {
     metodo: 'GET',
     token,
+    publico: !token,
     sinal,
   })
 
@@ -72,6 +75,7 @@ export async function buscarProjetoPorId(id, token = null, sinal = null) {
   return chamarApi(url, {
     metodo: 'GET',
     token,
+    publico: !token,
     sinal,
   })
 }
@@ -147,10 +151,11 @@ export async function enviarDocumentoProjeto(projetoId, arquivo, token = null, s
 }
 
 export async function listarDocumentosProjeto(projetoId, token = null, sinal = null) {
+  void token
   const url = `${pegarUrlBaseProjetos()}/${encodeURIComponent(projetoId)}/documentos`
   return chamarApi(url, {
     metodo: 'GET',
-    token,
+    publico: true,
     sinal,
   })
 }
@@ -160,9 +165,10 @@ export function pegarUrlDownload(projetoId, documentoId) {
 }
 
 export async function baixarDocumentoBlob(projetoId, documentoId, token = null, sinal = null) {
+  void token
   const url = pegarUrlDownload(projetoId, documentoId)
   const blob = await chamarApi(url, {
-    token,
+    publico: true,
     sinal,
     formatoResposta: 'blob',
     headers: { Accept: 'application/octet-stream' },

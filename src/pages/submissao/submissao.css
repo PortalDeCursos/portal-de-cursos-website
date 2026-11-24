@@ -1015,31 +1015,27 @@
 .submissao-acesso__acoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 11px;
+  align-items: center;
+  gap: 12px;
   margin-top: 30px;
 }
 
-.submissao-acesso__acoes .botao-primario {
-  gap: 12px;
+.submissao-acesso__acoes .botao-primario,
+.submissao-acesso__acoes .botao-secundario {
+  box-sizing: border-box;
+  margin: 0;
+  align-self: stretch;
+  line-height: 1.25;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 22px;
   border-radius: var(--raio-cartao);
-  padding: 8px 9px 8px 20px;
-}
-
-.submissao-acesso__acoes .botao-primario span {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: var(--raio-cartao);
-  background: rgb(255 255 255 / 16%);
-  transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.submissao-acesso__acoes .botao-primario:hover span {
+  text-decoration: none;
 }
 
 .submissao-acesso__acoes .botao-secundario {
-  border-radius: var(--raio-cartao);
   background: transparent;
 }
 

@@ -5,7 +5,7 @@ import Indicadores from '@/shared/componentes/Indicadores.jsx'
 import { useMemo, useState } from 'react'
 import '@/shared/styles/painel.css'
 import './professor.css'
-import { enderecoPrivado } from '../../app/rotas.js'
+import { basePortal, enderecoPrivado, navegar } from '../../app/rotas.js'
 
 const filtros = [
   'Precisa da sua ação',
@@ -132,7 +132,15 @@ export default function PaginaProfessor({ submissoes, usuario }) {
           </p>
         </div>
         <div>
-          <a className="botao-primario" href="#submeter">
+          <a
+            className="botao-primario"
+            href={`${basePortal}#submeter`}
+            onClick={(evento) => {
+              if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return
+              evento.preventDefault()
+              navegar(`${basePortal}#submeter`)
+            }}
+          >
             + Submeter novo projeto
           </a>
         </div>

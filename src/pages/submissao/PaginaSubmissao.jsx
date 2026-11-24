@@ -656,6 +656,16 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
     )
   }
 
+  if (sessao?.tipoUsuario === 'COORDENADOR') {
+    return (
+      <main className="limite pagina-submissao" id="conteudo">
+        <h1>Avaliação de projetos</h1>
+        <p>A coordenação acompanha e avalia as submissões do curso.</p>
+        <a className="botao-primario" href={enderecoPrivado('coordenacao/submissoes')}>Ver submissões</a>
+      </main>
+    )
+  }
+
   if (sessao?.tipoUsuario === 'ADMIN') {
     return (
       <main className="limite pagina-submissao" id="conteudo">

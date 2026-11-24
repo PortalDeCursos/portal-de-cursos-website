@@ -83,7 +83,7 @@ function prepararDisciplina(disciplina) {
   }
 }
 
-async function buscarTodosCursos(sinal, token = null) {
+async function buscarTodosCursos(sinal) {
   const cursos = []
   let pagina = 0
   let totalPaginas = 1
@@ -94,7 +94,7 @@ async function buscarTodosCursos(sinal, token = null) {
       `${enderecoCursos}${separador}page=${pagina}&size=100&sort=nome,asc`,
       {
         metodo: 'GET',
-        token,
+        publico: true,
         sinal,
       },
     )
@@ -123,22 +123,31 @@ export async function buscarCursoPorId(identificador, sinal) {
   const resumo = cursos.find((curso) => curso.identificador === identificador)
   if (!resumo) throw new ErroApi('Curso não encontrado.', { status: 404 })
 
+  const idFormatado = encodeURIComponent(resumo.id)
+  const separador = enderecoDisciplinas.includes('?') ? '&' : '?'
+  const urlDisciplinas = `${enderecoDisciplinas.replace(/\/$/, '')}${separador}cursoId=${idFormatado}`
+
   const [dadosCurso, disciplinas] = await Promise.all([
-    chamarApi(`${enderecoCursos.replace(/\/$/, '')}/${encodeURIComponent(resumo.id)}`, {
+    chamarApi(`${enderecoCursos.replace(/\/$/, '')}/${idFormatado}`, {
       metodo: 'GET',
+      publico: true,
       sinal,
-    }),
-    chamarApi(
-      `${enderecoDisciplinas}${enderecoDisciplinas.includes('?') ? '&' : '?'}cursoId=${encodeURIComponent(resumo.id)}`,
-      { metodo: 'GET', sinal },
-    ),
+    }).catch(() => resumo),
+    chamarApi(urlDisciplinas, {
+      metodo: 'GET',
+      publico: true,
+      sinal,
+    }).catch(() => []),
   ])
 
-  if (!dadosCurso || dadosCurso.id !== resumo.id || !Array.isArray(disciplinas)) {
-    throw new ErroApi('Os dados do curso estão em um formato inválido.', { status: 502 })
-  }
+  const cursoFinal = dadosCurso || resumo
+  const listaDisciplinas = Array.isArray(disciplinas) ? disciplinas : []
 
-  return { ...prepararCurso(dadosCurso), grade: disciplinas.map(prepararDisciplina) }
+  return { ...prepararCurso(cursoFinal), grade: listaDisciplinas.map(prepararDisciplina) }
+}
+
+export function designarCoordenador(token, cursoId, coordenadorId) {
+  return chamarApi(`${enderecoCursos}/${encodeURIComponent(cursoId)}/coordenador/${encodeURIComponent(coordenadorId)}`, { metodo: 'PATCH', token })
 }
 
 export async function cadastrarCurso(token, dados, sinal) {
