@@ -1,18 +1,6 @@
+import { MODULOS } from './config.js'
 import { repetirConsulta } from './repetirConsulta.js'
-
-export const VERSAO_PADRAO_API = ''
-
-let versaoAtiva = import.meta.env.VITE_API_VERSAO || VERSAO_PADRAO_API
-
-export function pegarVersaoApi() {
-  return versaoAtiva
-}
-
-export function mudarVersaoApi(novaVersao) {
-  if (typeof novaVersao === 'string') {
-    versaoAtiva = novaVersao.trim()
-  }
-}
+import { limparSessao, pegarSessao } from './sessaoMemoria.js'
 
 export class ErroApi extends Error {
   constructor(mensagem, { status = 0, dados = null, causa = null } = {}) {
@@ -27,11 +15,8 @@ export class ErroApi extends Error {
   }
 }
 
-export function pegarBaseApi(modulo = 'usuarios', versao = versaoAtiva) {
-  const basePortal = import.meta.env.BASE_URL || '/'
-  const baseLimpa = basePortal.endsWith('/') ? basePortal : `${basePortal}/`
-  const segmentoVersao = versao ? `${versao}/` : ''
-  return `${window.location.origin}${baseLimpa}api/${segmentoVersao}${modulo}`
+export function pegarBaseApi(modulo = 'usuarios') {
+  return MODULOS[modulo] || `${MODULOS.usuarios.replace(/\/usuarios$/, '')}/${modulo}`
 }
 
 export function chamarApi(caminhoCompletoOuRelativo, opcoes = {}) {
@@ -43,24 +28,42 @@ async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
     metodo = 'GET',
     corpo = null,
     token = null,
+    publico = false,
     headers = {},
     sinal = null,
     tempoLimiteMs = 15000,
     formatoResposta = 'json',
   } = opcoes
 
+  const tokenFinal = publico ? null : token || pegarSessao()?.token || null
   const multipart = corpo instanceof FormData
   const possuiCorpo = corpo !== null && corpo !== undefined
   const cabecalhos = {
     Accept: 'application/json',
     ...(possuiCorpo && !multipart ? { 'Content-Type': 'application/json' } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(tokenFinal ? { Authorization: `Bearer ${tokenFinal}` } : {}),
     ...headers,
   }
 
-  const sinaisCancelamento = [AbortSignal.timeout(tempoLimiteMs)]
-  if (sinal) sinaisCancelamento.push(sinal)
-  const sinalCombinado = AbortSignal.any(sinaisCancelamento)
+  const controle = new AbortController()
+  let expirouTempo = false
+  const temporizador = setTimeout(() => {
+    expirouTempo = true
+    controle.abort()
+  }, tempoLimiteMs)
+
+  function aoAbortarExterno() {
+    controle.abort(sinal?.reason)
+  }
+
+  if (sinal) {
+    if (sinal.aborted) {
+      clearTimeout(temporizador)
+      controle.abort(sinal.reason)
+    } else {
+      sinal.addEventListener('abort', aoAbortarExterno, { once: true })
+    }
+  }
 
   let resposta
   try {
@@ -68,15 +71,15 @@ async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
       method: metodo,
       headers: cabecalhos,
       body: possuiCorpo ? (multipart ? corpo : JSON.stringify(corpo)) : undefined,
-      signal: sinalCombinado,
+      signal: controle.signal,
       credentials: 'omit',
       cache: 'no-store',
     })
   } catch (falha) {
-    if (falha.name === 'AbortError' && sinal?.aborted) {
+    if (sinal?.aborted) {
       throw falha
     }
-    if (sinalCombinado.aborted && !sinal?.aborted) {
+    if (expirouTempo) {
       throw new ErroApi('A operação demorou mais que o esperado. Tente novamente.', {
         status: 408,
         causa: falha,
@@ -85,6 +88,11 @@ async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
     throw new ErroApi('Sem conexão no momento. Verifique sua internet e tente novamente.', {
       causa: falha,
     })
+  } finally {
+    clearTimeout(temporizador)
+    if (sinal) {
+      sinal.removeEventListener('abort', aoAbortarExterno)
+    }
   }
 
   if (resposta.status === 204) {
@@ -107,14 +115,9 @@ async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
   }
 
   if (!resposta.ok) {
-    // Tratamento global para 401: notifica aplicação para limpar sessão e redirecionar ao login
-    if (resposta.status === 401 && token) {
-      try {
-        sessionStorage.removeItem('portal-cursos-sessao')
-        window.dispatchEvent(new CustomEvent('portal-sessao-expirada'))
-      } catch {
-        /* storage bloqueado */
-      }
+    if (resposta.status === 401 && tokenFinal) {
+      limparSessao()
+      window.dispatchEvent(new CustomEvent('portal-sessao-expirada'))
     }
 
     let mensagem = 'Não foi possível completar sua solicitação. Tente novamente.'
@@ -131,11 +134,9 @@ async function chamarUmaVez(caminhoCompletoOuRelativo, opcoes = {}) {
     }
 
     if (resposta.status === 401) {
-      mensagem = token
+      mensagem = tokenFinal
         ? 'Sua sessão expirou. Entre novamente.'
-        : metodo.toUpperCase() === 'POST' && /\/auth\/login(?:\?|$)/.test(caminhoCompletoOuRelativo)
-          ? 'E-mail ou senha incorretos.'
-          : 'Entre na sua conta e tente consultar estes dados novamente.'
+        : 'E-mail ou senha incorretos.'
     } else if (resposta.status === 403) {
       mensagem = 'Sua conta não tem permissão para realizar esta operação.'
     } else if (resposta.status === 404 && !dados?.detail) {

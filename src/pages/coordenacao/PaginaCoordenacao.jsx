@@ -2,7 +2,7 @@ import { ordenarSubmissoes } from '@/shared/utils/ordenarSubmissoes.js'
 import Indicadores from '@/shared/componentes/Indicadores.jsx'
 import { useEffect, useState } from 'react'
 import { listarCursos } from '@/api/cursos.js'
-import { basePortal, enderecoPrivado } from '../../app/rotas.js'
+import { enderecoPrivado } from '../../app/rotas.js'
 import Icone from '@/shared/componentes/Icone.jsx'
 import TabelaSubmissoes from '@/pages/administracao/componentes/TabelaSubmissoes.jsx'
 import GestaoConteudos from '@/pages/administracao/componentes/GestaoConteudos.jsx'
@@ -97,11 +97,6 @@ export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
             <h1>Submissões do curso</h1>
             <p>Avalie as submissões aceitas pelos orientadores e decida sobre a publicação.</p>
           </div>
-          <div className="coordenacao-boas-vindas__acoes">
-            <a className="botao-primario" href={`${basePortal}#submeter`}>
-              Enviar projeto
-            </a>
-          </div>
         </header>
         <section
           className="painel-secao coordenacao-registros coordenacao-lista"
@@ -137,9 +132,6 @@ export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
         <div className="coordenacao-boas-vindas__acoes">
           <a className="botao-secundario" href={enderecoPrivado('coordenacao/curso')}>
             Editar curso
-          </a>
-          <a className="botao-primario" href={`${basePortal}#submeter`}>
-            Enviar projeto
           </a>
         </div>
       </header>

@@ -27,7 +27,7 @@ export default function CursosDestaque() {
           <h2 id="titulo-cursos">Cursos disponíveis</h2>
           <p>Conheça a estrutura e as possibilidades de cada formação.</p>
         </div>
-        <Link destino="#cursos" icone={null}>
+        <Link destino="#catalogo" icone={null}>
           Ver todos os cursos
         </Link>
       </div>

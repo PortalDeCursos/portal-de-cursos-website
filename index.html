@@ -18,10 +18,9 @@
     <title>Portal de Cursos — Formação e produção acadêmica</title>
     <script>
       try {
-        var t = localStorage.getItem('portal-cursos-tema')
-        if (t !== 'claro' && t !== 'escuro')
-          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro'
-        document.documentElement.dataset.tema = t
+        document.documentElement.dataset.tema = matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'escuro'
+          : 'claro'
       } catch (e) {}
     </script>
   </head>

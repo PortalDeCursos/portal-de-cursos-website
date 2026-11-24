@@ -267,11 +267,16 @@
   color: var(--titulo);
 }
 
-/* Entrar é a única ação com borda: é o convite principal para visitantes */
 .cabecalho__entrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cabecalho-item);
   padding: 0 14px;
-  border: 1px solid var(--borda-campo);
+  border: 1px solid var(--borda-suave);
   color: var(--titulo);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .cabecalho__entrar:hover {

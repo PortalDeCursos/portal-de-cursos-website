@@ -19,7 +19,8 @@ export async function repetirConsulta(consultar, { metodo = 'GET', sinal, interv
     try {
       return await consultar()
     } catch (falha) {
-      const recuperavel = [0, 408, 429, 500, 502, 503, 504].includes(falha.status)
+      const status = falha?.status ?? 0
+      const recuperavel = status === 0 || status === 408 || (status >= 500 && status <= 599)
       if (metodo.toUpperCase() !== 'GET' || !recuperavel || tentativa >= 2 || sinal?.aborted) {
         throw falha
       }

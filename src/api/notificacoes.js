@@ -11,7 +11,7 @@ export async function enviarNotificacaoProjeto(
   ]
   if (emails.length === 0) throw new Error('Nenhum destinatário de e-mail foi encontrado.')
 
-  return chamarApi(`${pegarEnderecoRecurso('notificacoes')}`, {
+  return chamarApi(pegarEnderecoRecurso('notificacoes'), {
     metodo: 'POST',
     corpo: {
       statusProjeto,

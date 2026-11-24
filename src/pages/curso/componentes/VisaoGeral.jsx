@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { listarCoordenadores } from '@/api/coordenadores.js'
-import { listarProfessores } from '@/api/professores.js'
+import { buscarCoordenadorPorId } from '@/api/coordenadores.js'
 import './visao-geral.css'
 
 export default function VisaoGeral({ curso }) {
@@ -11,66 +10,21 @@ export default function VisaoGeral({ curso }) {
     const controle = new AbortController()
     mudarCoordenador(null)
 
-    if (curso?.id) {
-      Promise.all([
-        listarCoordenadores(null, { cursoId: curso.id }, controle.signal).catch(() => []),
-        listarProfessores(null, {}, controle.signal).catch(() => []),
-      ]).then(([dadosCoordenadores, professores]) => {
-        if (!ativo) return
-        const coordenadores = Array.isArray(dadosCoordenadores)
-          ? dadosCoordenadores
-          : Array.isArray(dadosCoordenadores?.coordenadores)
-            ? dadosCoordenadores.coordenadores
-            : dadosCoordenadores
-              ? [dadosCoordenadores]
-              : []
-        const registro = coordenadores[0]
-        if (!registro) return
-
-        const professorRef = registro.professor || registro.docente
-        const referenciasProfessor = [
-          registro.professorId,
-          professorRef?.id,
-          professorRef?.professorId,
-          professorRef?.usuario?.id,
-          registro.usuarioId,
-          registro.usuario?.id,
-          registro.id,
-        ].filter(Boolean)
-        const professor = professores.find((item) =>
-          [item.id, item.usuario?.id].some(
-            (id) =>
-              id && referenciasProfessor.some((referencia) => String(id) === String(referencia)),
-          ),
-        )
-        const professorId =
-          registro.professorId ||
-          professorRef?.id ||
-          professor?.id ||
-          registro.usuarioId ||
-          registro.usuario?.id
-        const nome =
-          registro.nome ||
-          professorRef?.usuario?.nome ||
-          professorRef?.nome ||
-          registro.usuario?.nome ||
-          professor?.nome
-
-        if (nome || String(professorId) === '2') {
-          mudarCoordenador({
-            ...registro,
-            professorId: professorId || professor?.id,
-            nome: nome || 'Coordenador Inicial',
-          })
-        }
-      })
+    if (curso?.coordenadorId) {
+      buscarCoordenadorPorId(null, curso.coordenadorId, controle.signal)
+        .then((registro) => {
+          if (!ativo) return
+          const professor = registro?.professor
+          mudarCoordenador({ nome: professor?.usuario?.nome, professorId: professor?.id })
+        })
+        .catch(() => {})
     }
 
     return () => {
       ativo = false
       controle.abort()
     }
-  }, [curso?.id])
+  }, [curso?.coordenadorId])
 
   return (
     <section className="visao-curso" aria-labelledby="titulo-visao-geral">

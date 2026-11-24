@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { chamarApi, pegarBaseApi } from '@/api/cliente.js'
+import { buscarFotoUsuario } from '@/api/fotos.js'
 
 const ContextoFoto = createContext(null)
 
@@ -15,12 +15,7 @@ export function FotosDaSessao({ sessao, children }) {
   useEffect(() => {
     if (!id || !token) return
     const controle = new AbortController()
-    chamarApi(pegarBaseApi('usuarios') + '/fotos/' + id, {
-      token,
-      sinal: controle.signal,
-      formatoResposta: 'blob',
-      headers: { Accept: 'image/png' },
-    })
+    buscarFotoUsuario(id, controle.signal, token)
       .then((imagem) => {
         if (controle.signal.aborted) return
         mudarFoto(imagem)

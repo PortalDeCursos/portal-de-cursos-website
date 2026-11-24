@@ -1,9 +1,11 @@
 export const basePortal = import.meta.env.BASE_URL
 
 export function enderecoPrivado(caminho) {
+  if (caminho === 'submeter') return `${basePortal}#submeter`
   return `${basePortal}${caminho.replace(/^\//, '')}`
 }
 export function lerRota() {
+  if (window.location.hash === '#submeter' || (!window.location.hash && window.location.pathname === `${basePortal}submeter`)) return 'submeter'
   const caminho = window.location.pathname
     .slice(basePortal.length)
     .replace(/^\//, '')
