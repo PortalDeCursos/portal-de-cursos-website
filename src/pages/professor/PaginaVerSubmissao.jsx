@@ -135,8 +135,18 @@ export default function PaginaVerSubmissao({
       mudarSalvando(true)
       const resultado = await aoDecidir(proximoStatus, justificativa.trim())
       mudarAviso(resultado?.aviso || '')
-    } catch {
-      mudarErro('Não foi possível salvar a decisão. Tente novamente.')
+    } catch (falha) {
+      if (falha?.status === 404 && falha.message === 'O curso não possui coordenador designado.') {
+        mudarErro(
+          'O curso está sem coordenador designado. Peça à administração para vincular o coordenador ao curso antes de registrar a decisão.',
+        )
+        return
+      }
+      mudarErro(
+        falha?.status === 503
+          ? 'Não conseguimos confirmar a decisão porque um serviço está indisponível. Confira o andamento do projeto no painel antes de tentar novamente.'
+          : 'Não foi possível salvar a decisão. Tente novamente.',
+      )
       return
     } finally {
       mudarSalvando(false)
