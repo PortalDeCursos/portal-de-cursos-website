@@ -205,7 +205,6 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     } else {
       atualizarEtapa('notificacao', 'enviando', 'Enviando o aviso por e-mail…')
       try {
-        // TODO: confirmar com Notificações se o evento do RabbitMQ já envia o e-mail
         await enviarNotificacaoProjeto(
           {
             statusProjeto: sessao.tipoUsuario === 'ALUNO' ? 'EM_ANALISE' : 'ANALISE_PUBLICACAO',
@@ -221,7 +220,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         atualizarEtapa(
           'notificacao',
           'falhou',
-          'O projeto foi cadastrado. Não conseguimos confirmar apenas o envio do aviso por e-mail. Avise o responsável e acompanhe o projeto pelo painel.',
+          'Projeto salvo. Não conseguimos confirmar o aviso por e-mail. Acompanhe pelo painel.',
         )
       }
     }
