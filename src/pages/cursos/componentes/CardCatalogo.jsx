@@ -39,10 +39,14 @@ export default function CardCatalogo({ curso }) {
 
       <div className="curso-catalogo__base">
         {curso.campus && <p className="curso-catalogo__campus">{curso.campus}</p>}
-        <span className="curso-catalogo__acao" aria-hidden="true">
+        <a
+          className="curso-catalogo__acao"
+          href={`#curso/${curso.identificador}`}
+          aria-label={`Conhecer o curso ${curso.nome}`}
+        >
           <span>Conhecer o curso</span>
           <span aria-hidden="true">↗</span>
-        </span>
+        </a>
       </div>
     </article>
   )

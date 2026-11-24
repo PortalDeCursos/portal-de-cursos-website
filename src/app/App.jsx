@@ -1,11 +1,15 @@
 import { montarEdicaoProjeto, pegarIdsDisciplinas } from '@/shared/utils/contratoProjetos.js'
 import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import { Suspense, lazy, useEffect, useState } from 'react'
+import { definirSessao, limparSessao, pegarSessao } from '@/api/sessaoMemoria.js'
 import { basePortal, enderecoPrivado, lerRota, navegar, retornoAutenticado } from './rotas.js'
 import EstruturaProfessor from '@/pages/professor/componentes/EstruturaProfessor.jsx'
 import { FotosDaSessao } from '@/shared/componentes/FotoDaConta.jsx'
 import Cabecalho from '@/shared/componentes/Cabecalho.jsx'
-import Rodape from '@/shared/componentes/Rodape.jsx'
+import Rodape from '@/componentes/Rodape.jsx'
+const PaginaPoliticaPrivacidade = lazy(
+  () => import('@/pages/privacidade/PaginaPoliticaPrivacidade.jsx'),
+)
 const PaginaInicial = lazy(() => import('@/pages/inicio/PaginaInicial.jsx'))
 const PaginaCursos = lazy(() => import('@/pages/cursos/PaginaCursos.jsx'))
 const PaginaCurso = lazy(() => import('@/pages/curso/PaginaCurso.jsx'))
@@ -77,6 +81,7 @@ function descobrirPagina(rota) {
     rota.startsWith('professor/submissao/')
   )
     return 'professor'
+  if (rota === 'politica-de-privacidade') return 'privacidade'
   if (rota.startsWith('curso/')) return 'detalhes-curso'
   if (['cursos', 'catalogo'].includes(rota)) return 'cursos'
   if (!rota || rota === 'inicio') return 'inicio'
@@ -84,23 +89,13 @@ function descobrirPagina(rota) {
 }
 
 function lerTema() {
-  try {
-    const salvo = localStorage.getItem('portal-cursos-tema')
-    if (salvo === 'claro' || salvo === 'escuro') return salvo
-  } catch {
-    /* A navegação continua sem armazenamento local. */
-  }
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro'
 }
 
 export default function App() {
   const [sessao, mudarSessao] = useState(() => {
-    try {
-      const salva = JSON.parse(sessionStorage.getItem('portal-cursos-sessao') || 'null')
-      return salva && Date.now() < salva.expiraEm ? salva : null
-    } catch {
-      return null
-    }
+    const salva = pegarSessao()
+    return salva && Date.now() < salva.expiraEm ? salva : null
   })
   const [decisoes, mudarDecisoes] = useState({})
   const [listaSubmissoes, mudarListaSubmissoes] = useState([])
@@ -159,20 +154,11 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    try {
-      if (sessao) sessionStorage.setItem('portal-cursos-sessao', JSON.stringify(sessao))
-      else sessionStorage.removeItem('portal-cursos-sessao')
-    } catch {
-      /* A sessão permanece disponível em memória quando o armazenamento está bloqueado. */
-    }
+    if (sessao) definirSessao(sessao)
+    else limparSessao()
   }, [sessao])
   useEffect(() => {
     document.documentElement.dataset.tema = tema
-    try {
-      localStorage.setItem('portal-cursos-tema', tema)
-    } catch {
-      /* Preferência mantida nesta sessão. */
-    }
   }, [tema])
   useEffect(() => {
     const aoMudarRota = () => {
@@ -923,6 +909,7 @@ export default function App() {
           />
         )}
         {pagina === 'aluno-cadastro' && <PaginaCadastroAluno />}
+        {pagina === 'privacidade' && <PaginaPoliticaPrivacidade />}
         {pagina === 'inicio' && <PaginaInicial />}
       </Suspense>
       <Rodape pagina={pagina} />

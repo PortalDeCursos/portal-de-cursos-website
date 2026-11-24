@@ -1,32 +1,47 @@
 .indicadores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--espaco-4, 16px);
   margin: 0;
-  border-block: 1px solid var(--borda-suave);
 }
 
-.indicadores > div {
+.indicadores__item {
+  position: relative;
   display: flex;
   min-width: 0;
   flex-direction: column;
   padding: var(--espaco-5);
+  background: var(--superficie, #ffffff);
+  border: 1px solid var(--borda-suave);
+  border-radius: var(--raio-md, 12px);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
-.indicadores > div + div {
-  border-left: 1px solid var(--borda-suave);
+.indicadores__item--interativo:hover {
+  border-color: var(--cor-indicador, var(--azul));
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
 }
 
-.indicadores dt {
+.indicadores__item--interativo:focus-within {
+  outline: 2px solid var(--cor-indicador, var(--azul));
+  outline-offset: 2px;
+}
+
+.indicadores__titulo {
   order: 2;
   display: flex;
   align-items: center;
   gap: var(--espaco-2);
-  color: var(--texto-suave);
+  color: var(--titulo);
   font-size: var(--texto-sm);
   font-weight: 600;
 }
 
-.indicadores dt::before {
+.indicadores__titulo::before {
   width: 8px;
   height: 8px;
   flex: none;
@@ -35,24 +50,50 @@
   content: '';
 }
 
-.indicadores dt a {
+.indicadores__link {
   color: inherit;
   text-decoration: none;
 }
 
-.indicadores dt a:hover {
-  color: var(--azul);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+/* Faz o card inteiro ser clicável mantendo a semântica do <dl> */
+.indicadores__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.indicadores__item--interativo:hover .indicadores__link {
+  color: var(--cor-indicador, var(--azul));
+}
+
+/* Seta discreta no canto superior direito para sinalizar clique */
+.indicadores__item--interativo::after {
+  content: '→';
+  position: absolute;
+  top: var(--espaco-4, 16px);
+  right: var(--espaco-5);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  pointer-events: none;
+}
+
+.indicadores__item--interativo:hover::after,
+.indicadores__item--interativo:focus-within::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .indicadores__valor {
   order: 1;
-  margin: 0 0 var(--espaco-1);
+  margin: 0 0 var(--espaco-2);
   color: var(--titulo);
   font-family: var(--fonte-titulo);
   font-size: var(--texto-numeral);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
@@ -63,15 +104,39 @@
   margin: var(--espaco-1) 0 0;
   color: var(--texto-suave);
   font-size: var(--texto-xs);
+  line-height: 1.4;
+}
+
+.indicadores__esqueleto {
+  display: inline-block;
+  width: 3ch;
+  height: 1em;
+  border-radius: 6px;
+  background: var(--borda-suave);
+  animation: indicadores-pulso 1.2s ease-in-out infinite;
+}
+
+@keyframes indicadores-pulso {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicadores__item,
+  .indicadores__item--interativo::after,
+  .indicadores__esqueleto {
+    transition: none;
+    animation: none;
+  }
 }
 
 @media (max-width: 640px) {
   .indicadores {
     grid-template-columns: 1fr;
-  }
-
-  .indicadores > div + div {
-    border-top: 1px solid var(--borda-suave);
-    border-left: 0;
+    gap: var(--espaco-3, 12px);
   }
 }

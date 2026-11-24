@@ -424,3 +424,8 @@
     transform: translateY(10px);
   }
 }
+
+
+#cursos.secao {
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
+}

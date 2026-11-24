@@ -21,7 +21,7 @@ export async function buscarAlunoPorId(token, id, sinal) {
 }
 
 export async function cadastrarAluno(dados, sinal) {
-  return chamarApi(urlAlunos(), { metodo: 'POST', corpo: dados, sinal })
+  return chamarApi(urlAlunos(), { metodo: 'POST', corpo: dados, publico: true, sinal })
 }
 
 export async function atualizarAluno(token, id, dados, sinal) {

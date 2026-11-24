@@ -1,4 +1,5 @@
 import {
+  atualizarProfessor as atualizarProfessorApi,
   cadastrarProfessor as cadastrarProfessorApi,
   excluirProfessor as excluirProfessorApi,
   listarProfessores as listarProfessoresApi,
@@ -12,6 +13,10 @@ export async function cadastrarProfessor(token, dados) {
   return cadastrarProfessorApi(token, dados)
 }
 
+export async function atualizarProfessor(token, id, dados) {
+  return atualizarProfessorApi(token, id, dados)
+}
+
 export async function excluirProfessor(token, id) {
   return excluirProfessorApi(token, id)
 }
@@ -19,5 +24,6 @@ export async function excluirProfessor(token, id) {
 export default {
   listarProfessores,
   cadastrarProfessor,
+  atualizarProfessor,
   excluirProfessor,
 }

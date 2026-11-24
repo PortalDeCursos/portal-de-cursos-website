@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { chamarApi, pegarBaseApi } from '@/api/cliente.js'
-
+import { salvarFotoUsuario } from '@/api/fotos.js'
 import { useFotoDaConta } from '@/shared/componentes/FotoDaConta.jsx'
 
 export default function FotoPerfil({ usuario, token }) {
@@ -10,7 +9,6 @@ export default function FotoPerfil({ usuario, token }) {
   const [imagem, mudarImagem] = useState('')
   const [erro, mudarErro] = useState('')
   const [mensagem, mudarMensagem] = useState('')
-  const base = pegarBaseApi('usuarios') + '/fotos'
   const id = usuario.id
 
   useEffect(() => {
@@ -39,11 +37,8 @@ export default function FotoPerfil({ usuario, token }) {
     mudarEstado('salvando')
     mudarErro('')
     mudarMensagem('')
-    const corpo = new FormData()
-    corpo.append('usuarioId', String(id))
-    corpo.append('foto', arquivo)
     try {
-      await chamarApi(base, { token, corpo, metodo: foto ? 'PUT' : 'POST' })
+      await salvarFotoUsuario(id, arquivo, { atualizar: Boolean(foto), token })
       mudarFoto(arquivo)
       mudarArquivo(null)
       mudarMensagem('Foto de perfil salva.')

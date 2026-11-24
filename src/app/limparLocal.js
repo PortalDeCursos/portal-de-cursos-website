@@ -1,11 +1,5 @@
-const CHAVES_LOCAIS = ['portal-cursos-submissoes', 'portal-cursos-decisoes']
+import { limparSessao } from '@/api/sessaoMemoria.js'
 
 export function limparLocal() {
-  try {
-    CHAVES_LOCAIS.forEach((chave) => localStorage.removeItem(chave))
-    sessionStorage.removeItem('portal-cursos-sessao')
-    sessionStorage.removeItem('portal-cursos-filtros')
-  } catch {
-    return
-  }
+  limparSessao()
 }

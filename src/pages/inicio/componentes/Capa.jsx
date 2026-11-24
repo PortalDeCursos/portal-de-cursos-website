@@ -14,7 +14,7 @@ export default function Capa() {
         </p>
 
         <div className="hero-inicial__acoes">
-          <Botao as="a" href="#cursos" className="hero-inicial__cta-primario">
+          <Botao as="a" href="#catalogo" className="hero-inicial__cta-primario">
             Explorar cursos
           </Botao>
           <a href="#projetos" className="hero-inicial__cta-secundario">

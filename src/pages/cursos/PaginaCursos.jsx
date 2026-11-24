@@ -21,23 +21,7 @@ const filtrosIniciais = {
 }
 
 function lerFiltros() {
-  try {
-    const salvos = JSON.parse(sessionStorage.getItem('portal-cursos-filtros')) || {}
-    return Object.fromEntries(
-      Object.entries(filtrosIniciais).map(([campo, padrao]) => [
-        campo,
-        Array.isArray(padrao)
-          ? Array.isArray(salvos[campo])
-            ? salvos[campo].filter((item) => typeof item === 'string')
-            : []
-          : typeof salvos[campo] === 'string'
-            ? salvos[campo]
-            : '',
-      ]),
-    )
-  } catch {
-    return filtrosIniciais
-  }
+  return { ...filtrosIniciais }
 }
 
 function normalizar(texto = '') {
@@ -91,14 +75,6 @@ export default function PaginaCursos() {
       })
     return () => controle.abort()
   }, [tentativa])
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('portal-cursos-filtros', JSON.stringify(filtros))
-    } catch {
-      /* Os filtros continuam disponíveis nesta página. */
-    }
-  }, [filtros])
 
   function alterar(campo, valor) {
     mudarFiltros((anteriores) => ({ ...anteriores, [campo]: valor }))

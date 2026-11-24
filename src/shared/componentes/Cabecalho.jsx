@@ -250,7 +250,7 @@ export default function Cabecalho({
       <a href={`${basePortal}#projetos`} aria-current={ativoSe(pagina === 'projetos')}>
         Projetos
       </a>
-      {(!autenticado || ['ALUNO', 'COORDENADOR'].includes(tipoUsuario)) && (
+      {(!autenticado || ['ALUNO', 'PROFESSOR'].includes(tipoUsuario)) && (
         <a
           className="navegacao__submeter"
           href={`${basePortal}#submeter`}

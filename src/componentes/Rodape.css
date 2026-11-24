@@ -1,0 +1,105 @@
+.rodape-portal {
+  margin-top: auto;
+  border-top: 1px solid var(--borda-suave);
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.rodape-portal__grade {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+  gap: var(--espaco-6);
+  padding: var(--espaco-7) 0 var(--espaco-6);
+}
+
+.rodape-portal__coluna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.rodape-portal__titulo {
+  margin: 0;
+  color: var(--titulo);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+}
+
+.rodape-portal__texto {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  line-height: 1.6;
+}
+
+.rodape-portal__lista {
+  display: grid;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+.rodape-portal__lista a,
+.rodape-portal__link-privacidade {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  transition: color 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.rodape-portal__lista a:hover,
+.rodape-portal__link-privacidade:hover {
+  color: var(--azul);
+}
+
+.rodape-portal__base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4) 0;
+  border-top: 1px solid var(--borda-suave);
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+.rodape-portal__base p {
+  margin: 0;
+}
+
+.rodape-portal__topo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--raio-controle);
+  background: transparent;
+  color: var(--azul);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.rodape-portal__topo:hover {
+  background: var(--azul-suave);
+}
+
+@media (max-width: 960px) {
+  .rodape-portal__grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .rodape-portal__grade {
+    grid-template-columns: 1fr;
+    gap: var(--espaco-5);
+  }
+}
