@@ -45,3 +45,9 @@ commitlint.config.*
 AGENTS.md
 docs/imagens/
 
+# Preferências locais e anotações de integração
+/PENDENCIAS-INTEGRACAO.txt
+/.prettierignore
+/.prettierrc
+/.prettierrc.*
+/prettier.config.*
