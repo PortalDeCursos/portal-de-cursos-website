@@ -91,13 +91,6 @@ function lerTema() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro'
 }
 
-const retornosPublicos = {
-  cursos: ['inicio', 'Voltar ao início'],
-  projetos: ['inicio', 'Voltar ao início'],
-  'detalhes-curso': ['cursos', 'Voltar aos cursos'],
-  'perfil-professor': ['cursos', 'Voltar aos cursos'],
-  'perfil-aluno': ['projetos', 'Voltar aos projetos'],
-}
 export default function App() {
   const [sessao, mudarSessao] = useState(() => {
     const salva = pegarSessao()
