@@ -13,6 +13,7 @@ import './coordenacao.css'
 
 export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
   const [cursos, mudarCursos] = useState([])
+  const [carregandoCursos, mudarCarregandoCursos] = useState(true)
   useEffect(() => {
     const controller = new AbortController()
     listarCursos(controller.signal)
@@ -21,6 +22,9 @@ export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
       })
       .catch(() => {
         if (!controller.signal.aborted) mudarCursos([])
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) mudarCarregandoCursos(false)
       })
     return () => controller.abort()
   }, [])
@@ -31,6 +35,16 @@ export default function PaginaCoordenacao({ secao, sessao, submissoes }) {
       sessao,
       submissoes,
     })
+
+  if (!carregandoCursos && !cursoId && !cursosDaCoordenacao.length) {
+    return (
+      <main id="conteudo" className="pagina-painel pagina-painel--administracao">
+        <p className="painel-vazio" role="status">
+          Sua conta de coordenação não possui um curso vinculado. Entre em contato com a administração.
+        </p>
+      </main>
+    )
+  }
 
   if (secao === 'curso')
     return (

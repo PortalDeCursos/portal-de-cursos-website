@@ -1,6 +1,40 @@
 import './formulario-professor.css'
 import { useState } from 'react'
 
+// Siglas do seed acadêmico V2 para o catálogo público de cursos.
+const SIGLAS_CAMPUS = {
+  'Campus Apodi': 'IFAP',
+  'Campus Caicó': 'IFCA',
+  'Campus Canguaretama': 'IFCANG',
+  'Campus Ceará-Mirim': 'IFCM',
+  'Campus Currais Novos': 'IFCN',
+  'Campus Ipanguaçu': 'IFIP',
+  'Campus João Câmara': 'IFJC',
+  'Campus Avançado Jucurutu': 'IFJUC',
+  'Campus Avançado Lajes': 'IFLAJ',
+  'Campus Macau': 'IFMC',
+  'Campus Mossoró': 'IFMO',
+  'Campus Natal - Central': 'CNAT',
+  'Campus Natal - Centro Histórico': 'IFCAL',
+  'Campus Avançado Natal - Zona Leste (EaD)': 'IFZL',
+  'Campus Natal - Zona Norte': 'IFZN',
+  'Campus Nova Cruz': 'IFNC',
+  'Campus Avançado Parelhas': 'IFPAAS',
+  'Campus Parnamirim': 'IFPAR',
+  'Campus Pau dos Ferros': 'IFPF',
+  'Campus Santa Cruz': 'IFSC',
+  'Campus São Gonçalo do Amarante': 'IFSGA',
+  'Campus São Paulo do Potengi': 'IFSPP',
+}
+
+function formatarRotuloCurso(curso) {
+  return (
+    [curso.nome, curso.sigla, curso.campusNome, curso.campusAcronimo || SIGLAS_CAMPUS[curso.campusNome]]
+      .filter(Boolean)
+      .join(' · ') || `Curso ${curso.id}`
+  )
+}
+
 export default function FormularioProfessor({
   aoSalvar,
   aoCancelar,
@@ -136,7 +170,7 @@ export default function FormularioProfessor({
                     (c) => String(c.id) === String(cursoIdInicial),
                   )
                   return encontrado
-                    ? encontrado.nome || encontrado.sigla
+                    ? formatarRotuloCurso(encontrado)
                     : `Curso ${cursoIdInicial}`
                 })()}
                 readOnly
@@ -161,7 +195,7 @@ export default function FormularioProfessor({
               >
                 {cursosVinculados.map((curso) => (
                   <option key={curso.id} value={String(curso.id)}>
-                    {curso.nome || curso.sigla || `Curso ${curso.id}`}
+                    {formatarRotuloCurso(curso)}
                   </option>
                 ))}
               </select>
