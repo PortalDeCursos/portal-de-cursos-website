@@ -188,6 +188,13 @@ export default function App() {
     document.documentElement.dataset.tema = tema
   }, [tema])
   useEffect(() => {
+    const ehAbaCurso = rota.startsWith('curso/') && rota.split('/').length > 2
+    const ehSecaoInicio = pagina === 'inicio' && Boolean(window.location.hash) && window.location.hash !== '#inicio'
+    if (!ehAbaCurso && !ehSecaoInicio) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    }
+  }, [rota, pagina])
+  useEffect(() => {
     const aoMudarRota = () => {
       const destino = lerRota()
       mudarRota(destino)
