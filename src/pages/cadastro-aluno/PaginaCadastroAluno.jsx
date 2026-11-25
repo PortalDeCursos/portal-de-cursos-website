@@ -80,6 +80,7 @@ function MensagemErro({ id, texto }) {
 
 export default function PaginaCadastroAluno() {
   const [cursos, mudarCursos] = useState([])
+  const [campusSelecionado, mudarCampusSelecionado] = useState('')
   const [carregandoCursos, mudarCarregandoCursos] = useState(true)
   const [erroCursos, mudarErroCursos] = useState('')
   const [tentativaCursos, mudarTentativaCursos] = useState(0)
@@ -242,55 +243,101 @@ export default function PaginaCadastroAluno() {
               <MensagemErro id="erro-email" texto={erros.email} />
             </div>
 
-            <div className="acesso-campo">
-              <label htmlFor="aluno-curso">Curso</label>
-              <div className="acesso-select">
-                <select
-                  id="aluno-curso"
-                  value={valores.curso}
-                  onChange={(evento) => alterar('curso', evento.target.value)}
-                  onBlur={() => sairDoCampo('curso')}
-                  disabled={
-                    enviando || carregandoCursos || Boolean(erroCursos) || cursos.length === 0
-                  }
-                  aria-invalid={erros.curso ? true : undefined}
-                  aria-describedby={descrever(
-                    erros.curso && 'erro-curso',
-                    erroCursos && 'erro-cursos',
+            {(() => {
+              const campiDisponiveis = [
+                ...new Set(
+                  cursos
+                    .map((c) => c.campus || c.campusNome || '')
+                    .filter(Boolean),
+                ),
+              ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+              const cursosDoCampus = campusSelecionado
+                ? cursos.filter((c) => (c.campus || c.campusNome || '') === campusSelecionado)
+                : cursos
+
+              return (
+                <>
+                  {campiDisponiveis.length > 0 && (
+                    <div className="acesso-campo">
+                      <label htmlFor="aluno-campus">Campus</label>
+                      <div className="acesso-select">
+                        <select
+                          id="aluno-campus"
+                          value={campusSelecionado}
+                          onChange={(evento) => {
+                            const novoCampus = evento.target.value
+                            mudarCampusSelecionado(novoCampus)
+                            if (valores.curso) {
+                              const cursoAtual = cursos.find((c) => String(c.id) === String(valores.curso))
+                              if (cursoAtual && novoCampus && (cursoAtual.campus || cursoAtual.campusNome || '') !== novoCampus) {
+                                alterar('curso', '')
+                              }
+                            }
+                          }}
+                          disabled={enviando || carregandoCursos || Boolean(erroCursos)}
+                        >
+                          <option value="">Todos os campi</option>
+                          {campiDisponiveis.map((campus) => (
+                            <option key={campus} value={campus}>
+                              {campus}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   )}
-                >
-                  <option value="">
-                    {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
-                  </option>
-                  {cursos.map((curso) => (
-                    <option key={curso.id} value={String(curso.id)}>
-                      {curso.nome}
-                      {curso.sigla ? ` · ${curso.sigla}` : ''}
-                      {curso.campus || curso.campusNome ? ` — ${curso.campus || curso.campusNome}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              {erroCursos && (
-                <div id="erro-cursos" className="acesso-erro-carregamento" role="status">
-                  <span>{erroCursos}</span>
-                  <button
-                    type="button"
-                    className="acesso-link-acao"
-                    onClick={tentarNovamenteCursos}
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              )}
+                  <div className="acesso-campo">
+                    <label htmlFor="aluno-curso">Curso</label>
+                    <div className="acesso-select">
+                      <select
+                        id="aluno-curso"
+                        value={valores.curso}
+                        onChange={(evento) => alterar('curso', evento.target.value)}
+                        onBlur={() => sairDoCampo('curso')}
+                        disabled={
+                          enviando || carregandoCursos || Boolean(erroCursos) || cursosDoCampus.length === 0
+                        }
+                        aria-invalid={erros.curso ? true : undefined}
+                        aria-describedby={descrever(
+                          erros.curso && 'erro-curso',
+                          erroCursos && 'erro-cursos',
+                        )}
+                      >
+                        <option value="">
+                          {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
+                        </option>
+                        {cursosDoCampus.map((curso) => (
+                          <option key={curso.id} value={String(curso.id)}>
+                            {curso.nome}
+                            {curso.sigla ? ` · ${curso.sigla}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-              {!carregandoCursos && !erroCursos && cursos.length === 0 && (
-                <p className="acesso-ajuda-campo">Nenhum curso disponível no momento.</p>
-              )}
+                    {erroCursos && (
+                      <div id="erro-cursos" className="acesso-erro-carregamento" role="status">
+                        <span>{erroCursos}</span>
+                        <button
+                          type="button"
+                          className="acesso-link-acao"
+                          onClick={tentarNovamenteCursos}
+                        >
+                          Tentar novamente
+                        </button>
+                      </div>
+                    )}
 
-              <MensagemErro id="erro-curso" texto={erros.curso} />
-            </div>
+                    {!carregandoCursos && !erroCursos && cursos.length === 0 && (
+                      <p className="acesso-ajuda-campo">Nenhum curso disponível no momento.</p>
+                    )}
+
+                    <MensagemErro id="erro-curso" texto={erros.curso} />
+                  </div>
+                </>
+              )
+            })()}
 
             <div className="acesso-campo">
               <label htmlFor="aluno-senha">Senha</label>
