@@ -845,21 +845,32 @@ export default function App() {
       </FotosDaSessao>
     )
   }
-  return (
-    <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
-      <a className="pular-conteudo" href="#conteudo">
-        Pular para o conteúdo
-      </a>
-      <Cabecalho
-        destinoArea={
-          sessao?.tipoUsuario === 'ADMIN'
+  const destinoArea = sessao?.tipoUsuario === 'ADMIN'
             ? 'administracao/painel'
             : sessao?.tipoUsuario === 'COORDENADOR'
               ? 'coordenacao/painel'
               : sessao?.tipoUsuario === 'ALUNO'
                 ? 'aluno/painel'
                 : 'professor/feed'
-        }
+  const inicio = [basePortal + '#inicio', 'Voltar ao início']
+  const cursos = [basePortal + '#cursos', 'Voltar aos cursos']
+  const projetos = [basePortal + '#projetos', 'Voltar aos projetos']
+  const retorno = {
+    cursos: inicio,
+    projetos: inicio,
+    'detalhes-curso': cursos,
+    'detalhes-projeto': projetos,
+    'perfil-professor': cursos,
+    'perfil-aluno': projetos,
+    submissao: sessao ? [enderecoPrivado(destinoArea), 'Voltar ao painel'] : inicio,
+  }[pagina]
+  return (
+    <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
+      <a className="pular-conteudo" href="#conteudo">
+        Pular para o conteúdo
+      </a>
+      <Cabecalho
+        destinoArea={destinoArea}
         destinoPerfil={
           sessao?.tipoUsuario === 'ADMIN'
             ? 'administracao/perfil'
@@ -877,6 +888,13 @@ export default function App() {
         tema={tema}
         alternarTema={(proximoTema) => mudarTema(proximoTema)}
       />
+      {retorno && (
+        <div className="limite">
+          <a className="botao-secundario" href={retorno[0]}>
+            <span aria-hidden="true">←</span> {retorno[1]}
+          </a>
+        </div>
+      )}
       <Suspense fallback={<CarregamentoPagina />}>
         {pagina === 'cursos' && <PaginaCursos />}
         {pagina === 'projetos' && <PaginaProjetos />}
