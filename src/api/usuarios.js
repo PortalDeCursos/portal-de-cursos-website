@@ -88,9 +88,28 @@ export async function identificarConta(token, email, sinal) {
         ['PROFESSOR', 'COORDENADOR'].includes(item.usuario?.tipoUsuario),
     )
     if (professor) {
-      const cursoId = professor.cursoId
+      let tipoUsuario = professor.usuario.tipoUsuario
+      let cursoId = professor.cursoId
+      try {
+        const listaCoordenadores = await chamarApi(`${base}/coordenadores/buscar`, {
+          metodo: 'GET',
+          token,
+          sinal,
+        })
+        if (Array.isArray(listaCoordenadores)) {
+          const coord = listaCoordenadores.find(
+            (c) => String(c.professorId ?? c.professor?.id) === String(professor.id),
+          )
+          if (coord) {
+            tipoUsuario = 'COORDENADOR'
+            if (coord.cursoId != null) cursoId = coord.cursoId
+          }
+        }
+      } catch {
+        // Ignora caso não tenha permissão ou o endpoint falhe
+      }
       return {
-        tipoUsuario: professor.usuario.tipoUsuario,
+        tipoUsuario,
         usuario: {
           id: professor.usuario.id,
           professorId: professor.id,
