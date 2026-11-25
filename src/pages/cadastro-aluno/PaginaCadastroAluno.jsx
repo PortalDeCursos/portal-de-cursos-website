@@ -249,7 +249,9 @@ export default function PaginaCadastroAluno() {
               <div className="acesso-select" style={{ position: 'relative' }}>
                 <input
                   id="aluno-curso"
-                  type="text"
+                  name="curso-pesquisa"
+                  type="search"
+                  autoComplete="off"
                   role="combobox"
                   aria-expanded={listaCursosAberta}
                   aria-controls="lista-cursos-aluno"
