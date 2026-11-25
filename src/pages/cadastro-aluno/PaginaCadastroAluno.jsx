@@ -80,8 +80,6 @@ function MensagemErro({ id, texto }) {
 
 export default function PaginaCadastroAluno() {
   const [cursos, mudarCursos] = useState([])
-  const [buscaCurso, mudarBuscaCurso] = useState('')
-  const [listaCursosAberta, mudarListaCursosAberta] = useState(false)
   const [carregandoCursos, mudarCarregandoCursos] = useState(true)
   const [erroCursos, mudarErroCursos] = useState('')
   const [tentativaCursos, mudarTentativaCursos] = useState(0)
@@ -246,49 +244,12 @@ export default function PaginaCadastroAluno() {
 
             <div className="acesso-campo">
               <label htmlFor="aluno-curso">Curso</label>
-              <div className="acesso-select" style={{ position: 'relative' }}>
-                <input
+              <div className="acesso-select">
+                <select
                   id="aluno-curso"
-                  name="curso-pesquisa"
-                  type="search"
-                  autoComplete="off"
-                  role="combobox"
-                  aria-expanded={listaCursosAberta}
-                  aria-controls="lista-cursos-aluno"
-                  aria-autocomplete="list"
-                  style={{ width: '100%', paddingRight: '38px', cursor: 'pointer' }}
-                  placeholder={
-                    carregandoCursos
-                      ? 'Carregando cursos…'
-                      : 'Pesquise ou selecione seu curso (nome, sigla ou campus)'
-                  }
-                  value={
-                    listaCursosAberta
-                      ? buscaCurso
-                      : (() => {
-                          const selecionado = cursos.find((c) => String(c.id) === String(valores.curso))
-                          if (!selecionado) return buscaCurso
-                          return `${selecionado.nome}${selecionado.sigla ? ` · ${selecionado.sigla}` : ''}${selecionado.campus || selecionado.campusNome ? ` — ${selecionado.campus || selecionado.campusNome}` : ''}`
-                        })()
-                  }
-                  onFocus={() => {
-                    if (!enviando && !carregandoCursos && !erroCursos && cursos.length > 0) {
-                      mudarBuscaCurso('')
-                      mudarListaCursosAberta(true)
-                    }
-                  }}
-                  onChange={(evento) => {
-                    const texto = evento.target.value
-                    mudarBuscaCurso(texto)
-                    mudarListaCursosAberta(true)
-                    if (!texto.trim() && valores.curso) {
-                      alterar('curso', '')
-                    }
-                  }}
-                  onBlur={() => {
-                    mudarListaCursosAberta(false)
-                    sairDoCampo('curso')
-                  }}
+                  value={valores.curso}
+                  onChange={(evento) => alterar('curso', evento.target.value)}
+                  onBlur={() => sairDoCampo('curso')}
                   disabled={
                     enviando || carregandoCursos || Boolean(erroCursos) || cursos.length === 0
                   }
@@ -297,64 +258,17 @@ export default function PaginaCadastroAluno() {
                     erros.curso && 'erro-curso',
                     erroCursos && 'erro-cursos',
                   )}
-                />
-                {listaCursosAberta && (
-                  <ul
-                    id="lista-cursos-aluno"
-                    role="listbox"
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      zIndex: 30,
-                      maxHeight: '220px',
-                      overflowY: 'auto',
-                      margin: '4px 0 0',
-                      padding: '4px',
-                      listStyle: 'none',
-                      background: 'var(--superficie, #ffffff)',
-                      border: '1px solid var(--borda, #d0d7de)',
-                      borderRadius: 'var(--raio-campo, 8px)',
-                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-                    }}
-                  >
-                    {cursos
-                      .filter((curso) => {
-                        const termo = buscaCurso.trim().toLocaleLowerCase('pt-BR')
-                        if (!termo) return true
-                        const texto = `${curso.nome || ''} ${curso.sigla || ''} ${curso.campus || curso.campusNome || ''}`.toLocaleLowerCase('pt-BR')
-                        return texto.includes(termo)
-                      })
-                      .map((curso) => {
-                        const rotulo = `${curso.nome}${curso.sigla ? ` · ${curso.sigla}` : ''}${curso.campus || curso.campusNome ? ` — ${curso.campus || curso.campusNome}` : ''}`
-                        const ativo = String(curso.id) === String(valores.curso)
-                        return (
-                          <li
-                            key={curso.id}
-                            role="option"
-                            aria-selected={ativo}
-                            onMouseDown={(evento) => {
-                              evento.preventDefault()
-                              alterar('curso', String(curso.id))
-                              mudarBuscaCurso(rotulo)
-                              mudarListaCursosAberta(false)
-                            }}
-                            style={{
-                              padding: '8px 10px',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontSize: '0.92rem',
-                              background: ativo ? 'var(--suave, #f3f6fb)' : 'transparent',
-                              fontWeight: ativo ? 600 : 400,
-                            }}
-                          >
-                            {rotulo}
-                          </li>
-                        )
-                      })}
-                  </ul>
-                )}
+                >
+                  <option value="">
+                    {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
+                  </option>
+                  {cursos.map((curso) => (
+                    <option key={curso.id} value={String(curso.id)}>
+                      {curso.nome}
+                      {curso.sigla ? ` · ${curso.sigla}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {erroCursos && (
