@@ -24,3 +24,16 @@ main :is(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--azul);
   outline-offset: 2px;
 }
+
+.retorno-publico {
+  padding-block-start: 1rem;
+}
+
+.retorno-publico a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  color: var(--azul);
+  font-weight: 700;
+}

@@ -4,8 +4,6 @@ import {
   encaminharProjetoParaCoordenacao,
   enviarDocumentoProjeto,
 } from '@/api/projetos.js'
-import { listarCoordenadores } from '@/api/coordenadores.js'
-import { enviarNotificacaoProjeto } from '@/api/notificacoes.js'
 
 function criarEnvioInicial() {
   return {
@@ -111,7 +109,7 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
     await executarArquivo(indice, item.arquivo)
   }
 
-  async function enviarProjeto({ dto, submissaoLocal, orientador, arquivos }) {
+  async function enviarProjeto({ dto, submissaoLocal, arquivos }) {
     if (cadastroBloqueado.current || projetoId.current || cadastroIncerto.current) return false
     cadastroBloqueado.current = true
     atualizarEtapa('cadastro', 'enviando', 'Salvando o projeto…')
@@ -159,31 +157,6 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
       })),
     }))
 
-    const destinatarios = []
-    let erroDestinatarios = ''
-    if (sessao.tipoUsuario === 'ALUNO') {
-      const email = orientador?.email || orientador?.usuario?.email
-      if (email) destinatarios.push(email)
-    } else if (sessao.tipoUsuario === 'COORDENADOR') {
-      if (sessao.usuario?.email) destinatarios.push(sessao.usuario.email)
-    } else {
-      atualizarEtapa('notificacao', 'enviando', 'Consultando os destinatários do aviso…')
-      try {
-        const coordenadores = await listarCoordenadores(sessao.token, { cursoId: dto.cursoId })
-        destinatarios.push(
-          ...(Array.isArray(coordenadores)
-            ? coordenadores
-                .map((item) => item.professor?.usuario?.email || item.usuario?.email || item.email)
-                .filter(Boolean)
-            : []),
-        )
-      } catch {
-        erroDestinatarios =
-          'Projeto salvo. Não conseguimos consultar os destinatários para confirmar o aviso. Acompanhe pelo painel.'
-      }
-    }
-
-    let encaminhamentoFalhou = false
     if (sessao.tipoUsuario === 'ALUNO') {
       atualizarEtapa(
         'encaminhamento',
@@ -191,40 +164,14 @@ export default function useEnvioProjeto({ sessao, aoSubmeter }) {
         'A avaliação do orientador faz parte do cadastro. Acompanhe o andamento no painel.',
       )
     } else {
-      encaminhamentoFalhou = !(await executarEncaminhamento(projetoCriado.id))
+      await executarEncaminhamento(projetoCriado.id)
     }
 
-    if (erroDestinatarios) {
-      atualizarEtapa('notificacao', 'falhou', erroDestinatarios)
-    } else if (encaminhamentoFalhou) {
-      atualizarEtapa(
-        'notificacao',
-        'falhou',
-        'Projeto salvo. Tente o encaminhamento novamente. O aviso por e-mail ainda não foi confirmado.',
-      )
-    } else {
-      atualizarEtapa('notificacao', 'enviando', 'Enviando o aviso por e-mail…')
-      try {
-        await enviarNotificacaoProjeto(
-          {
-            statusProjeto: sessao.tipoUsuario === 'ALUNO' ? 'EM_ANALISE' : 'ANALISE_PUBLICACAO',
-            nomeProjeto: dto.nome,
-            tipoProjeto: dto.tipoProjeto,
-            destinatarios,
-            nomeResponsavel: sessao.usuario?.nome,
-          },
-          sessao.token,
-        )
-        atualizarEtapa('notificacao', 'concluido', 'Solicitação de aviso recebida.')
-      } catch {
-        atualizarEtapa(
-          'notificacao',
-          'falhou',
-          'Projeto salvo. Não conseguimos confirmar o aviso por e-mail. Acompanhe pelo painel.',
-        )
-      }
-    }
-
+    atualizarEtapa(
+      'notificacao',
+      'concluido',
+      'Os avisos por e-mail são processados pelo serviço de notificações.',
+    )
     for (const [indice, arquivo] of arquivosParaEnviar.entries()) {
       await executarArquivo(indice, arquivo)
     }

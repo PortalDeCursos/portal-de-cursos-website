@@ -43,7 +43,7 @@ function prepararCurso(curso) {
   const componentes = (curso.qtdDisciplinasObrigatorias || 0) + (curso.qtdDisciplinasOptativas || 0)
   return {
     ...curso,
-    identificador: gerarSlug(curso.acronimo),
+    identificador: `id-${curso.id}`,
     sigla: curso.acronimo,
     grau: rotuloDoEnum(curso.grau, 'grau'),
     modalidade: rotuloDoEnum(curso.modalidade, 'modalidade'),
@@ -120,7 +120,9 @@ export async function listarCursos(sinal, token = null) {
 
 export async function buscarCursoPorId(identificador, sinal) {
   const cursos = await buscarTodosCursos(sinal)
-  const resumo = cursos.find((curso) => curso.identificador === identificador)
+  const resumo =
+    cursos.find((curso) => curso.identificador === identificador) ||
+    cursos.find((curso) => gerarSlug(curso.acronimo) === identificador)
   if (!resumo) throw new ErroApi('Curso não encontrado.', { status: 404 })
 
   const idFormatado = encodeURIComponent(resumo.id)
@@ -132,18 +134,21 @@ export async function buscarCursoPorId(identificador, sinal) {
       metodo: 'GET',
       publico: true,
       sinal,
-    }).catch(() => resumo),
+    }).catch(() => null),
     chamarApi(urlDisciplinas, {
       metodo: 'GET',
       publico: true,
       sinal,
-    }).catch(() => []),
+    }),
   ])
 
-  const cursoFinal = dadosCurso || resumo
-  const listaDisciplinas = Array.isArray(disciplinas) ? disciplinas : []
-
-  return { ...prepararCurso(cursoFinal), grade: listaDisciplinas.map(prepararDisciplina) }
+  if (!Array.isArray(disciplinas)) {
+    throw new ErroApi('A grade recebida está em um formato inválido.', { status: 502 })
+  }
+  return {
+    ...(dadosCurso ? prepararCurso(dadosCurso) : resumo),
+    grade: disciplinas.map(prepararDisciplina),
+  }
 }
 
 export function designarCoordenador(token, cursoId, coordenadorId) {

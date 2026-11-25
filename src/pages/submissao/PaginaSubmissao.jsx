@@ -903,7 +903,7 @@ export default function PaginaSubmissao({ sessao, aoSubmeter }) {
           <div className="formulario-submissao__acoes">
             {etapa > 0 && (
               <button className="botao-secundario" type="button" onClick={voltar}>
-                Voltar
+                <span aria-hidden="true">←</span> Voltar
               </button>
             )}
             {etapa < etapas.length - 1 ? (

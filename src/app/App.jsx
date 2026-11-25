@@ -51,7 +51,6 @@ import {
   listarProjetos,
 } from '@/api/projetos.js'
 import { listarCoordenadores } from '@/api/coordenadores.js'
-import { enviarNotificacaoProjeto } from '@/api/notificacoes.js'
 import { limparLocal } from './limparLocal.js'
 
 function descobrirPagina(rota) {
@@ -92,6 +91,13 @@ function lerTema() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro'
 }
 
+const retornosPublicos = {
+  cursos: ['inicio', 'Voltar ao início'],
+  projetos: ['inicio', 'Voltar ao início'],
+  'detalhes-curso': ['cursos', 'Voltar aos cursos'],
+  'perfil-professor': ['cursos', 'Voltar aos cursos'],
+  'perfil-aluno': ['projetos', 'Voltar aos projetos'],
+}
 export default function App() {
   const [sessao, mudarSessao] = useState(() => {
     const salva = pegarSessao()
@@ -104,6 +110,33 @@ export default function App() {
   const [sessaoExpirada, mudarSessaoExpirada] = useState(false)
   const [tema, mudarTema] = useState(lerTema)
   const [rota, mudarRota] = useState(lerRota)
+  const [vinculo, mudarVinculo] = useState(null)
+  const [tentativaVinculo, repetirVinculo] = useState(0)
+  const tokenCoord = sessao?.tipoUsuario === 'COORDENADOR' ? sessao.token : null
+  const usuarioCoord = sessao?.usuario?.id
+  const vinculoAtual = tokenCoord && vinculo?.token === tokenCoord ? vinculo : null
+  const cursoCoord = vinculoAtual?.curso
+  useEffect(() => {
+    if (!tokenCoord) return
+    const controle = new AbortController()
+    mudarVinculo(null)
+    Promise.all([
+      listarCoordenadores(tokenCoord, {}, controle.signal),
+      listarCursos(controle.signal),
+    ]).then(([coordenadores, cursos]) => {
+      if (controle.signal.aborted) return
+      const registro = coordenadores.find((item) =>
+        item.professor?.usuario?.id != null && String(item.professor.usuario.id) === String(usuarioCoord),
+      )
+      const curso = registro && cursos.find((item) =>
+        item.coordenadorId != null && String(item.coordenadorId) === String(registro.id),
+      )
+      mudarVinculo({ token: tokenCoord, curso })
+    }).catch(() => {
+      if (!controle.signal.aborted) mudarVinculo({ token: tokenCoord, erro: true })
+    })
+    return () => controle.abort()
+  }, [tokenCoord, usuarioCoord, tentativaVinculo])
   const [pagina, mudarPagina] = useState(() => descobrirPagina(lerRota()) || 'inicio')
   const [rotaCurso, mudarRotaCurso] = useState(() =>
     window.location.hash.startsWith('#curso/') ? window.location.hash.slice(1) : '',
@@ -134,6 +167,7 @@ export default function App() {
       if (elemento.matches(seletor)) alvos.push(elemento)
       alvos.push(...elemento.querySelectorAll(seletor))
       alvos.forEach((alvo) => {
+        if (alvo.closest('.pagina-painel--administracao')) return
         if (alvo.classList.contains('revelacao-rolagem--visivel')) return
         alvo.dataset.revelacaoRolagem = 'preparada'
         alvo.classList.add('revelacao-rolagem')
@@ -263,7 +297,7 @@ export default function App() {
   }, [sessao])
 
   useEffect(() => {
-    if (!sessao?.token) return
+    if (!sessao?.token || (tokenCoord && !cursoCoord)) return
     const controller = new AbortController()
 
     async function sincronizarSubmissoes() {
@@ -423,7 +457,7 @@ export default function App() {
 
     sincronizarSubmissoes()
     return () => controller.abort()
-  }, [sessao?.token, tentativaSubmissoes])
+  }, [sessao?.token, tentativaSubmissoes, tokenCoord, cursoCoord])
 
   function entrar(novaSessao) {
     mudarSessao(novaSessao)
@@ -568,7 +602,7 @@ export default function App() {
             'coordenacao/perfil',
             'aluno/perfil',
           ].includes(rota)}
-          usuario={sessao?.usuario}
+          usuario={coordenador ? { ...sessao.usuario, cursoId: cursoCoord?.id } : sessao?.usuario}
           aoSair={sair}
           tema={tema}
           alternarTema={mudarTema}
@@ -612,6 +646,18 @@ export default function App() {
                   mudarSessao((atual) => ({ ...atual, usuario: { ...atual.usuario, ...perfil } }))
                 }
               />
+            ) : coordenador && !cursoCoord ? (
+              <main id="conteudo" className="pagina-painel">
+                {!vinculoAtual ? <CarregamentoPagina /> : (
+                  <section>
+                    <h1>{vinculoAtual.erro ? 'Não foi possível verificar o vínculo' : 'Aguardando vínculo com um curso'}</h1>
+                    {!vinculoAtual.erro && <p>A administração precisa vincular sua conta a um curso para liberar o painel.</p>}
+                    <button className="botao-secundario" onClick={() => repetirVinculo((n) => n + 1)}>
+                      Verificar novamente
+                    </button>
+                  </section>
+                )}
+              </main>
             ) : administrador ? (
               <PaginaAdministracao
                 secao={rota.split('/')[1] || 'painel'}
@@ -639,7 +685,7 @@ export default function App() {
             ) : coordenador && !identificadorSubmissao ? (
               <PaginaCoordenacao
                 secao={rota.split('/')[1] || 'painel'}
-                sessao={sessao}
+                sessao={{ ...sessao, usuario: { ...sessao.usuario, cursoId: cursoCoord.id, curso: cursoCoord } }}
                 submissoes={listaSubmissoes.map((item) => ({
                   ...item,
                   status:
@@ -655,7 +701,7 @@ export default function App() {
                 tipoUsuario={sessao.tipoUsuario}
                 usuario={sessao.usuario}
                 token={sessao.token}
-                cursoId={sessao.usuario.cursoId}
+                cursoId={coordenador ? cursoCoord.id : sessao.usuario.cursoId}
                 decisao={decisoes[identificadorSubmissao]}
                 aoDecidir={async (status, justificativa) => {
                   const submissao = listaSubmissoes.find(
@@ -665,46 +711,6 @@ export default function App() {
                   // Sincroniza com o backend via PATCH /api/projetos/{id}/status
                   let proximoStatusBackend = submissao?.statusBackend
                   let statusAtualizado = status
-                  const falhasAviso = []
-                  const avisosPendentes = []
-                  const enviarAviso = (statusProjeto, destinatarios) => {
-                    if (!destinatarios.length) {
-                      falhasAviso.push(
-                        'Não foi possível localizar os destinatários do aviso por e-mail.',
-                      )
-                      return
-                    }
-                    avisosPendentes.push(
-                      // TODO: confirmar com Notificações se o evento do RabbitMQ já envia o e-mail
-                      enviarNotificacaoProjeto(
-                        {
-                          statusProjeto,
-                          nomeProjeto: submissao?.titulo || submissao?.nome || 'Projeto',
-                          tipoProjeto:
-                            {
-                              TCC: 'TCC',
-                              'Projeto Integrador': 'PROJETO_INTEGRADOR',
-                              Pesquisa: 'PROJETO_PESQUISA',
-                              Extensão: 'PROJETO_EXTENSAO',
-                            }[submissao?.tipo] ||
-                            submissao?.tipo ||
-                            'TCC',
-                          destinatarios,
-                          nomeResponsavel: sessao.usuario?.nome,
-                          justificativa,
-                        },
-                        sessao.token,
-                      ).catch(() => {
-                        falhasAviso.push(
-                          'Não foi possível confirmar o aviso por e-mail. Avise o responsável.',
-                        )
-                      }),
-                    )
-                  }
-                  const emailsAutores = (submissao?.autores || [])
-                    .map((autor) => (typeof autor === 'string' ? '' : autor?.email))
-                    .filter(Boolean)
-                  if (submissao?.email) emailsAutores.push(submissao.email)
                   if (submissao?.id && sessao?.token) {
                     try {
                       if (sessao.tipoUsuario === 'PROFESSOR') {
@@ -712,40 +718,16 @@ export default function App() {
                           await encaminharProjetoParaCoordenacao(submissao.id, sessao.token)
                           proximoStatusBackend = 'ANALISE_PUBLICACAO'
                           statusAtualizado = 'Aguardando Coordenação'
-                          enviarAviso('APROVADO', emailsAutores)
-                          const coordenadores = await listarCoordenadores(sessao.token, {
-                            cursoId: submissao?.cursoId,
-                          }).catch((falha) => {
-                            console.warn('Não foi possível localizar a coordenação:', falha.message)
-                            falhasAviso.push(
-                              'Não foi possível localizar a coordenação para enviar o aviso. Avise o responsável.',
-                            )
-                            return []
-                          })
-                          const emailsCoordenadores = (
-                            Array.isArray(coordenadores) ? coordenadores : []
-                          )
-                            .map((c) => c.professor?.usuario?.email || c.usuario?.email || c.email)
-                            .filter(Boolean)
-                          if (emailsCoordenadores.length > 0) {
-                            enviarAviso('ANALISE_PUBLICACAO', emailsCoordenadores)
-                          } else {
-                            falhasAviso.push(
-                              'Não foi encontrado um e-mail da coordenação. Avise o responsável pelo curso.',
-                            )
-                          }
                         } else if (status === 'Recusado') {
                           await atualizarStatusProjeto(submissao.id, 'RECUSADO', sessao.token)
                           proximoStatusBackend = 'RECUSADO'
                           statusAtualizado = 'Recusado pelo orientador'
-                          enviarAviso('RECUSADO', emailsAutores)
                         }
                       } else if (sessao.tipoUsuario === 'COORDENADOR') {
                         if (status === 'Aprovado') {
                           await atualizarStatusProjeto(submissao.id, 'PUBLICADO', sessao.token)
                           proximoStatusBackend = 'PUBLICADO'
                           statusAtualizado = 'Aprovado'
-                          enviarAviso('PUBLICADO', emailsAutores)
                         } else if (status === 'Recusado') {
                           await atualizarStatusProjeto(
                             submissao.id,
@@ -754,7 +736,6 @@ export default function App() {
                           )
                           proximoStatusBackend = 'RECUSADO_PUBLICACAO'
                           statusAtualizado = 'Publicação recusada'
-                          enviarAviso('RECUSADO_PUBLICACAO', emailsAutores)
                         }
                       }
                     } catch (err) {
@@ -784,12 +765,7 @@ export default function App() {
                     )
                     return atualizadas
                   })
-                  await Promise.all(avisosPendentes)
-                  return {
-                    aviso: falhasAviso.length
-                      ? `A decisão foi salva. ${[...new Set(falhasAviso)].join(' ')}`
-                      : '',
-                  }
+                  return { aviso: '' }
                 }}
                 aoEditar={async (alteracoes) => {
                   const submissao = listaSubmissoes.find(
@@ -845,6 +821,15 @@ export default function App() {
       </FotosDaSessao>
     )
   }
+  const retorno = pagina === 'submissao'
+    ? [
+        sessao ? enderecoPrivado(sessao.tipoUsuario === 'ALUNO' ? 'aluno/painel' : sessao.tipoUsuario === 'ADMIN' ? 'administracao/painel' : sessao.tipoUsuario === 'COORDENADOR' ? 'coordenacao/painel' : 'professor/feed') : basePortal + '#inicio',
+        sessao ? 'Voltar ao painel' : 'Voltar ao início',
+      ]
+    : retornosPublicos[pagina] && [
+        basePortal + '#' + retornosPublicos[pagina][0],
+        retornosPublicos[pagina][1],
+      ]
   return (
     <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
       <a className="pular-conteudo" href="#conteudo">
@@ -877,6 +862,13 @@ export default function App() {
         tema={tema}
         alternarTema={(proximoTema) => mudarTema(proximoTema)}
       />
+      {retorno && (
+        <div className="limite retorno-publico">
+          <a href={retorno[0]}>
+            <span aria-hidden="true">←</span> {retorno[1]}
+          </a>
+        </div>
+      )}
       <Suspense fallback={<CarregamentoPagina />}>
         {pagina === 'cursos' && <PaginaCursos />}
         {pagina === 'projetos' && <PaginaProjetos />}

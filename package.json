@@ -13,12 +13,6 @@
     "test:contratos": "node --test tests/contratos/*.test.mjs",
     "preview": "vite preview"
   },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "all",
-    "printWidth": 100
-  },
   "dependencies": {
     "@tiptap/extension-placeholder": "^3.35.0",
     "@tiptap/pm": "^3.35.0",

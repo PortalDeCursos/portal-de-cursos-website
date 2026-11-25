@@ -71,6 +71,8 @@ export async function buscarProjetosPublicados(sinal, aoAvisos = () => {}, consu
     return {
       id: p.id,
       identificador: String(p.id),
+      autoresDetalhados: Array.isArray(p.autores) ? p.autores : [],
+      cursoId: p.cursoId,
       nome: p.nome,
       descricao: p.descricao || p.resumo || '',
       resumo: p.resumo || '',
