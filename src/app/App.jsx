@@ -821,30 +821,32 @@ export default function App() {
       </FotosDaSessao>
     )
   }
-  const retorno = pagina === 'submissao'
-    ? [
-        sessao ? enderecoPrivado(sessao.tipoUsuario === 'ALUNO' ? 'aluno/painel' : sessao.tipoUsuario === 'ADMIN' ? 'administracao/painel' : sessao.tipoUsuario === 'COORDENADOR' ? 'coordenacao/painel' : 'professor/feed') : basePortal + '#inicio',
-        sessao ? 'Voltar ao painel' : 'Voltar ao início',
-      ]
-    : retornosPublicos[pagina] && [
-        basePortal + '#' + retornosPublicos[pagina][0],
-        retornosPublicos[pagina][1],
-      ]
-  return (
-    <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
-      <a className="pular-conteudo" href="#conteudo">
-        Pular para o conteúdo
-      </a>
-      <Cabecalho
-        destinoArea={
-          sessao?.tipoUsuario === 'ADMIN'
+  const destinoArea = sessao?.tipoUsuario === 'ADMIN'
             ? 'administracao/painel'
             : sessao?.tipoUsuario === 'COORDENADOR'
               ? 'coordenacao/painel'
               : sessao?.tipoUsuario === 'ALUNO'
                 ? 'aluno/painel'
                 : 'professor/feed'
-        }
+  const inicio = [basePortal + '#inicio', 'Voltar ao início']
+  const cursos = [basePortal + '#cursos', 'Voltar aos cursos']
+  const projetos = [basePortal + '#projetos', 'Voltar aos projetos']
+  const retorno = {
+    cursos: inicio,
+    projetos: inicio,
+    'detalhes-curso': cursos,
+    'detalhes-projeto': projetos,
+    'perfil-professor': cursos,
+    'perfil-aluno': projetos,
+    submissao: sessao ? [enderecoPrivado(destinoArea), 'Voltar ao painel'] : inicio,
+  }[pagina]
+  return (
+    <FotosDaSessao key={sessao?.usuario?.id} sessao={sessao}>
+      <a className="pular-conteudo" href="#conteudo">
+        Pular para o conteúdo
+      </a>
+      <Cabecalho
+        destinoArea={destinoArea}
         destinoPerfil={
           sessao?.tipoUsuario === 'ADMIN'
             ? 'administracao/perfil'
