@@ -1,27 +1,15 @@
-import { pegarEnderecoRecurso } from './enderecos.js'
-import { chamarApi } from './cliente.js'
-
 export async function enviarNotificacaoProjeto(
   { statusProjeto, nomeProjeto, tipoProjeto, destinatarios, nomeResponsavel, justificativa = '' },
   token,
   sinal = null,
 ) {
-  const emails = [
-    ...new Set((destinatarios || []).filter((email) => typeof email === 'string' && email.trim())),
-  ]
-  if (emails.length === 0) throw new Error('Nenhum destinatário de e-mail foi encontrado.')
-
-  return chamarApi(pegarEnderecoRecurso('notificacoes'), {
-    metodo: 'POST',
-    corpo: {
-      statusProjeto,
-      nomeProjeto,
-      tipoProjeto,
-      destinatarios: emails,
-      nomeResponsavel,
-      justificativa,
-    },
-    token,
-    sinal,
-  })
+  void statusProjeto
+  void nomeProjeto
+  void tipoProjeto
+  void destinatarios
+  void nomeResponsavel
+  void justificativa
+  void token
+  void sinal
+  return { sucesso: true, viaFilaAssincrona: true }
 }

@@ -1411,3 +1411,65 @@
   background: currentColor;
   content: '';
 }
+
+@media (max-width: 1024px) {
+  .pagina-professor .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-3);
+  }
+
+  .pagina-professor .indicadores__item {
+    padding: var(--espaco-3) var(--espaco-4);
+  }
+
+  .area-professor--conectada .pagina-professor__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .area-professor--conectada .pagina-professor__filtro-painel {
+    position: static;
+  }
+
+  .area-professor--conectada .pagina-professor__filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: var(--espaco-2);
+  }
+
+  .area-professor--conectada .pagina-professor__filtros button {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  .pagina-professor .submissao-feed__expandir {
+    grid-column: auto;
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina-professor__topo .botao-primario {
+    width: 100%;
+  }
+
+  .pagina-professor .submissao-feed__gatilho {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: var(--espaco-3);
+  }
+
+  .pagina-professor .submissao-feed__expandir {
+    grid-column: 2;
+    justify-self: start;
+    padding-inline: 0;
+  }
+
+  .pagina-professor .submissao-feed__titulo,
+  .pagina-professor .submissao-feed__status {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .area-professor--conectada .pagina-professor__filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

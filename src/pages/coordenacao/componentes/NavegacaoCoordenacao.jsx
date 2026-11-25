@@ -24,7 +24,7 @@ export default function NavegacaoCoordenacao({ rota, usuario, aoSair }) {
       area="coordenacao"
       titulo="Coordenação"
       papel="Coordenação"
-      grupos={grupos}
+      grupos={usuario?.cursoId ? grupos : grupos.filter((grupo) => grupo.titulo === 'Conta')}
       rota={rota}
       usuario={usuario}
       aoSair={aoSair}

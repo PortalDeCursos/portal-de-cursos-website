@@ -1,5 +1,6 @@
 function pertenceAoCurso(item, cursoId, curso) {
-  if (String(item.identificadorCurso ?? item.cursoId ?? '') === String(cursoId)) return true
+  const id = item.cursoId ?? item.identificadorCurso
+  if (id != null) return String(id) === String(cursoId)
   return Boolean(curso && [curso.sigla, curso.nome].includes(item.curso))
 }
 
@@ -7,7 +8,7 @@ export function filtrarContextoCoordenacao({ cursos = [], sessao, submissoes = [
   const cursoId = sessao?.usuario?.cursoId
   const referenciaCurso = sessao?.usuario?.curso
 
-  const curso = cursos.find((item) =>
+  const curso = cursoId != null ? cursos.find((item) => String(item.id) === String(cursoId)) : cursos.find((item) =>
     [item.identificador, item.id, item.sigla, item.nome].some((valor) =>
       [
         cursoId,
