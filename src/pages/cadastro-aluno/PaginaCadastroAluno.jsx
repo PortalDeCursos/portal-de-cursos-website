@@ -80,6 +80,7 @@ function MensagemErro({ id, texto }) {
 
 export default function PaginaCadastroAluno() {
   const [cursos, mudarCursos] = useState([])
+  const [buscaCurso, mudarBuscaCurso] = useState('')
   const [carregandoCursos, mudarCarregandoCursos] = useState(true)
   const [erroCursos, mudarErroCursos] = useState('')
   const [tentativaCursos, mudarTentativaCursos] = useState(0)
@@ -244,6 +245,19 @@ export default function PaginaCadastroAluno() {
 
             <div className="acesso-campo">
               <label htmlFor="aluno-curso">Curso</label>
+              {!carregandoCursos && !erroCursos && cursos.length > 0 && (
+                <div className="acesso-controle" style={{ marginBottom: '8px' }}>
+                  <input
+                    id="aluno-busca-curso"
+                    type="search"
+                    placeholder="Pesquisar curso por nome, sigla ou campus..."
+                    value={buscaCurso}
+                    onChange={(evento) => mudarBuscaCurso(evento.target.value)}
+                    disabled={enviando}
+                    aria-label="Pesquisar curso"
+                  />
+                </div>
+              )}
               <div className="acesso-select">
                 <select
                   id="aluno-curso"
@@ -262,13 +276,20 @@ export default function PaginaCadastroAluno() {
                   <option value="">
                     {carregandoCursos ? 'Carregando cursos…' : 'Selecione seu curso'}
                   </option>
-                  {cursos.map((curso) => (
-                    <option key={curso.id} value={String(curso.id)}>
-                      {curso.nome}
-                      {curso.sigla ? ` · ${curso.sigla}` : ''}
-                      {curso.campus || curso.campusNome ? ` — ${curso.campus || curso.campusNome}` : ''}
-                    </option>
-                  ))}
+                  {cursos
+                    .filter((curso) => {
+                      const termo = buscaCurso.trim().toLocaleLowerCase('pt-BR')
+                      if (!termo) return true
+                      const texto = `${curso.nome || ''} ${curso.sigla || ''} ${curso.campus || curso.campusNome || ''}`.toLocaleLowerCase('pt-BR')
+                      return texto.includes(termo)
+                    })
+                    .map((curso) => (
+                      <option key={curso.id} value={String(curso.id)}>
+                        {curso.nome}
+                        {curso.sigla ? ` · ${curso.sigla}` : ''}
+                        {curso.campus || curso.campusNome ? ` — ${curso.campus || curso.campusNome}` : ''}
+                      </option>
+                    ))}
                 </select>
               </div>
 
