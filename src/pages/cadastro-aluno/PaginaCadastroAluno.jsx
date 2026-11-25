@@ -266,6 +266,7 @@ export default function PaginaCadastroAluno() {
                     <option key={curso.id} value={String(curso.id)}>
                       {curso.nome}
                       {curso.sigla ? ` · ${curso.sigla}` : ''}
+                      {curso.campus || curso.campusNome ? ` — ${curso.campus || curso.campusNome}` : ''}
                     </option>
                   ))}
                 </select>
