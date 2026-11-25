@@ -134,6 +134,7 @@ export default function App() {
       if (elemento.matches(seletor)) alvos.push(elemento)
       alvos.push(...elemento.querySelectorAll(seletor))
       alvos.forEach((alvo) => {
+        if (alvo.closest('.pagina-painel--administracao')) return
         if (alvo.classList.contains('revelacao-rolagem--visivel')) return
         alvo.dataset.revelacaoRolagem = 'preparada'
         alvo.classList.add('revelacao-rolagem')
