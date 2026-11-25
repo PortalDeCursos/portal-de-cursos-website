@@ -291,8 +291,7 @@ export default function PaginaProfessor({ submissoes, usuario }) {
 
                       <span className="submissao-feed__rodape">
                         {item.tipo && <span className="submissao-feed__tipo">{item.tipo}</span>}
-                        <span className={`submissao-feed__status status--${tomStatus}`}>
-                          <span className="submissao-feed__status-ponto" aria-hidden="true" />
+                        <span className={`status status--${status.toLowerCase().replace(/\s+/g, '-')}`}>
                           {status === 'Aguardando Orientador'
                             ? 'Aguardando orientador'
                             : status === 'Aprovado pelo orientador'

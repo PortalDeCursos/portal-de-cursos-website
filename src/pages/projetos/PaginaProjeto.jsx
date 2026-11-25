@@ -10,6 +10,14 @@ import { listarDisciplinasPorCurso } from '@/api/disciplinas.js'
 import './detalhes-projeto.css'
 import TextoFormatado from '@/shared/componentes/TextoFormatado.jsx'
 
+function VoltarAosProjetos() {
+  return (
+    <a className="botao-secundario detalhe-projeto__voltar" href="#projetos">
+      <span aria-hidden="true">←</span> Voltar aos projetos
+    </a>
+  )
+}
+
 const ROTULOS_TIPO = {
   TCC: 'Trabalho de conclusão de curso (TCC)',
   PROJETO_INTEGRADOR: 'Projeto integrador',
@@ -189,6 +197,7 @@ export default function PaginaProjeto({ identificador, token = null }) {
   if (estado === 'carregando') {
     return (
       <main id="conteudo" className="limite pagina-detalhe-projeto">
+        <VoltarAosProjetos />
         <div className="detalhe-projeto__carregando" role="status">
           <p>Carregando produção acadêmica…</p>
         </div>
@@ -209,9 +218,7 @@ export default function PaginaProjeto({ identificador, token = null }) {
           >
             Tentar novamente
           </button>
-          <a className="botao-secundario" href="#projetos">
-            Voltar ao acervo de projetos
-          </a>
+          <VoltarAosProjetos />
         </section>
       </main>
     )
@@ -271,6 +278,7 @@ export default function PaginaProjeto({ identificador, token = null }) {
 
   return (
     <main id="conteudo" className="limite pagina-detalhe-projeto">
+      <VoltarAosProjetos />
       {Object.keys(avisos).length > 0 && (
         <section role="status">
           {Object.entries(avisos).map(([consulta, mensagem]) => (
@@ -520,8 +528,10 @@ export default function PaginaProjeto({ identificador, token = null }) {
                 const nomeAutor = typeof autor === 'string' ? autor : autor.nome
                 const emailAutor = typeof autor === 'object' ? autor.email : ''
 
+                const destino = autor.id != null ? `#aluno/autor-${encodeURIComponent(autor.id)}` : undefined
+                const Cartao = destino ? 'a' : 'div'
                 return (
-                  <div key={idx} className="detalhe-projeto__membro-card">
+                  <Cartao key={autor.id ?? idx} className="detalhe-projeto__membro-card" href={destino}>
                     <div className="detalhe-projeto__membro-avatar detalhe-projeto__membro-avatar--aluno">
                       <Retrato email={emailAutor}>
                         {nomeAutor ? nomeAutor.charAt(0).toUpperCase() : 'A'}
@@ -533,8 +543,9 @@ export default function PaginaProjeto({ identificador, token = null }) {
                       {emailAutor && (
                         <small className="detalhe-projeto__membro-email">{emailAutor}</small>
                       )}
+                      {destino && <span className="detalhe-projeto__membro-link-acao">Ver perfil do aluno →</span>}
                     </div>
-                  </div>
+                  </Cartao>
                 )
               })}
             </div>

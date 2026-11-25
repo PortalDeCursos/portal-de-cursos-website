@@ -26,53 +26,19 @@ export default function PaginaPerfilAluno({ idAluno, conta }) {
 
         if (!ativo) return
 
-        // Localiza projetos em que este discente participa como autor
-        const projetosDoAluno = projetos.filter((proj) => {
-          if (String(proj.autorId) === String(idAluno)) return true
-          const autorStr = (proj.autores || '').toLowerCase()
-          return (
-            autorStr.includes(String(idAluno).toLowerCase()) ||
-            (proj.id && String(proj.id) === String(idAluno))
-          )
-        })
-
-        const projReferencia = projetosDoAluno[0] || projetos[0]
-        const autoresReferencia = projReferencia?.autores
-        const primeiroAutor = Array.isArray(autoresReferencia)
-          ? autoresReferencia[0]
-          : autoresReferencia || projReferencia?.autor
-        const nomeDiscente =
-          typeof primeiroAutor === 'string'
-            ? primeiroAutor
-            : primeiroAutor?.nome ||
-              (String(idAluno) === '1' ? 'Carlos Eduardo Santos Vitor' : 'Lucas Ribeiro Mendes')
-        const emailDiscente =
-          typeof primeiroAutor === 'object' && primeiroAutor?.email
-            ? primeiroAutor.email
-            : `${nomeDiscente
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9]+/g, '.')
-                .replace(/^\.|\.$/g, '')}@escolar.ifrn.edu.br`
-
-        mudarAluno({
-          id: idAluno,
-          nome: nomeDiscente,
-          email: emailDiscente,
-          curso: projReferencia?.curso || 'TADS',
-        })
-
-        if (projReferencia?.cursoId) {
-          const c = cursos.find((item) => String(item.id) === String(projReferencia.cursoId))
-          if (c) mudarCursoInfo(c)
-        } else if (cursos.length > 0) {
-          mudarCursoInfo(cursos[0])
+        const autor = projetos.flatMap((projeto) => projeto.autoresDetalhados)
+          .find((item) => item?.id != null && `autor-${item.id}` === idAluno)
+        if (!autor) return
+        const email = autor.email?.trim().toLowerCase()
+        const trabalhos = projetos.filter((projeto) => projeto.autoresDetalhados.some((item) =>
+          item?.id === autor.id || (email && item?.email?.trim().toLowerCase() === email),
+        ))
+        mudarAluno(autor)
+        mudarProjetosAutor(trabalhos)
+        const cursosIds = [...new Set(trabalhos.map((item) => item.cursoId).filter(Boolean))]
+        if (cursosIds.length === 1) {
+          mudarCursoInfo(cursos.find((item) => String(item.id) === String(cursosIds[0])))
         }
-
-        mudarProjetosAutor(
-          projetosDoAluno.length > 0 ? projetosDoAluno : projReferencia ? [projReferencia] : [],
-        )
       } finally {
         if (ativo) mudarCarregando(false)
       }
@@ -101,7 +67,10 @@ export default function PaginaPerfilAluno({ idAluno, conta }) {
     )
   }
 
-  const titular = conta?.alunoId != null && String(conta.alunoId) === String(idAluno) ? conta : null
+  if (!aluno) {
+    return <main id="conteudo" className="limite pagina-perfil-discente"><h1>Perfil discente indisponível</h1></main>
+  }
+  const titular = aluno.email && conta?.email?.toLowerCase() === aluno.email.toLowerCase() ? conta : null
   const inicial = aluno?.nome ? aluno.nome.charAt(0).toUpperCase() : 'A'
 
   return (
@@ -137,13 +106,13 @@ export default function PaginaPerfilAluno({ idAluno, conta }) {
         {/* Coluna Lateral: Curso de Formação */}
         <aside className="perfil-publico__sidebar">
           <div className="perfil-publico__bloco">
-            <h2>Formação acadêmica</h2>
+            <h2>Curso das produções</h2>
             {cursoInfo ? (
               <div className="perfil-publico__curso-card">
                 <strong>{cursoInfo.nome}</strong>
                 <p>
                   {cursoInfo.descricao ||
-                    'Formação acadêmica superior e tecnológica de excelência no IFRN.'}
+                    'Curso das produções superior e tecnológica de excelência no IFRN.'}
                 </p>
                 <a
                   className="botao-secundario botao--pequeno"
@@ -154,8 +123,7 @@ export default function PaginaPerfilAluno({ idAluno, conta }) {
               </div>
             ) : (
               <p className="perfil-publico__descricao-bio">
-                Discente matriculado em curso de graduação no Instituto Federal do Rio Grande do
-                Norte.
+                Curso não identificado.
               </p>
             )}
           </div>
