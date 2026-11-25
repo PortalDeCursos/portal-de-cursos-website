@@ -246,7 +246,7 @@ export default function PaginaCadastroAluno() {
 
             <div className="acesso-campo">
               <label htmlFor="aluno-curso">Curso</label>
-              <div className="acesso-controle" style={{ position: 'relative' }}>
+              <div className="acesso-select" style={{ position: 'relative' }}>
                 <input
                   id="aluno-curso"
                   type="text"
@@ -254,6 +254,7 @@ export default function PaginaCadastroAluno() {
                   aria-expanded={listaCursosAberta}
                   aria-controls="lista-cursos-aluno"
                   aria-autocomplete="list"
+                  style={{ width: '100%', paddingRight: '38px', cursor: 'pointer' }}
                   placeholder={
                     carregandoCursos
                       ? 'Carregando cursos…'
