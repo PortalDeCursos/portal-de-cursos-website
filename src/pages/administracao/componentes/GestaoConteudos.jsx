@@ -23,6 +23,7 @@ import {
 import { listarProfessores } from '../servicos/gerenciarProfessores.js'
 import ConfirmacaoGestao from './ConfirmacaoGestao.jsx'
 import EditorConteudo from './conteudos/EditorConteudo.jsx'
+import FiltroDisciplinas from './conteudos/FiltroDisciplinas.jsx'
 import { configuracoes } from './conteudos/configuracoes.js'
 import '../estilos/gestao.css'
 import '../estilos/geral.css'
@@ -41,7 +42,9 @@ export default function GestaoConteudos({
   const configuracao = configuracoes[dominio]
   const [busca, mudarBusca] = useState('')
   const [cursoFiltro, mudarCursoFiltro] = useState('todos')
+  const [tipoFiltro, mudarTipoFiltro] = useState('todos')
   const [editor, mudarEditor] = useState(null)
+  const [novaDisciplinaCurso, mudarNovaDisciplinaCurso] = useState(null)
   const [exclusao, mudarExclusao] = useState(null)
   const [mensagem, mudarMensagem] = useState('')
   const [professores, mudarProfessores] = useState([])
@@ -202,7 +205,10 @@ export default function GestaoConteudos({
         .includes(busca.trim().toLocaleLowerCase('pt-BR')) &&
       (dominio !== 'disciplinas' ||
         cursoFiltro === 'todos' ||
-        String(item.cursoId ?? '') === cursoFiltro),
+        String(item.cursoId ?? '') === cursoFiltro) &&
+      (dominio !== 'disciplinas' ||
+        tipoFiltro === 'todos' ||
+        (tipoFiltro === 'obrigatoria' ? Boolean(item.obrigatoria) : !item.obrigatoria)),
   )
   async function salvar(dados) {
     if (persistido) {
@@ -281,6 +287,28 @@ export default function GestaoConteudos({
       return
     }
   }
+  async function salvarDisciplinaNoCurso(cursoAlvo, dados) {
+    mudarSalvando(true)
+    mudarMensagem('')
+    try {
+      await cadastrarDisciplina(token, {
+        cursoId: Number(cursoAlvo.id),
+        nome: dados.nome,
+        codigo: dados.codigo,
+        cargaHoraria: Number(dados.cargaHoraria),
+        semestre: dados.semestre,
+        descricao: dados.descricao,
+        obrigatoria: dados.obrigatoria === 'true' || dados.obrigatoria === true,
+      })
+      await carregarPersistidos()
+      mudarNovaDisciplinaCurso(null)
+      mudarMensagem(`Matéria cadastrada em ${cursoAlvo.nome} com sucesso.`)
+    } catch (falha) {
+      mudarMensagem(falha.message || 'Não foi possível cadastrar a matéria neste curso.')
+    } finally {
+      mudarSalvando(false)
+    }
+  }
   function renderizarEditor(registro) {
     const itemEditor = registro?.novo
       ? null
@@ -312,7 +340,7 @@ export default function GestaoConteudos({
         item={itemEditor}
         configuracao={configuracao}
         curso={curso}
-        cursoId={cursoId}
+        cursoId={registro?.cursoId || cursoId}
         bloquearCurso={Boolean(cursoId)}
         dominio={dominio}
         professores={professores}
@@ -369,7 +397,17 @@ export default function GestaoConteudos({
             <button
               className="botao-primario"
               onClick={() => {
-                mudarEditor((atual) => (atual?.novo ? null : { novo: true }))
+                mudarEditor((atual) =>
+                  atual?.novo
+                    ? null
+                    : {
+                        novo: true,
+                        ...(dominio === 'disciplinas' && cursoFiltro !== 'todos'
+                          ? { cursoId: cursoFiltro }
+                          : {}),
+                      },
+                )
+                mudarNovaDisciplinaCurso(null)
                 mudarExclusao(null)
                 mudarMensagem('')
               }}
@@ -444,47 +482,32 @@ export default function GestaoConteudos({
         </section>
       )}
       <section className="painel-secao">
-        <div className="gestao-lista-filtros">
-          <label className="gestao-busca">
-            Buscar {configuracao.singular}
-            <input
-              type="search"
-              placeholder={dominio === 'disciplinas' ? 'Nome ou código' : 'Nome ou curso'}
-              value={busca}
-              onChange={(e) => mudarBusca(e.target.value)}
-            />
-          </label>
-          {dominio === 'disciplinas' && !restritoAoCurso && !cursoId && (
-            <div
-              className="gestao-filtro-cursos"
-              role="group"
-              aria-label="Filtrar disciplinas por curso"
-            >
-              <button
-                type="button"
-                aria-pressed={cursoFiltro === 'todos'}
-                onClick={() => mudarCursoFiltro('todos')}
-              >
-                Todas <span>{itensPermitidos.length}</span>
-              </button>
-              {cursosDisponiveis.map((cursoItem) => {
-                const total = itensPermitidos.filter(
-                  (item) => String(item.cursoId ?? '') === String(cursoItem.id),
-                ).length
-                return (
-                  <button
-                    type="button"
-                    key={cursoItem.id}
-                    aria-pressed={cursoFiltro === String(cursoItem.id)}
-                    onClick={() => mudarCursoFiltro(String(cursoItem.id))}
-                  >
-                    {cursoItem.sigla || cursoItem.acronimo || cursoItem.nome} <span>{total}</span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
+        {dominio === 'disciplinas' ? (
+          <FiltroDisciplinas
+            busca={busca}
+            aoMudarBusca={mudarBusca}
+            cursoFiltro={cursoFiltro}
+            aoMudarCursoFiltro={mudarCursoFiltro}
+            tipoFiltro={tipoFiltro}
+            aoMudarTipoFiltro={mudarTipoFiltro}
+            cursosDisponiveis={cursosDisponiveis}
+            itensPermitidos={itensPermitidos}
+            totalFiltrado={resultados.length}
+            mostrarFiltroCurso={!restritoAoCurso && !cursoId}
+          />
+        ) : (
+          <div className="gestao-lista-filtros">
+            <label className="gestao-busca">
+              Buscar {configuracao.singular}
+              <input
+                type="search"
+                placeholder="Nome ou curso"
+                value={busca}
+                onChange={(e) => mudarBusca(e.target.value)}
+              />
+            </label>
+          </div>
+        )}
         <div
           className="tabela-submissoes"
           role="region"
@@ -527,6 +550,10 @@ export default function GestaoConteudos({
                 const expandidoId = `gestao-expansao-${dominio}-${chaveItem}`
                 const editando =
                   editor && !editor.novo && String(editor.identificador || editor.id) === chaveItem
+                const adicionandoDisciplina =
+                  dominio === 'cursos' &&
+                  novaDisciplinaCurso &&
+                  String(novaDisciplinaCurso.identificador || novaDisciplinaCurso.id) === chaveItem
                 const confirmando =
                   exclusao && String(exclusao.identificador || exclusao.id) === chaveItem
                 const tituloExclusao = `titulo-excluir-${dominio}-${chaveItem.replace(/[^a-z0-9_-]/gi, '-')}`
@@ -588,11 +615,27 @@ export default function GestaoConteudos({
                       )}
                       <td>
                         <div className="gestao-acoes">
+                          {dominio === 'cursos' && !somenteEdicao && (
+                            <button
+                              type="button"
+                              aria-expanded={Boolean(adicionandoDisciplina)}
+                              aria-controls={expandidoId}
+                              onClick={() => {
+                                mudarNovaDisciplinaCurso(adicionandoDisciplina ? null : item)
+                                mudarEditor(null)
+                                mudarExclusao(null)
+                                mudarMensagem('')
+                              }}
+                            >
+                              + Matéria<span className="somente-leitores"> em {item.nome}</span>
+                            </button>
+                          )}
                           <button
                             aria-expanded={Boolean(editando)}
                             aria-controls={expandidoId}
                             onClick={() => {
                               mudarEditor(editando ? null : item)
+                              mudarNovaDisciplinaCurso(null)
                               mudarExclusao(null)
                               mudarMensagem('')
                             }}
@@ -607,6 +650,7 @@ export default function GestaoConteudos({
                               onClick={() => {
                                 mudarExclusao(confirmando ? null : item)
                                 mudarEditor(null)
+                                mudarNovaDisciplinaCurso(null)
                               }}
                             >
                               Remover<span className="somente-leitores"> {item.nome}</span>
@@ -615,6 +659,30 @@ export default function GestaoConteudos({
                         </div>
                       </td>
                     </tr>
+                    {adicionandoDisciplina && (
+                      <tr className="gestao-linha-expandida">
+                        <td colSpan={colunasTabela} id={expandidoId}>
+                          <EditorConteudo
+                            key={`nova-disciplina-${chaveItem}`}
+                            item={null}
+                            configuracao={configuracoes.disciplinas}
+                            curso={item}
+                            cursoId={item.id}
+                            bloquearCurso
+                            dominio="disciplinas"
+                            professores={professores}
+                            alunos={alunos}
+                            cursos={cursosDisponiveis}
+                            disciplinas={disciplinasDisponiveis}
+                            campus={campus}
+                            areas={areas}
+                            salvando={salvando}
+                            aoSalvar={(dados) => salvarDisciplinaNoCurso(item, dados)}
+                            aoCancelar={() => mudarNovaDisciplinaCurso(null)}
+                          />
+                        </td>
+                      </tr>
+                    )}
                     {editando && (
                       <tr className="gestao-linha-expandida">
                         <td colSpan={colunasTabela} id={expandidoId}>

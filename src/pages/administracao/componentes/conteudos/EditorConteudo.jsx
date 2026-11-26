@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { explicacoesCampos, gruposFormulario } from './configuracoes.js'
+import SeletorCursoPesquisavel from './SeletorCursoPesquisavel.jsx'
 
 export default function EditorConteudo({
   item,
@@ -186,36 +187,24 @@ export default function EditorConteudo({
                         ))}
                       </select>
                     ) : opcoes === 'cursos' ? (
-                      <select
+                      <SeletorCursoPesquisavel
                         id={idCampo}
-                        aria-describedby={idAjuda}
+                        ariaDescribedBy={idAjuda}
                         required
                         value={dados[chave]}
                         disabled={chave === 'cursoId' && bloquearCurso}
-                        onChange={(e) =>
+                        cursos={cursos}
+                        dominio={dominio}
+                        aoAlterar={(novoValor) =>
                           mudarDados({
                             ...dados,
-                            [chave]: e.target.value,
+                            [chave]: novoValor,
                             ...(chave === 'cursoId' && dominio === 'projetos'
                               ? { alunoIds: [], disciplinaIds: [] }
                               : {}),
                           })
                         }
-                      >
-                        <option value="">Selecione um curso</option>
-                        {cursos.map((itemCurso) => (
-                          <option
-                            key={itemCurso.id || itemCurso.identificador}
-                            value={String(
-                              ['disciplinas', 'projetos'].includes(dominio)
-                                ? itemCurso.id
-                                : itemCurso.identificador || itemCurso.id,
-                            )}
-                          >
-                            {itemCurso.nome} · {itemCurso.sigla}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     ) : ['alunos', 'disciplinas', 'professores'].includes(opcoes) ? (
                       <>
                         <select

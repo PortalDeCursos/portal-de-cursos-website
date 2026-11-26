@@ -8,6 +8,7 @@ import {
 } from '@/api/cursos.js'
 import { enderecoPrivado } from '@/app/rotas.js'
 import ConfirmacaoGestao from './ConfirmacaoGestao.jsx'
+import FiltroCampus from './FiltroCampus.jsx'
 import '../estilos/campus.css'
 import '../estilos/gestao.css'
 import '../estilos/geral.css'
@@ -144,11 +145,6 @@ export default function GestaoCampus({ identificador, token }) {
     queueMicrotask(() => carregar(controller.signal))
     return () => controller.abort()
   }, [carregar])
-
-  const cidades = useMemo(
-    () => [...new Set(campus.map((item) => item.cidade).filter(Boolean))].sort(),
-    [campus],
-  )
 
   const resultados = useMemo(
     () =>
@@ -420,38 +416,14 @@ export default function GestaoCampus({ identificador, token }) {
       )}
 
       <section className="painel-secao campus-lista">
-        <div className="gestao-lista-filtros">
-          <label className="gestao-busca">
-            Buscar campus por nome
-            <input
-              type="search"
-              value={busca}
-              onChange={(evento) => mudarBusca(evento.target.value)}
-              placeholder="Nome, acrônimo, cidade ou endereço"
-            />
-          </label>
-          {cidades.length > 0 && (
-            <div className="gestao-filtro-cursos" role="group" aria-label="Filtrar por cidade">
-              <button
-                type="button"
-                aria-pressed={cidadeFiltro === 'todas'}
-                onClick={() => mudarCidadeFiltro('todas')}
-              >
-                Todas as cidades <span>{campus.length}</span>
-              </button>
-              {cidades.map((cidade) => (
-                <button
-                  type="button"
-                  key={cidade}
-                  aria-pressed={cidadeFiltro === cidade}
-                  onClick={() => mudarCidadeFiltro(cidade)}
-                >
-                  {cidade} <span>{campus.filter((item) => item.cidade === cidade).length}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <FiltroCampus
+          busca={busca}
+          aoMudarBusca={mudarBusca}
+          cidadeFiltro={cidadeFiltro}
+          aoMudarCidadeFiltro={mudarCidadeFiltro}
+          campus={campus}
+          totalFiltrado={resultados.length}
+        />
         <div
           className="tabela-submissoes"
           role="region"

@@ -8,6 +8,8 @@ public final class Seletores {
   public static final By LOGIN_EMAIL = By.id("identificacao");
   public static final By LOGIN_SENHA = By.id("senha");
   public static final By LOGIN_ENTRAR = By.cssSelector("button.acesso-entrar[type='submit']");
+  public static final By NAV_INICIO = By.cssSelector("header a[href$='#inicio']");
+  public static final By NAV_SUBMISSAO = By.cssSelector("#btn-submeter-projeto, header a.navegacao__submeter");
 
   public static final By FORMULARIO_SUBMISSAO = By.cssSelector("form.formulario-submissao");
   public static final By CURSO = By.cssSelector("[data-testid='curso-submissao']");
