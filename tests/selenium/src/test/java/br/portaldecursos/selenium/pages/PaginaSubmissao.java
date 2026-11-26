@@ -24,8 +24,12 @@ public final class PaginaSubmissao {
   }
 
   public void abrir() {
-    navegador.get(configuracao.obrigatorio("portal.url") + configuracao.obrigatorio("rota.submissao"));
-    navegador.navigate().refresh();
+    String rotaSubmissao = configuracao.obrigatorio("rota.submissao");
+    if (navegador.getCurrentUrl().endsWith(rotaSubmissao)) {
+      clicar(Seletores.NAV_INICIO);
+      espera.until(driver -> !driver.getCurrentUrl().endsWith(rotaSubmissao));
+    }
+    clicar(Seletores.NAV_SUBMISSAO);
     espera.until(ExpectedConditions.visibilityOfElementLocated(Seletores.FORMULARIO_SUBMISSAO));
     aguardarCursosDaApi();
   }

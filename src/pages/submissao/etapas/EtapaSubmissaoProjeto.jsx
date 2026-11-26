@@ -39,7 +39,6 @@ export default function EtapaSubmissaoProjeto({ formulario, erros, alterar, erro
           Título <span aria-hidden="true">*</span>
           <input
             data-testid="titulo-projeto-submissao"
-            maxLength={255}
             required
             aria-invalid={Boolean(erros.titulo)}
             aria-describedby={erroDoCampo('titulo')}
